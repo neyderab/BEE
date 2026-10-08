@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro BEE</title>
+</head>
+
+<body>
+
+    <h1>BEE</h1>
+
+    <h2>Crear una cuenta</h2>
+
+    <form action="/registrar" method="post">
+
+        <label>Teléfono:</label>
+        <input type="text" name="telefono">
+
+        <br><br>
+
+        <label>Nombre:</label>
+        <input type="text" name="nombre">
+
+        <br><br>
+
+        <label>Apellido:</label>
+        <input type="text" name="apellido">
+
+        <br><br>
+
+        <label>Tipo de usuario:</label>
+
+        <select name="rol">
+            <option value="Estudiante">Estudiante</option>
+            <option value="Tienda">Tienda</option>
+        </select>
+
+        <br><br>
+
+        <button type="submit">Registrarme</button>
+
+    </form>
+
+</body>
+</html>
