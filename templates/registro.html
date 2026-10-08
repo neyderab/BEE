@@ -1,45 +1,278 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Registro BEE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear cuenta | BEE</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f2;
+            color: #202019;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .contenedor {
+            width: 100%;
+            max-width: 1000px;
+            min-height: 600px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.08);
+        }
+
+        .presentacion {
+            background: #ffdf35;
+            padding: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 38px;
+            font-weight: 900;
+            letter-spacing: -2px;
+        }
+
+        .logo span {
+            color: white;
+        }
+
+        .mensaje h1 {
+            font-size: clamp(34px, 4vw, 52px);
+            line-height: 1.08;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+        }
+
+        .mensaje p {
+            font-size: 16px;
+            line-height: 1.7;
+            max-width: 340px;
+        }
+
+        .decoracion {
+            font-size: 68px;
+            margin-top: 30px;
+        }
+
+        .pie {
+            font-size: 12px;
+            color: #514b22;
+        }
+
+        .formulario {
+            padding: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .formulario h2 {
+            font-size: 32px;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+
+        .descripcion {
+            color: #77776f;
+            line-height: 1.6;
+            margin-bottom: 28px;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 9px;
+        }
+
+        input, select {
+            width: 100%;
+            border: 1px solid #deded7;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 19px;
+            font-size: 15px;
+            background: white;
+            color: #202019;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #c5a400;
+        }
+
+        .boton {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            background: #202019;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .boton:hover {
+            background: #3b3b30;
+            transform: translateY(-1px);
+        }
+
+        .registro {
+            text-align: center;
+            font-size: 14px;
+            color: #77776f;
+            margin-top: 23px;
+        }
+
+        .registro a {
+            color: #202019;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .registro a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 14px;
+            }
+
+            .contenedor {
+                grid-template-columns: 1fr;
+                max-width: 430px;
+            }
+
+            .presentacion {
+                padding: 28px;
+                min-height: 235px;
+            }
+
+            .mensaje h1 {
+                font-size: 34px;
+                margin-top: 28px;
+            }
+
+            .mensaje p {
+                font-size: 14px;
+            }
+
+            .decoracion {
+                display: none;
+            }
+
+            .pie {
+                margin-top: 25px;
+            }
+
+            .formulario {
+                padding: 30px 26px;
+            }
+
+            .formulario h2 {
+                font-size: 28px;
+            }
+        }
+    </style>
 </head>
 
 <body>
+    <main class="contenedor">
 
-    <h1>BEE</h1>
+        <section class="presentacion">
+            <div class="logo">BEE<span>.</span></div>
 
-    <h2>Crear una cuenta</h2>
+            <div class="mensaje">
+                <h1>Tu próxima<br>pausa empieza aquí.</h1>
+                <p>
+                    Crea tu cuenta y descubre una forma más
+                    fácil de pedir dentro de tu universidad.
+                </p>
+                <div class="decoracion">🐝</div>
+            </div>
 
-    <form action="/registrar" method="post">
+            <p class="pie">Pide antes. Recoge sin fila.</p>
+        </section>
 
-        <label>Teléfono:</label>
-        <input type="text" name="telefono">
+        <section class="formulario">
+            <h2>Crear una cuenta</h2>
+            <p class="descripcion">
+                Completa tus datos para comenzar con BEE.
+            </p>
 
-        <br><br>
+            <form action="/registrar" method="post">
+                <label for="telefono">Número de teléfono</label>
+                <input
+                    type="tel"
+                    id="telefono"
+                    name="telefono"
+                    placeholder="3001234567"
+                    inputmode="numeric"
+                    pattern="[0-9]{10}"
+                    minlength="10"
+                    maxlength="10"
+                    required
+                >
 
-        <label>Nombre:</label>
-        <input type="text" name="nombre">
+                <label for="nombre">Nombre</label>
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    placeholder="Tu nombre"
+                    maxlength="50"
+                    required
+                >
 
-        <br><br>
+                <label for="apellido">Apellido</label>
+                <input
+                    type="text"
+                    id="apellido"
+                    name="apellido"
+                    placeholder="Tu apellido"
+                    maxlength="50"
+                    required
+                >
 
-        <label>Apellido:</label>
-        <input type="text" name="apellido">
+                <label for="rol">Tipo de usuario</label>
+                <select id="rol" name="rol" required>
+                    <option value="Estudiante">Estudiante</option>
+                    <option value="Tienda">Tienda</option>
+                </select>
 
-        <br><br>
+                <button class="boton" type="submit">
+                    Crear mi cuenta
+                </button>
+            </form>
 
-        <label>Tipo de usuario:</label>
+            <p class="registro">
+                ¿Ya tienes cuenta?
+                <a href="/login">Iniciar sesión</a>
+            </p>
+        </section>
 
-        <select name="rol">
-            <option value="Estudiante">Estudiante</option>
-            <option value="Tienda">Tienda</option>
-        </select>
-
-        <br><br>
-
-        <button type="submit">Registrarme</button>
-
-    </form>
-
+    </main>
 </body>
 </html>

@@ -1,22 +1,200 @@
+
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-    <title>Registro exitoso - BEE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Registro exitoso | BEE</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f2;
+            color: #202019;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .tarjeta {
+            background: white;
+            width: 100%;
+            max-width: 520px;
+            padding: 45px 35px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.07);
+            animation: aparecer 0.5s ease;
+        }
+
+        .logo {
+            font-size: 38px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            text-align: left;
+            margin-bottom: 35px;
+        }
+
+        .logo span {
+            color: #e1bc00;
+        }
+
+        .icono {
+            width: 85px;
+            height: 85px;
+            background: #ffdf35;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            margin: 0 auto 25px;
+        }
+
+        h1 {
+            font-size: 30px;
+            letter-spacing: -1px;
+            margin-bottom: 15px;
+        }
+
+        .mensaje {
+            color: #6d6d64;
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .nota {
+            background: #fff9d9;
+            border: 1px solid #f3e7a4;
+            border-radius: 14px;
+            padding: 17px;
+            margin-bottom: 28px;
+            text-align: left;
+        }
+
+        .nota strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .nota p {
+            color: #68644d;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .boton {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: #202019;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .boton:hover {
+            background: #3b3b30;
+            transform: translateY(-1px);
+        }
+
+        .enlace {
+            display: inline-block;
+            margin-top: 22px;
+            color: #6d6d64;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .enlace:hover {
+            color: #202019;
+            text-decoration: underline;
+        }
+
+        .pie {
+            color: #99998f;
+            font-size: 12px;
+            margin-top: 35px;
+        }
+
+        @keyframes aparecer {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tarjeta {
+                padding: 30px 22px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .logo {
+                margin-bottom: 28px;
+            }
+        }
+    </style>
 </head>
 
 <body>
+    <main class="tarjeta">
 
-    <h1>BEE</h1>
+        <div class="logo">BEE<span>.</span></div>
 
-    <h2>¡Fuiste registrado correctamente!</h2>
+        <div class="icono">✓</div>
 
-    <p>BEE estará disponible pronto.</p>
+        <h1>¡Ya eres parte de BEE!</h1>
 
-    <p>Gracias por registrarte. Te avisaremos cuando puedas comenzar a usar la aplicación.</p>
+        <p class="mensaje">
+            Tu registro se completó correctamente.
+            Nos alegra que quieras hacer parte de una forma
+            más fácil de pedir y recoger dentro de tu universidad.
+        </p>
 
+        <div class="nota">
+            <strong>¿Qué sigue ahora?</strong>
+            <p>
+                Ya puedes volver al inicio de sesión y probar
+                tu acceso con el número de teléfono que registraste.
+            </p>
+        </div>
+
+        <a href="/login" class="boton">
+            Ir a iniciar sesión
+        </a>
+
+
+<a href="/login" class="enlace">
+    Volver al inicio de sesión
+</a>
+
+        <p class="pie">
+            BEE · Pide antes. Recoge sin fila.
+        </p>
+
+    </main>
 </body>
-
 </html>
-
