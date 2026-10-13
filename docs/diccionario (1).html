@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Diccionario de datos de la base de datos del proyecto BEE.">
+<title>Diccionario de datos | BEE</title>
+<style>
+:root{--navy:#142b4a;--blue:#2463eb;--yellow:#f4c542;--ink:#1d2939;--muted:#667085;--line:#e4e9f0;--surface:#fff;--bg:#f5f7fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}
+header{background:linear-gradient(135deg,#102541,#1d4168);color:white;padding:28px 22px 42px;border-bottom:5px solid var(--yellow)}
+.topbar,.wrap{max-width:1180px;margin:0 auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-size:1.35rem;font-weight:800;letter-spacing:.08em;color:white;text-decoration:none}
+.back{color:white;text-decoration:none;border:1px solid #ffffff66;border-radius:999px;padding:9px 14px;font-size:.9rem}
+.hero{max-width:1180px;margin:32px auto 0;padding:0 22px}
+.eyebrow{color:var(--yellow);font-size:.76rem;font-weight:800;letter-spacing:.16em}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:10px 0 12px}
+.hero p{max-width:720px;color:#e1eaf5;margin:0;font-size:1.02rem}
+.wrap{padding:26px 22px 54px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.stat,.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 18px #152c4a08}
+.stat{padding:18px 20px}
+.stat strong{display:block;font-size:1.8rem;color:var(--navy)}
+.stat span{color:var(--muted);font-size:.92rem}
+.panel{padding:18px;overflow:hidden}
+.controls{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:12px;margin-bottom:16px}
+input,select{width:100%;padding:12px 13px;border:1px solid #cfd7e3;border-radius:10px;background:white;font:inherit;color:var(--ink)}
+input:focus,select:focus{outline:2px solid #9bbaff;border-color:var(--blue)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:900px;font-size:.9rem}
+thead{background:#edf2f8}
+th{padding:13px 14px;text-align:left;color:var(--navy);font-size:.78rem;letter-spacing:.04em;white-space:nowrap}
+td{padding:12px 14px;border-top:1px solid var(--line);white-space:nowrap}
+tbody tr:hover{background:#f8faff}
+.table-name{font-weight:700;color:var(--navy)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#174ea6;background:#edf4ff;padding:3px 6px;border-radius:5px}
+.type{color:#344054}
+.pill,.key{display:inline-block;padding:3px 8px;border-radius:999px;font-size:.77rem;font-weight:700}
+.pill.yes{background:#fff2cc;color:#765900}
+.pill.no{background:#e9f7ef;color:#17663b}
+.key{background:#edf0f5;color:#344054}
+.note{margin:18px 2px 0;color:var(--muted);font-size:.88rem}
+.empty{display:none;text-align:center;padding:28px;color:var(--muted)}
+footer{padding:22px;text-align:center;color:var(--muted);font-size:.85rem}
+@media(max-width:650px){.topbar{align-items:flex-start}.controls{grid-template-columns:1fr}.stats{gap:10px}.stat{padding:15px}.hero{margin-top:24px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <a class="brand" href="index.html">🐝 BEE</a>
+    <a class="back" href="index.html">← Volver al inicio</a>
+  </div>
+  <div class="hero">
+    <div class="eyebrow">DOCUMENTACIÓN DEL PROYECTO</div>
+    <h1>Diccionario de datos</h1>
+    <p>Referencia de la estructura de la base de datos de BEE: tablas, campos, tipos de datos, restricciones y valores predeterminados.</p>
+  </div>
+</header>
+<main class="wrap">
+  <section class="stats" aria-label="Resumen del diccionario">
+    <div class="stat"><strong>9</strong><span>Tablas documentadas</span></div>
+    <div class="stat"><strong>53</strong><span>Campos documentados</span></div>
+  </section>
+  <section class="panel">
+    <div class="controls">
+      <input id="search" type="search" placeholder="Buscar tabla, campo o tipo de dato..." aria-label="Buscar en el diccionario">
+      <select id="tableFilter" aria-label="Filtrar por tabla">
+        <option value="">Todas las tablas</option>
+        <option value="auditoria">auditoria</option><option value="detalle_pedido">detalle_pedido</option><option value="estudiantes">estudiantes</option><option value="pagos">pagos</option><option value="pedidos">pedidos</option><option value="productos">productos</option><option value="tiendas">tiendas</option><option value="universidades">universidades</option><option value="usuarios">usuarios</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tabla</th><th>Campo</th><th>Tipo de dato</th><th>Permite NULL</th><th>Llave</th><th>Valor por defecto</th><th>Extra</th></tr></thead>
+        <tbody id="dictionaryRows">
+          <tr data-table="auditoria"><td><span class="table-name">auditoria</span></td><td><code>id_auditoria</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">PRI</span></td><td>NULL</td><td>auto_increment</td></tr><tr data-table="auditoria"><td><span class="table-name">auditoria</span></td><td><code>id_usuario</code></td><td><span class="type">int</span></td><td><span class="pill yes">Sí</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="auditoria"><td><span class="table-name">auditoria</span></td><td><code>accion</code></td><td><span class="type">varchar(50)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="auditoria"><td><span class="table-name">auditoria</span></td><td><code>tabla_afectada</code></td><td><span class="type">varchar(50)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="auditoria"><td><span class="table-name">auditoria</span></td><td><code>descripcion</code></td><td><span class="type">varchar(255)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="auditoria"><td><span class="table-name">auditoria</span></td><td><code>fecha</code></td><td><span class="type">datetime</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>CURRENT_TIMESTAMP</td><td>DEFAULT_GENERATED</td></tr><tr data-table="detalle_pedido"><td><span class="table-name">detalle_pedido</span></td><td><code>id_detalle</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">PRI</span></td><td>NULL</td><td>auto_increment</td></tr><tr data-table="detalle_pedido"><td><span class="table-name">detalle_pedido</span></td><td><code>id_pedido</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="detalle_pedido"><td><span class="table-name">detalle_pedido</span></td><td><code>id_producto</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="detalle_pedido"><td><span class="table-name">detalle_pedido</span></td><td><code>cantidad</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="detalle_pedido"><td><span class="table-name">detalle_pedido</span></td><td><code>precio</code></td><td><span class="type">decimal(10,2)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="estudiantes"><td><span class="table-name">estudiantes</span></td><td><code>id_estudiante</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">PRI</span></td><td>NULL</td><td>auto_increment</td></tr><tr data-table="estudiantes"><td><span class="table-name">estudiantes</span></td><td><code>id_usuario</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="estudiantes"><td><span class="table-name">estudiantes</span></td><td><code>id_universidad</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="estudiantes"><td><span class="table-name">estudiantes</span></td><td><code>codigo_estudiante</code></td><td><span class="type">varchar(50)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="pagos"><td><span class="table-name">pagos</span></td><td><code>id_pago</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">PRI</span></td><td>NULL</td><td>auto_increment</td></tr><tr data-table="pagos"><td><span class="table-name">pagos</span></td><td><code>id_pedido</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="pagos"><td><span class="table-name">pagos</span></td><td><code>metodo_pago</code></td><td><span class="type">enum(&#x27;Nequi&#x27;,&#x27;Daviplata&#x27;,&#x27;Tarjeta&#x27;,&#x27;Efectivo&#x27;)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="pagos"><td><span class="table-name">pagos</span></td><td><code>monto</code></td><td><span class="type">decimal(10,2)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="pagos"><td><span class="table-name">pagos</span></td><td><code>estado</code></td><td><span class="type">enum(&#x27;Pendiente&#x27;,&#x27;Aprobado&#x27;,&#x27;Rechazado&#x27;,&#x27;Reembolsado&#x27;)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>Pendiente</td><td>—</td></tr><tr data-table="pagos"><td><span class="table-name">pagos</span></td><td><code>referencia</code></td><td><span class="type">varchar(100)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="pagos"><td><span class="table-name">pagos</span></td><td><code>fecha_pago</code></td><td><span class="type">datetime</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>CURRENT_TIMESTAMP</td><td>DEFAULT_GENERATED</td></tr><tr data-table="pedidos"><td><span class="table-name">pedidos</span></td><td><code>id_pedido</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">PRI</span></td><td>NULL</td><td>auto_increment</td></tr><tr data-table="pedidos"><td><span class="table-name">pedidos</span></td><td><code>id_usuario</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="pedidos"><td><span class="table-name">pedidos</span></td><td><code>id_tienda</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="pedidos"><td><span class="table-name">pedidos</span></td><td><code>fecha_pedido</code></td><td><span class="type">datetime</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>CURRENT_TIMESTAMP</td><td>DEFAULT_GENERATED</td></tr><tr data-table="pedidos"><td><span class="table-name">pedidos</span></td><td><code>hora_recogida</code></td><td><span class="type">datetime</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="pedidos"><td><span class="table-name">pedidos</span></td><td><code>estado</code></td><td><span class="type">enum(&#x27;Pendiente&#x27;,&#x27;Preparando&#x27;,&#x27;Listo&#x27;,&#x27;Entregado&#x27;,&#x27;Cancelado&#x27;)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>Pendiente</td><td>—</td></tr><tr data-table="pedidos"><td><span class="table-name">pedidos</span></td><td><code>total</code></td><td><span class="type">decimal(10,2)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="productos"><td><span class="table-name">productos</span></td><td><code>id_producto</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">PRI</span></td><td>NULL</td><td>auto_increment</td></tr><tr data-table="productos"><td><span class="table-name">productos</span></td><td><code>id_tienda</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="productos"><td><span class="table-name">productos</span></td><td><code>nombre</code></td><td><span class="type">varchar(100)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="productos"><td><span class="table-name">productos</span></td><td><code>descripcion</code></td><td><span class="type">varchar(255)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="productos"><td><span class="table-name">productos</span></td><td><code>precio</code></td><td><span class="type">decimal(10,2)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="productos"><td><span class="table-name">productos</span></td><td><code>stock</code></td><td><span class="type">int</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>0</td><td>—</td></tr><tr data-table="productos"><td><span class="table-name">productos</span></td><td><code>estado</code></td><td><span class="type">tinyint(1)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>1</td><td>—</td></tr><tr data-table="tiendas"><td><span class="table-name">tiendas</span></td><td><code>id_tienda</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">PRI</span></td><td>NULL</td><td>auto_increment</td></tr><tr data-table="tiendas"><td><span class="table-name">tiendas</span></td><td><code>id_usuario</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="tiendas"><td><span class="table-name">tiendas</span></td><td><code>id_universidad</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">MUL</span></td><td>NULL</td><td>—</td></tr><tr data-table="tiendas"><td><span class="table-name">tiendas</span></td><td><code>nombre</code></td><td><span class="type">varchar(100)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="tiendas"><td><span class="table-name">tiendas</span></td><td><code>descripcion</code></td><td><span class="type">varchar(255)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="tiendas"><td><span class="table-name">tiendas</span></td><td><code>ubicacion</code></td><td><span class="type">varchar(100)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="tiendas"><td><span class="table-name">tiendas</span></td><td><code>estado</code></td><td><span class="type">tinyint(1)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>1</td><td>—</td></tr><tr data-table="universidades"><td><span class="table-name">universidades</span></td><td><code>id_universidad</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">PRI</span></td><td>NULL</td><td>auto_increment</td></tr><tr data-table="universidades"><td><span class="table-name">universidades</span></td><td><code>nombre</code></td><td><span class="type">varchar(100)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="universidades"><td><span class="table-name">universidades</span></td><td><code>estado</code></td><td><span class="type">tinyint(1)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>1</td><td>—</td></tr><tr data-table="usuarios"><td><span class="table-name">usuarios</span></td><td><code>id_usuario</code></td><td><span class="type">int</span></td><td><span class="pill no">No</span></td><td><span class="key">PRI</span></td><td>NULL</td><td>auto_increment</td></tr><tr data-table="usuarios"><td><span class="table-name">usuarios</span></td><td><code>telefono</code></td><td><span class="type">varchar(20)</span></td><td><span class="pill no">No</span></td><td><span class="key">UNI</span></td><td>NULL</td><td>—</td></tr><tr data-table="usuarios"><td><span class="table-name">usuarios</span></td><td><code>nombre</code></td><td><span class="type">varchar(50)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="usuarios"><td><span class="table-name">usuarios</span></td><td><code>apellido</code></td><td><span class="type">varchar(50)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="usuarios"><td><span class="table-name">usuarios</span></td><td><code>rol</code></td><td><span class="type">enum(&#x27;Estudiante&#x27;,&#x27;Tienda&#x27;)</span></td><td><span class="pill no">No</span></td><td>—</td><td>NULL</td><td>—</td></tr><tr data-table="usuarios"><td><span class="table-name">usuarios</span></td><td><code>fecha_registro</code></td><td><span class="type">datetime</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>CURRENT_TIMESTAMP</td><td>DEFAULT_GENERATED</td></tr><tr data-table="usuarios"><td><span class="table-name">usuarios</span></td><td><code>estado</code></td><td><span class="type">tinyint(1)</span></td><td><span class="pill yes">Sí</span></td><td>—</td><td>1</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <div id="empty" class="empty">No se encontraron campos con esos criterios.</div>
+    </div>
+    <p class="note"><strong>Llaves:</strong> PRI = llave primaria; UNI = índice único; MUL = índice no único. <strong>NULL:</strong> indica si el campo permite almacenar un valor nulo. Los valores se muestran según el archivo de estructura suministrado para BEE.</p>
+  </section>
+</main>
+<footer>BEE · Buy, Enjoy &amp; Exit · Diccionario de datos</footer>
+<script>
+const searchInput = document.getElementById('search');
+const tableFilter = document.getElementById('tableFilter');
+const rows = Array.from(document.querySelectorAll('#dictionaryRows tr'));
+const empty = document.getElementById('empty');
+function filterRows() {
+  const term = searchInput.value.toLowerCase().trim();
+  const selectedTable = tableFilter.value;
+  let visible = 0;
+  rows.forEach(row => {
+    const matchesText = row.textContent.toLowerCase().includes(term);
+    const matchesTable = !selectedTable || row.dataset.table === selectedTable;
+    const show = matchesText && matchesTable;
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  empty.style.display = visible ? 'none' : 'block';
+}
+searchInput.addEventListener('input', filterRows);
+tableFilter.addEventListener('change', filterRows);
+</script>
+</body>
+</html>
