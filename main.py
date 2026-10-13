@@ -68,7 +68,7 @@ def iniciar_sesion(telefono: str = Form(...)):
             )
             usuario = cursor.fetchone()
 
-    if usuario:
+
         return f"""
         <!DOCTYPE html>
         <html lang="es">
@@ -76,24 +76,177 @@ def iniciar_sesion(telefono: str = Form(...)):
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Verificar código | BEE</title>
+            <style>
+                * {{
+                    box-sizing: border-box;
+                }}
+
+                body {{
+                    margin: 0;
+                    min-height: 100vh;
+                    padding: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: Arial, sans-serif;
+                    background: #F9FBFA;
+                    color: #263238;
+                }}
+
+                .tarjeta {{
+                    width: 100%;
+                    max-width: 440px;
+                    padding: 36px;
+                    background: #FFFFFF;
+                    border: 1px solid #E5ECEA;
+                    border-radius: 20px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+                }}
+
+                .logo {{
+                    margin: 0 0 28px;
+                    font-size: 38px;
+                    font-weight: bold;
+                }}
+
+                .logo span {{
+                    color: #F7C948;
+                }}
+
+                .etiqueta {{
+                    display: inline-block;
+                    padding: 8px 12px;
+                    border-radius: 20px;
+                    background: #E4F3F1;
+                    color: #357D7B;
+                    font-size: 13px;
+                }}
+
+                h2 {{
+                    margin: 20px 0 12px;
+                    font-size: 27px;
+                }}
+
+                .descripcion {{
+                    color: #64716F;
+                    line-height: 1.6;
+                }}
+
+                .codigo-prueba {{
+                    margin: 22px 0;
+                    padding: 15px;
+                    text-align: center;
+                    background: #FFF8DF;
+                    border: 1px solid #F7E6A5;
+                    border-radius: 12px;
+                }}
+
+                .codigo-prueba strong {{
+                    display: block;
+                    margin-top: 6px;
+                    font-size: 26px;
+                    letter-spacing: 6px;
+                }}
+
+                label {{
+                    display: block;
+                    margin-bottom: 8px;
+                    font-weight: bold;
+                    font-size: 14px;
+                }}
+
+                input {{
+                    width: 100%;
+                    padding: 14px;
+                    border: 1px solid #D5DEDB;
+                    border-radius: 10px;
+                    font-size: 22px;
+                    letter-spacing: 6px;
+                    text-align: center;
+                    outline: none;
+                }}
+
+                input:focus {{
+                    border-color: #357D7B;
+                    box-shadow: 0 0 0 3px rgba(53, 125, 123, 0.12);
+                }}
+
+                button {{
+                    width: 100%;
+                    margin-top: 18px;
+                    padding: 15px;
+                    border: none;
+                    border-radius: 10px;
+                    background: #F7C948;
+                    color: #263238;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                }}
+
+                button:hover {{
+                    background: #E9B832;
+                }}
+
+                .volver {{
+                    display: block;
+                    margin-top: 24px;
+                    color: #357D7B;
+                    text-align: center;
+                    text-decoration: none;
+                    font-size: 14px;
+                }}
+
+                @media (max-width: 480px) {{
+                    .tarjeta {{
+                        padding: 26px 22px;
+                    }}
+                }}
+            </style>
         </head>
         <body>
-            <h1>BEE</h1>
-            <h2>Verifica tu número</h2>
-            <p>Ingresa el código de prueba para continuar.</p>
-            <p>Código de prueba: <strong>123456</strong></p>
-            <form action="/verificar-codigo" method="post">
-                <input type="hidden" name="telefono" value="{telefono}">
-                <label for="codigo">Código de seis dígitos</label>
-                <input type="text" id="codigo" name="codigo"
-                       inputmode="numeric" pattern="[0-9]{{6}}"
-                       maxlength="6" required>
-                <button type="submit">Verificar y continuar</button>
-            </form>
-            <p><a href="/login">Volver al inicio de sesión</a></p>
+            <main class="tarjeta">
+                <h1 class="logo">BEE<span>.</span></h1>
+
+                <span class="etiqueta">Verificación de seguridad</span>
+
+                <h2>Verifica tu número</h2>
+                <p class="descripcion">
+                    Ingresa el código de prueba para continuar con tu cuenta.
+                </p>
+
+                <div class="codigo-prueba">
+                    Código de prueba
+                    <strong>123456</strong>
+                </div>
+
+                <form action="/verificar-codigo" method="post">
+                    <input type="hidden" name="telefono" value="{telefono}">
+
+                    <label for="codigo">Código de seis dígitos</label>
+                    <input
+                        type="text"
+                        id="codigo"
+                        name="codigo"
+                        inputmode="numeric"
+                        pattern="[0-9]{{6}}"
+                        maxlength="6"
+                        autocomplete="one-time-code"
+                        placeholder="000000"
+                        required
+                    >
+
+                    <button type="submit">Verificar y continuar</button>
+                </form>
+
+                <a class="volver" href="/login">
+                    Volver al inicio de sesión
+                </a>
+            </main>
         </body>
         </html>
         """
+
 
     return """
     <!DOCTYPE html>
