@@ -5,245 +5,371 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>BEE | Proyecto de Grado</title>
+    <title>BEE | Pide antes. Recoge sin fila.</title>
 
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Fuente -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-    <!-- ENCABEZADO / NAVBAR -->
-    <header class="navbar">
-        <div class="nav-container">
+    <header>
+        <nav>
 
-            <!-- LOGO -->
-            <a href="#inicio" class="logo">
-                <img src="imagenes/logo.png" alt="Logo BEE">
+            <div class="logo">
+                BEE
+            </div>
 
-                <div class="logo-text">
-                    <strong>BEE</strong>
-                    <span>Buy, Enjoy & Exit</span>
-                </div>
-            </a>
-
-            <!-- MENÚ -->
-            <nav>
+            <div class="menu">
                 <a href="#inicio">Inicio</a>
-                <a href="#app">La App</a>
-                <a href="#funcionamiento">Funcionamiento</a>
-                <a href="#poo">POO</a>
-                <a href="#equipo">Equipo</a>
+                <a href="#sobre">Sobre BEE</a>
+                <a href="#funciona">Cómo funciona</a>
                 <a href="#documentos">Documentos</a>
-            </nav>
+                <a href="#equipo">Equipo</a>
+            </div>
 
-        </div>
+        </nav>
     </header>
 
-    <!-- CONTENIDO -->
-    <main>
 
-        <!-- INICIO -->
-        <section id="inicio" class="hero">
-            <div class="hero-content">
+    <section id="inicio" class="inicio">
 
-                <div class="hero-text">
-                    <span class="tag">PROYECTO DE GRADO</span>
+        <div class="inicio-texto">
 
-                    <h1>
-                        Una nueva forma de
-                        <span>comprar dentro de la universidad.</span>
-                    </h1>
+            <p class="etiqueta">
+                PROYECTO DE DESARROLLO DE SOFTWARE
+            </p>
 
-                    <p>
-                        BEE es una aplicación diseñada para facilitar
-                        la compra de productos en las tiendas de la
-                        universidad, permitiendo a los estudiantes
-                        realizar sus pedidos de manera rápida,
-                        organizada y sencilla.
-                    </p>
+            <h1>
+                Pide antes.
+                <br>
+                Recoge sin fila.
+            </h1>
 
-                    <div class="hero-buttons">
-                        <a href="#app" class="btn btn-primary">
-                            Conocer BEE
-                        </a>
+            <p>
+                BEE permite a los estudiantes realizar sus pedidos
+                con anticipación y recogerlos cuando estén listos.
+            </p>
 
-                        <a href="#documentos" class="btn btn-secondary">
-                            Ver proyecto
-                        </a>
-                    </div>
-                </div>
+            <div class="botones">
 
-                <!-- TARJETA PRINCIPAL -->
-                <div class="hero-card">
-                    <div class="bee-circle">🐝</div>
+                <a href="#sobre" class="boton">
+                    Conocer BEE
+                </a>
 
-                    <h3>BEE</h3>
-
-                    <p>Compra · Organiza · Recoge</p>
-
-                    <div class="mini-info">
-                        <div>
-                            <strong>01</strong>
-                            <span>Selecciona</span>
-                        </div>
-
-                        <div>
-                            <strong>02</strong>
-                            <span>Compra</span>
-                        </div>
-
-                        <div>
-                            <strong>03</strong>
-                            <span>Recoge</span>
-                        </div>
-                    </div>
-                </div>
+                <a href="#funciona" class="boton-secundario">
+                    Cómo funciona
+                </a>
 
             </div>
-        </section>
 
-        <!-- LA APP -->
-        <section id="app" class="section">
-            <div class="section-title">
-                <span class="small-title">SOBRE EL PROYECTO</span>
+        </div>
 
-                <h2>¿Qué es BEE?</h2>
+
+        <div class="inicio-imagen">
+
+            <div class="espacio-imagen">
+                <span>Imagen principal de BEE</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section id="sobre" class="seccion">
+
+        <div class="titulo-seccion">
+
+            <p>CONOCE BEE</p>
+
+            <h2>¿Qué es BEE?</h2>
+
+        </div>
+
+
+        <div class="sobre-contenido">
+
+            <div>
 
                 <p>
-                    Una aplicación pensada para mejorar la experiencia
-                    de compra de los estudiantes dentro de la universidad.
+                    BEE es una plataforma web y móvil diseñada para
+                    facilitar los pedidos dentro de las universidades.
                 </p>
-            </div>
-
-            <div class="about-grid">
-
-                <div class="about-card">
-                    <div class="icon">🛍️</div>
-
-                    <h3>Compra en línea</h3>
-
-                    <p>
-                        Los estudiantes pueden consultar los productos
-                        disponibles en las diferentes tiendas y realizar
-                        sus pedidos desde la aplicación.
-                    </p>
-                </div>
-
-                <div class="about-card">
-                    <div class="icon">🕐</div>
-
-                    <h3>Elige tu horario</h3>
-
-                    <p>
-                        El usuario selecciona una hora de recogida para
-                        organizar mejor sus pedidos y evitar esperas
-                        innecesarias.
-                    </p>
-                </div>
-
-                <div class="about-card">
-                    <div class="icon">📦</div>
-
-                    <h3>Recoge tu pedido</h3>
-
-                    <p>
-                        Una vez preparado el pedido, el estudiante puede
-                        acercarse a la tienda y recogerlo de manera rápida.
-                    </p>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- FUNCIONAMIENTO -->
-        <section id="funcionamiento" class="section section-alt">
-            <div class="section-title">
-                <span class="small-title">EXPERIENCIA DEL USUARIO</span>
-
-                <h2>¿Cómo funciona?</h2>
-            </div>
-
-            <div class="steps">
-
-                <div class="step">
-                    <div class="step-number">01</div>
-
-                    <h3>Selecciona una tienda</h3>
-
-                    <p>
-                        El estudiante escoge una de las tiendas
-                        disponibles dentro de la universidad.
-                    </p>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">02</div>
-
-                    <h3>Elige tus productos</h3>
-
-                    <p>
-                        Explora el catálogo y selecciona los productos
-                        que deseas comprar.
-                    </p>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">03</div>
-
-                    <h3>Realiza el pedido</h3>
-
-                    <p>
-                        Confirma los productos y genera tu pedido
-                        directamente desde la aplicación.
-                    </p>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">04</div>
-
-                    <h3>Selecciona una hora</h3>
-
-                    <p>
-                        Escoge el horario en el que deseas recoger
-                        tu pedido.
-                    </p>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">05</div>
-
-                    <h3>Recoge tu pedido</h3>
-
-                    <p>
-                        Dirígete a la tienda en el horario seleccionado
-                        y recoge tu compra.
-                    </p>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- PROGRAMACIÓN ORIENTADA A OBJETOS -->
-        <section id="poo" class="section">
-            <div class="section-title">
-                <span class="small-title">DESARROLLO DEL SISTEMA</span>
-
-                <h2>Programación Orientada a Objetos</h2>
 
                 <p>
-                    BEE está estructurada utilizando el paradigma de
-                    Programación Orientada a Objetos para representar
-                    los diferentes componentes del sistema y las
-                    relaciones entre ellos.
+                    Los estudiantes pueden consultar productos,
+                    realizar pedidos con anticipación y recogerlos
+                    sin tener que esperar largas filas.
                 </p>
+
             </div>
 
-            <!-- CLASES
+
+            <div class="espacio-imagen pequeño">
+                <span>Imagen del proyecto</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section id="funciona" class="seccion fondo">
+
+        <div class="titulo-seccion">
+
+            <p>EL PROCESO</p>
+
+            <h2>¿Cómo funciona?</h2>
+
+        </div>
+
+
+        <div class="pasos">
+
+            <div class="tarjeta">
+
+                <span>01</span>
+
+                <h3>Elige tu universidad</h3>
+
+                <p>
+                    Selecciona la universidad en la que
+                    utilizas BEE.
+                </p>
+
+            </div>
+
+
+            <div class="tarjeta">
+
+                <span>02</span>
+
+                <h3>Selecciona tus productos</h3>
+
+                <p>
+                    Explora los productos disponibles
+                    y elige lo que quieres pedir.
+                </p>
+
+            </div>
+
+
+            <div class="tarjeta">
+
+                <span>03</span>
+
+                <h3>Realiza tu pedido</h3>
+
+                <p>
+                    Confirma tu pedido y selecciona
+                    cuándo quieres recogerlo.
+                </p>
+
+            </div>
+
+
+            <div class="tarjeta">
+
+                <span>04</span>
+
+                <h3>Recoge sin fila</h3>
+
+                <p>
+                    Cuando tu pedido esté listo,
+                    simplemente lo recoges.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="seccion">
+
+        <div class="titulo-seccion">
+
+            <p>NUESTRO PROYECTO</p>
+
+            <h2>Construyendo BEE</h2>
+
+        </div>
+
+
+        <div class="galeria">
+
+            <div class="espacio-imagen">
+                <span>Captura de BEE</span>
+            </div>
+
+            <div class="espacio-imagen">
+                <span>Captura de BEE</span>
+            </div>
+
+            <div class="espacio-imagen">
+                <span>Captura de BEE</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section id="documentos" class="seccion fondo">
+
+        <div class="titulo-seccion">
+
+            <p>DOCUMENTACIÓN</p>
+
+            <h2>Conoce nuestro proyecto</h2>
+
+        </div>
+
+
+        <div class="documentos">
+
+            <div class="documento">
+
+                <h3>Base de datos</h3>
+
+                <p>
+                    Modelo y estructura de la base de datos
+                    utilizada por BEE.
+                </p>
+
+                <a href="#">
+                    Ver documento →
+                </a>
+
+            </div>
+
+
+            <div class="documento">
+
+                <h3>Diccionario de datos</h3>
+
+                <p>
+                    Descripción de las tablas y campos
+                    de nuestra base de datos.
+                </p>
+
+                <a href="#">
+                    Ver documento →
+                </a>
+
+            </div>
+
+
+            <div class="documento">
+
+                <h3>Requisitos</h3>
+
+                <p>
+                    Requisitos funcionales y no funcionales
+                    del sistema.
+                </p>
+
+                <a href="#">
+                    Ver documento →
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section id="equipo" class="seccion">
+
+        <div class="titulo-seccion">
+
+            <p>EL EQUIPO</p>
+
+            <h2>Detrás de BEE</h2>
+
+        </div>
+
+
+        <div class="equipo">
+
+
+            <div class="persona">
+
+                <div class="foto-persona">
+
+                    <img
+                        src="images/Neyder.png"
+                        alt="Neyder Arenas"
+                    >
+
+                </div>
+
+                <h3>Neyder Arenas</h3>
+
+                <p>Desarrollo de Software</p>
+
+            </div>
+
+
+            <div class="persona">
+
+                <div class="foto-persona">
+
+                    <img
+                        src="images/Nicole.png"
+                        alt="Nicole Lamprea"
+                    >
+
+                </div>
+
+                <h3>Nicole Lamprea</h3>
+
+                <p>Desarrollo de Software</p>
+
+            </div>
+
+
+            <div class="persona">
+
+                <div class="foto-persona">
+
+                    <img
+                        src="images/Camilo.png"
+                        alt="Camilo Cueto"
+                    >
+
+                </div>
+
+                <h3>Camilo Cueto</h3>
+
+                <p>Desarrollo de Software</p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <footer>
+
+        <h2>BEE</h2>
+
+        <p>
+            Pide antes. Recoge sin fila.
+        </p>
+
+        <p>
+            Proyecto académico de Desarrollo de Software
+        </p>
+
+    </footer>
+
+
+</body>
+
+</html>
