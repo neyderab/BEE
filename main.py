@@ -161,14 +161,110 @@ def verificar_codigo(
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Bienvenido a BEE</title>
+        <style>
+            * {{
+                box-sizing: border-box;
+            }}
+
+            body {{
+                margin: 0;
+                min-height: 100vh;
+                font-family: Arial, sans-serif;
+                background: #F9FBFA;
+                color: #263238;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 24px;
+            }}
+
+            main {{
+                width: 100%;
+                max-width: 600px;
+                background: white;
+                padding: 40px;
+                border-radius: 20px;
+                border: 1px solid #E5ECEA;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+            }}
+
+            .logo {{
+                color: #263238;
+                font-size: 38px;
+                font-weight: bold;
+                margin: 0 0 8px;
+            }}
+
+            .logo span {{
+                color: #F7C948;
+            }}
+
+            .rol {{
+                display: inline-block;
+                background: #E4F3F1;
+                color: #357D7B;
+                padding: 8px 14px;
+                border-radius: 20px;
+                font-size: 14px;
+                margin-bottom: 18px;
+            }}
+
+            h2 {{
+                font-size: 28px;
+                margin: 8px 0 18px;
+            }}
+
+            .contenido {{
+                line-height: 1.7;
+                color: #52615F;
+            }}
+
+            .acciones {{
+                margin-top: 28px;
+            }}
+
+            .boton {{
+                display: inline-block;
+                background: #F7C948;
+                color: #263238;
+                text-decoration: none;
+                font-weight: bold;
+                padding: 13px 20px;
+                border-radius: 10px;
+            }}
+
+            .boton:hover {{
+                background: #E9B832;
+            }}
+
+            @media (max-width: 480px) {{
+                main {{
+                    padding: 26px 22px;
+                }}
+
+                h2 {{
+                    font-size: 24px;
+                }}
+            }}
+        </style>
     </head>
     <body>
         <main>
-            <h1>BEE.</h1>
-            <p>{rol}</p>
+            <h1 class="logo">BEE<span>.</span></h1>
+
+            <div class="rol">{rol}</div>
+
             <h2>¡Bienvenido, {nombre}!</h2>
-            {contenido}
-            <p><a href="/login">Cerrar y volver al login</a></p>
+
+            <section class="contenido">
+                {contenido}
+            </section>
+
+            <div class="acciones">
+                <a class="boton" href="/login">
+                    Cerrar y volver al login
+                </a>
+            </div>
         </main>
     </body>
     </html>
