@@ -192,12 +192,12 @@ a {
    MENÃš
 ===================================================== */
 
+
 nav {
-
     display: flex;
-
-    gap: 28px;
-
+    align-items: center;
+    gap: 20px;
+    flex-wrap: nowrap;
 }
 
 
@@ -218,6 +218,30 @@ nav a:hover {
 
     color: var(--teal-dark);
 
+}
+
+
+/* Botones de acceso del encabezado */
+nav a.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 42px;
+    padding: 12px 18px;
+    background: var(--yellow-header);
+    color: var(--dark);
+    border: 1px solid #D8C45E;
+    border-radius: 10px;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+nav a.btn-primary:hover {
+    background: #F4E7A1;
+    color: var(--dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(100, 90, 40, 0.12);
 }
 
 
