@@ -38,7 +38,7 @@ La plataforma busca conectar a los estudiantes con las tiendas disponibles dentr
 
 *Nota: las funcionalidades descritas representan el alcance previsto del proyecto; algunas pueden encontrarse todavía en desarrollo.*
 
-## 🛠️ Tecnologías utilizadas
+## Tecnologías utilizadas
 
 | Tecnología | Uso |
 |---|---|
@@ -81,7 +81,7 @@ BEE/
 └── README.md
 ```
 
-## 💻 Ejecución local del backend
+## Ejecución local del backend
 
 Para ejecutar el backend en un entorno local, necesitas tener Python instalado y acceso a una instancia de MySQL configurada para el proyecto.
 
