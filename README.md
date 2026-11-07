@@ -1,5 +1,7 @@
 # Bee — Buy, Enjoy & Exit
 
+[![Pruebas](https://github.com/neyderab/BEE/actions/workflows/pruebas.yml/badge.svg)](https://github.com/neyderab/BEE/actions/workflows/pruebas.yml)
+
 **Pide antes. Recoge sin fila.**
 
 Bee es un proyecto de desarrollo de software que busca mejorar la experiencia de compra dentro de las universidades mediante una plataforma que permite a los estudiantes consultar productos, realizar pedidos anticipadamente y recogerlos en un horario seleccionado, reduciendo los tiempos de espera en las tiendas universitarias.
@@ -66,14 +68,18 @@ Estas entidades sirven como base conceptual para organizar la información y las
 ## Cómo funciona hoy
 
 - **Registro:** el usuario elige si es *estudiante* o *tienda* y selecciona su universidad. Las tiendas también escriben el nombre de la tienda.
-- **Universidades disponibles:** Universidad de San Buenaventura, Universidad Nacional de Colombia, Pontificia Universidad Javeriana, Universidad de los Andes y Universidad del Rosario (se crean en `schema.sql`).
+- **Universidades disponibles:** Universidad de San Buenaventura, Universidad Nacional de Colombia, Pontificia Universidad Javeriana, Universidad de los Andes y Universidad del Rosario (se crean en la primera migración).
 - **Inicio de sesión:** con el teléfono y un código de verificación (por ahora el código de prueba `123456`).
 - **Panel de la tienda** (`/tienda`):
+  - Abre o cierra la tienda con un botón y, si quiere, define un horario fijo (por ejemplo de 7:00 a 18:00). Cerrada, no recibe pedidos.
   - Define en cuánto tiempo se pueden recoger los pedidos: 5–10, 10–15, 15–20, 20–25 o 25–30 minutos.
   - Elige si acepta los pedidos **automáticamente** o **manualmente**.
   - Ve los pedidos en columnas (Por aceptar, Aceptado, En preparación, Listo para recoger) y los avanza con un botón.
-  - En "Menú y precios" crea menús, agrega productos con precio, los edita y los marca como agotados.
-- **Vista del estudiante** (`/estudiante`): ve solo las tiendas de **su universidad** con su tiempo de preparación, hace pedidos y sigue cada uno con una barra de progreso que indica entre qué horas pasar a recogerlo.
+  - En "Menú y precios" crea menús, agrega productos con precio y foto, los edita y los marca como agotados.
+- **Vista del estudiante** (`/estudiante`), diseñada como una app para el celular, con barra inferior **Tiendas · Pedidos · Avisos · Perfil**:
+  - Ve solo las tiendas de **su universidad**, si están abiertas y su tiempo de preparación.
+  - Agrega productos con los botones − y +, revisa el carrito y elige cómo pagar. Por ahora solo **efectivo** (al recoger); Nequi, tarjeta débito y tarjeta crédito aparecen como «Pronto».
+  - Sigue cada pedido con una barra de progreso, lo **cancela** mientras la tienda no lo haya aceptado y lo **pide de nuevo** con un toque.
 - **Notificaciones:** la campana 🔔 avisa al estudiante cuando la tienda acepta, prepara, termina o cancela su pedido, y a la tienda cuando llega un pedido nuevo. Las páginas de pedidos se actualizan solas.
 - **Configuración** (`/configuracion`): ambos usuarios cambian su foto de perfil y su nombre (la tienda también el nombre de la tienda). El estudiante puede cerrar su cuenta desde ahí; la tienda debe escribir a admin@usebeeapp.com.
 - **Administración** (`/admin`): los administradores crean estudiantes, tiendas y otros administradores, editan datos, suspenden o eliminan cuentas, ven los pedidos de todas las tiendas y agregan universidades. Cada administrador solo puede hacer lo que sus **permisos** le autorizan (ver más abajo).
@@ -109,16 +115,19 @@ Reglas de seguridad:
 ```text
 BEE/
 ├── main.py                 # Crea la app FastAPI y registra las rutas
-├── schema.sql              # Tablas, universidades y descripciones (se aplica al iniciar)
+├── alembic.ini             # Configuración de las migraciones
+├── migraciones/            # Cambios de la base de datos, en orden (Alembic)
 ├── render.yaml             # Configuración para publicar en Render
 ├── app/
 │   ├── db.py               # Conexión a PostgreSQL
 │   ├── sesion.py           # Usuario en sesión y permisos por rol
 │   ├── permisos.py         # Permisos de los administradores
 │   ├── usuarios.py         # Creación de usuarios
-│   ├── validacion.py       # Validaciones de formularios
+│   ├── validacion.py       # Clase Formulario (validaciones)
+│   ├── csrf.py             # Protección de formularios
+│   ├── fotos.py            # Fotos de perfil y de productos
 │   ├── plantillas.py       # Jinja2 y mensajes
-│   ├── pedidos.py          # Estados de pedidos, tiempos y notificaciones
+│   ├── pedidos.py          # Estados, tiempos, horario, pagos y notificaciones
 │   └── rutas/
 │       ├── auth.py         # Registro, login, verificación, perfil
 │       ├── tienda.py       # Panel de la tienda
@@ -129,8 +138,9 @@ BEE/
 │   ├── crear_admin.py      # Crea el primer administrador
 │   └── generar_diccionario.py  # Regenera docs/diccionario.html desde la base
 ├── templates/              # Páginas HTML (Jinja2)
-├── static/styles.css       # Estilos compartidos
+├── static/                 # Estilos y JavaScript de los avisos
 ├── tests/                  # Pruebas automáticas (pytest)
+├── .github/workflows/      # Pruebas automáticas en GitHub
 └── docs/                   # Página de presentación (GitHub Pages)
 ```
 
@@ -166,10 +176,10 @@ pip install -r requirements.txt
 
 4. Copia `.env.example` como `.env` y completa los datos de la base de datos y `SECRET_KEY`.
 
-5. Inicia el servidor. Al arrancar, la aplicación crea las tablas que falten y agrega las universidades. Si ya tenías la tabla `usuarios`, se conservan los datos: los usuarios antiguos eligen su universidad la próxima vez que inicien sesión.
+5. Inicia el servidor. Al arrancar, la aplicación aplica las migraciones pendientes de la base de datos (ver «Migraciones»). Los datos existentes se conservan.
 
 ```bash
-python3 -m uvicorn main:app --reload
+python3 main.py
 ```
 
 6. Abre http://127.0.0.1:8000 en el navegador.
@@ -181,6 +191,22 @@ Las pruebas **borran y recrean todas las tablas**, así que usa una base de dato
 ```bash
 TEST_DB_HOST=localhost TEST_DB_USER=postgres TEST_DB_PASSWORD=tu_clave TEST_DB_NAME=bee_test TEST_DB_SSLMODE=disable pytest
 ```
+
+En GitHub las pruebas se ejecutan solas en cada pull request (`.github/workflows/pruebas.yml`). Si alguna falla, el pull request muestra una ❌ y no conviene unirlo hasta arreglarla.
+
+### Migraciones
+
+La estructura de la base de datos se maneja con [Alembic](https://alembic.sqlalchemy.org/) en `migraciones/versiones/`: cada cambio es un archivo numerado (`0001_…`, `0002_…`). La aplicación aplica las pendientes al arrancar. Para cambiar la base:
+
+1. Crea una migración: `alembic revision -m "describe el cambio"`.
+2. Escribe el SQL en `upgrade()` (y cómo deshacerlo en `downgrade()`). Agrega un `COMMENT ON COLUMN` para cada campo nuevo.
+3. Actualiza el diccionario de datos: `python scripts/generar_diccionario.py`.
+
+No se editan migraciones que ya estén en `main`; los cambios siempre van en una migración nueva.
+
+### Seguridad de los formularios
+
+Todos los formularios llevan un token CSRF (`app/csrf.py`): otra página web no puede enviarlos en nombre del usuario. En las plantillas se agrega con `{{ campo_csrf() }}` dentro de cada `<form method="post">`.
 
 ## Publicar la aplicación
 
@@ -197,7 +223,7 @@ Pasos en [Render](https://render.com):
 
 ## Diccionario de datos
 
-`docs/diccionario.html` se genera desde la base de datos real, con las descripciones de `schema.sql`. Después de cambiar el esquema, actualízalo con:
+`docs/diccionario.html` se genera desde la base de datos real, con las descripciones (`COMMENT`) de las migraciones. Después de agregar una migración, actualízalo con:
 
 ```bash
 python scripts/generar_diccionario.py

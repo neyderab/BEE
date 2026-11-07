@@ -1,12 +1,10 @@
 """Notificaciones, configuración del perfil, foto y cierre de cuenta."""
 
-import io
-
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse, Response
-from PIL import Image, ImageOps, UnidentifiedImageError
 
 from app.db import conectar, ejecutar, uno
+from app.fotos import leer_foto, respuesta_foto
 from app.pedidos import ACTIVOS, contar_sin_leer, notificaciones_recientes
 from app.plantillas import mostrar_mensaje, render
 from app.sesion import ADMIN, ESTUDIANTE, TIENDA, usuario_en_sesion
@@ -14,8 +12,6 @@ from app.validacion import Formulario
 
 router = APIRouter()
 
-FOTO_MAXIMA_BYTES = 5 * 1024 * 1024
-FOTO_LADO = 256
 CONFIRMACION_CIERRE = "ELIMINAR"
 
 
@@ -91,35 +87,14 @@ def guardar_perfil(
 
 # ---------- Foto de perfil ----------
 
-def preparar_foto(contenido: bytes) -> bytes | None:
-    """Valida la imagen y la convierte en un JPEG cuadrado de 256×256."""
-    try:
-        imagen = Image.open(io.BytesIO(contenido))
-        imagen = ImageOps.exif_transpose(imagen).convert("RGB")
-    except (UnidentifiedImageError, OSError, Image.DecompressionBombError):
-        return None
-    imagen = ImageOps.fit(imagen, (FOTO_LADO, FOTO_LADO), Image.LANCZOS)
-    salida = io.BytesIO()
-    imagen.save(salida, "JPEG", quality=85, optimize=True)
-    return salida.getvalue()
-
-
 @router.post("/configuracion/foto")
-async def subir_foto(
-    request: Request,
-    foto: UploadFile = File(...),
-    usuario: dict = Depends(usuario_en_sesion),
-):
-    contenido = await foto.read(FOTO_MAXIMA_BYTES + 1)
-    if len(contenido) > FOTO_MAXIMA_BYTES:
-        mostrar_mensaje(request, "La foto pesa más de 5 MB. Elige una más liviana.", "error")
-        return volver_a_configuracion()
-    jpeg = preparar_foto(contenido)
-    if jpeg is None:
-        mostrar_mensaje(request, "El archivo no es una imagen válida (usa JPG, PNG o WebP).", "error")
-        return volver_a_configuracion()
-    ejecutar("UPDATE usuarios SET foto = %s, foto_actualizada = now() WHERE id = %s", (jpeg, usuario["id"]))
-    mostrar_mensaje(request, "Tu foto de perfil se actualizó.")
+async def subir_foto(request: Request, foto: UploadFile = File(...), usuario: dict = Depends(usuario_en_sesion)):
+    jpeg, error = await leer_foto(foto, 256)
+    if error:
+        mostrar_mensaje(request, error, "error")
+    else:
+        ejecutar("UPDATE usuarios SET foto = %s, foto_actualizada = now() WHERE id = %s", (jpeg, usuario["id"]))
+        mostrar_mensaje(request, "Tu foto de perfil se actualizó.")
     return volver_a_configuracion()
 
 
@@ -132,15 +107,12 @@ def eliminar_foto(request: Request, usuario: dict = Depends(usuario_en_sesion)):
 
 @router.get("/fotos/{usuario_id}")
 def ver_foto(usuario_id: int, usuario: dict = Depends(usuario_en_sesion)):
-    fila = uno("SELECT foto FROM usuarios WHERE id = %s AND foto IS NOT NULL", (usuario_id,))
-    if fila is None:
-        return Response(status_code=404)
-    # La URL lleva ?v=<versión>, así que el navegador puede guardarla en caché.
-    return Response(
-        bytes(fila["foto"]),
-        media_type="image/jpeg",
-        headers={"Cache-Control": "private, max-age=86400"},
-    )
+    return respuesta_foto(uno("SELECT foto FROM usuarios WHERE id = %s AND foto IS NOT NULL", (usuario_id,)))
+
+
+@router.get("/productos/{producto_id}/foto")
+def ver_foto_producto(producto_id: int, usuario: dict = Depends(usuario_en_sesion)):
+    return respuesta_foto(uno("SELECT foto FROM productos WHERE id = %s AND foto IS NOT NULL", (producto_id,)))
 
 
 # ---------- Cerrar la cuenta ----------

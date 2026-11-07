@@ -2,16 +2,26 @@
 
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
 from app import permisos as P
-from app.pedidos import ACCIONES, ESTADOS, PASOS, TIEMPOS, contar_sin_leer, texto_tiempo
+from app.csrf import campo_csrf
+from app.pedidos import (
+    ACCIONES,
+    ESTADOS,
+    METODOS_PAGO,
+    PASOS,
+    TIEMPOS,
+    ZONA_HORARIA,
+    contar_sin_leer,
+    estado_tienda,
+    texto_tiempo,
+    tienda_abierta,
+)
 
 CARPETA = Path(__file__).resolve().parent.parent / "templates"
-ZONA_HORARIA = ZoneInfo("America/Bogota")
 
 # Correo al que las tiendas escriben para cerrar su cuenta.
 CORREO_SOPORTE = "admin@usebeeapp.com"
@@ -48,10 +58,14 @@ templates.env.globals.update(
     PASOS=PASOS,
     TIEMPOS=TIEMPOS,
     texto_tiempo=texto_tiempo,
+    tienda_abierta=tienda_abierta,
+    estado_tienda=estado_tienda,
+    METODOS_PAGO=METODOS_PAGO,
     iniciales=iniciales,
     CORREO_SOPORTE=CORREO_SOPORTE,
     P=P,
     tiene_permiso=P.tiene,
+    campo_csrf=campo_csrf,
 )
 
 

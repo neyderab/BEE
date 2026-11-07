@@ -28,6 +28,7 @@ def cargar_usuario(usuario_id: int) -> dict | None:
         SELECT u.id, u.telefono, u.nombre, u.apellido, u.rol, u.activo,
                u.universidad_id, un.nombre AS universidad, {campos_foto("u")},
                t.id AS tienda_id, t.nombre AS tienda, t.tiempo_min, t.auto_aceptar,
+               t.abierta, t.hora_apertura, t.hora_cierre,
                ARRAY(SELECT permiso FROM permisos_usuario WHERE usuario_id = u.id ORDER BY permiso) AS permisos
         FROM usuarios u
         LEFT JOIN universidades un ON un.id = u.universidad_id

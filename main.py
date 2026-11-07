@@ -4,12 +4,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 load_dotenv()
 
+from app.csrf import ErrorCSRF, verificar_csrf  # noqa: E402
 from app.db import inicializar_db  # noqa: E402  (después de cargar .env)
 from app.plantillas import render  # noqa: E402
 from app.rutas import admin, auth, cuenta, estudiante, tienda  # noqa: E402
@@ -29,7 +30,7 @@ async def ciclo_de_vida(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Bee", lifespan=ciclo_de_vida)
+app = FastAPI(title="Bee", lifespan=ciclo_de_vida, dependencies=[Depends(verificar_csrf)])
 # En producción (HTTPS) define COOKIE_SEGURA=1 para que la cookie de sesión
 # solo viaje cifrada.
 app.add_middleware(
@@ -51,6 +52,11 @@ app.include_router(cuenta.router)
 app.include_router(admin.router)
 
 
+@app.exception_handler(ErrorCSRF)
+def csrf_invalido(request: Request, _: ErrorCSRF):
+    return render(request, "expirada.html", status_code=403, usuario=None)
+
+
 @app.exception_handler(SinPermiso)
 def sin_permiso(request: Request, _: SinPermiso):
     return render(
@@ -65,3 +71,11 @@ def sin_permiso(request: Request, _: SinPermiso):
 # La página de presentación (docs/) se sirve en la raíz: estilos, imágenes,
 # PDF y diccionario de datos. Va al final para no tapar las rutas de la app.
 app.mount("/", StaticFiles(directory=Path(__file__).resolve().parent / "docs"), name="presentacion")
+
+
+if __name__ == "__main__":
+    # Permite iniciar la app con: python3 main.py
+    import uvicorn
+
+    print("Bee está corriendo en http://127.0.0.1:8000  (Ctrl+C para detener)")
+    uvicorn.run("main:app", host="127.0.0.1", port=int(os.getenv("PORT", "8000")), reload=True)

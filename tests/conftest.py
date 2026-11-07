@@ -23,10 +23,36 @@ os.environ["DB_PORT"] = os.environ["DB_PORT"] or "5432"
 os.environ["DB_SSLMODE"] = os.environ["DB_SSLMODE"] or "disable"
 os.environ["SECRET_KEY"] = "clave-de-pruebas"
 
+import base64  # noqa: E402
+import json  # noqa: E402
+
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.db import conectar  # noqa: E402
 from main import app  # noqa: E402
+
+class ClienteBee(TestClient):
+    """Cliente de pruebas que agrega el token CSRF a cada POST, como hace el navegador.
+
+    Para probar un envío sin token: cliente.post(..., sin_csrf=True).
+    """
+
+    def post(self, url, *args, sin_csrf=False, **kwargs):
+        if not sin_csrf:
+            token = self.token_csrf()
+            if token is None:  # Sin sesión todavía: abrir una página crea el token.
+                self.get("/login")
+                token = self.token_csrf()
+            kwargs["data"] = {**(kwargs.get("data") or {}), "csrf": token}
+        return super().post(url, *args, **kwargs)
+
+    def token_csrf(self):
+        cookie = self.cookies.get("session")
+        if not cookie:
+            return None
+        datos = cookie.split(".")[0]
+        return json.loads(base64.b64decode(datos + "=" * (-len(datos) % 4))).get("csrf")
+
 
 USB = "Universidad de San Buenaventura"
 ANDES = "Universidad de los Andes"
@@ -40,7 +66,7 @@ def base_limpia():
 
 @pytest.fixture
 def cliente():
-    with TestClient(app) as c:  # `with` ejecuta el arranque (crea las tablas)
+    with ClienteBee(app) as c:  # `with` ejecuta el arranque (crea las tablas)
         yield c
 
 
@@ -50,7 +76,7 @@ def nuevo_cliente():
     clientes = []
 
     def crear():
-        c = TestClient(app)
+        c = ClienteBee(app)
         c.__enter__()
         clientes.append(c)
         return c

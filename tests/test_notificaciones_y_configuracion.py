@@ -124,7 +124,7 @@ def test_cancelacion_avisa_al_estudiante(escenario):
     pedido_id = ultimo_pedido()["id"]
     tienda.post(f"/tienda/pedidos/{pedido_id}/estado", data={"estado": "cancelado"})
     assert notificaciones_de("3200000001") == [f"Café USB canceló tu pedido #{pedido_id}."]
-    assert "La tienda canceló este pedido" in alumno.get("/estudiante/pedidos").text
+    assert "Este pedido se canceló" in alumno.get("/estudiante/pedidos").text
 
 
 # ---------- Campana de notificaciones ----------

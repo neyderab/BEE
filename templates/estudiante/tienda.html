@@ -1,61 +1,157 @@
 {% extends "app_base.html" %}
+{% from "_iconos.html" import icono %}
 {% set seccion = "tiendas" %}
 {% block titulo %}{{ tienda.nombre }}{% endblock %}
+
+{% block cabecera_estudiante %}
+<a class="app-boton-icono" href="/estudiante" aria-label="Volver a las tiendas">{{ icono("atras") }}</a>
+<span class="app-titulo">{{ tienda.nombre }}</span>
+{% endblock %}
+
 {% block contenido %}
-<div class="encabezado">
+{% set abierta = tienda_abierta(tienda) %}
+<section class="tienda-hero">
+    <span class="tienda-inicial grande" aria-hidden="true">{{ tienda.nombre[:1]|upper }}</span>
     <div>
-        <p class="sobretitulo"><a href="/estudiante">← Tiendas</a></p>
         <h1>{{ tienda.nombre }}</h1>
+        <p class="tienda-meta">
+            <span class="estado {{ 'abierta' if abierta else 'cerrada' }}">{{ "Abierta" if abierta else "Cerrada" }}</span>
+            · {{ estado_tienda(tienda) }}
+        </p>
+        <p class="tienda-meta linea-tiempo">{{ icono("reloj") }}
+            <span>Listo en {{ texto_tiempo(tienda.tiempo_min) }} {{ "desde que pides" if tienda.auto_aceptar else "desde que la tienda acepta" }}</span></p>
     </div>
-</div>
+</section>
+
+{% if not abierta %}
+<p class="aviso aviso-error">Esta tienda está cerrada en este momento.{% if tienda.abierta and tienda.hora_apertura %} {{ estado_tienda(tienda) }}.{% endif %} Puedes ver el menú, pero todavía no puedes pedir.</p>
+{% endif %}
+{% if faltantes %}
+<p class="aviso aviso-info">Pusimos tu pedido anterior en el carrito. Ya no hay: {{ faltantes|join(", ") }}.</p>
+{% elif cantidades %}
+<p class="aviso aviso-ok">Pusimos tu pedido anterior en el carrito. Revísalo y confirma.</p>
+{% endif %}
 
 {% if menus %}
-<form action="/estudiante/tiendas/{{ tienda.id }}/pedido" method="post" id="form-pedido" class="pedido-layout">
-    <div>
-        {% for menu in menus %}
-        <section class="tarjeta menu">
-            <h2>{{ menu.nombre }}</h2>
-            <ul class="productos">
-                {% for p in menu.productos %}
-                <li class="producto">
-                    <div class="producto-info">
-                        <label for="cantidad_{{ p.id }}"><strong>{{ p.nombre }}</strong></label>
-                        {% if p.descripcion %}<small>{{ p.descripcion }}</small>{% endif %}
-                    </div>
-                    <span class="precio">{{ p.precio|pesos }}</span>
-                    <input class="campo campo-cantidad" type="number" id="cantidad_{{ p.id }}" name="cantidad_{{ p.id }}"
-                           min="0" max="{{ cantidad_maxima }}" value="0" data-precio="{{ p.precio }}">
-                </li>
-                {% endfor %}
-            </ul>
-        </section>
+<nav class="chips-menu" aria-label="Secciones del menú">
+    {% for menu in menus %}<a href="#menu-{{ menu.id }}">{{ menu.nombre }}</a>{% endfor %}
+</nav>
+
+<form action="/estudiante/tiendas/{{ tienda.id }}/pedido" method="post" id="form-pedido">
+{{ campo_csrf() }}
+    {% for menu in menus %}
+    <section class="seccion-menu" id="menu-{{ menu.id }}">
+        <h2>{{ menu.nombre }}</h2>
+        {% for p in menu.productos %}
+        {% set cantidad = cantidades.get(p.id, 0) %}
+        <article class="producto-card">
+            {% if p.tiene_foto %}
+            <img class="producto-foto" src="/productos/{{ p.id }}/foto?v={{ p.foto_version }}" alt="" loading="lazy" width="88" height="88">
+            {% else %}
+            <span class="producto-foto producto-foto-vacia" aria-hidden="true">🍽️</span>
+            {% endif %}
+            <div class="producto-texto">
+                <label for="cantidad_{{ p.id }}"><strong>{{ p.nombre }}</strong></label>
+                {% if p.descripcion %}<small>{{ p.descripcion }}</small>{% endif %}
+                <span class="precio">{{ p.precio|pesos }}</span>
+            </div>
+            <div class="stepper" data-producto="{{ p.nombre }}" data-precio="{{ p.precio }}">
+                <button type="button" class="stepper-boton" data-paso="-1" aria-label="Quitar uno de {{ p.nombre }}" {% if not abierta %}disabled{% endif %}>{{ icono("menos") }}</button>
+                <input type="number" id="cantidad_{{ p.id }}" name="cantidad_{{ p.id }}" min="0" max="{{ cantidad_maxima }}"
+                       value="{{ cantidad }}" inputmode="numeric" {% if not abierta %}disabled{% endif %}>
+                <button type="button" class="stepper-boton" data-paso="1" aria-label="Agregar uno de {{ p.nombre }}" {% if not abierta %}disabled{% endif %}>{{ icono("mas") }}</button>
+            </div>
+        </article>
         {% endfor %}
+    </section>
+    {% endfor %}
+
+    {% if abierta %}
+    <div class="barra-carrito" id="barra-carrito" hidden>
+        <button type="button" class="boton boton-carrito" id="abrir-pago">
+            <span class="carrito-cantidad" id="carrito-cantidad">0</span>
+            <span>Ver pedido</span>
+            <span id="carrito-total">$0</span>
+        </button>
     </div>
 
-    <aside class="tarjeta resumen">
-        <h2>Tu pedido</h2>
-        <p class="tiempo-tienda">
-            <span aria-hidden="true">⏱️</span>
-            <span>Listo para recoger en <strong>{{ texto_tiempo(tienda.tiempo_min) }}</strong>
-            {% if tienda.auto_aceptar %}desde que haces el pedido.{% else %}desde que la tienda lo acepta.{% endif %}</span>
+    <dialog class="hoja" id="hoja-pago" aria-labelledby="titulo-pago">
+        <div class="hoja-cabecera">
+            <h2 id="titulo-pago">Tu pedido</h2>
+            <button type="button" class="app-boton-icono" id="cerrar-pago" aria-label="Cerrar">✕</button>
+        </div>
+        <ul class="items resumen-items" id="resumen-items"></ul>
+        <p class="total"><span>Total</span><strong id="resumen-total">$0</strong></p>
+
+        <fieldset class="metodos-pago">
+            <legend>¿Cómo vas a pagar?</legend>
+            {% for clave, (nombre, disponible) in METODOS_PAGO.items() %}
+            <label class="metodo {% if not disponible %}metodo-pronto{% endif %}">
+                <input type="radio" name="metodo_pago" value="{{ clave }}" {% if clave == "efectivo" %}checked{% endif %} {% if not disponible %}disabled{% endif %}>
+                {{ icono({"efectivo": "efectivo", "nequi": "celular"}.get(clave, "tarjeta")) }}
+                <span>{{ nombre }}{% if clave == "efectivo" %}<small>Pagas al recoger</small>{% endif %}</span>
+                {% if not disponible %}<span class="insignia insignia-pronto">Pronto</span>{% endif %}
+            </label>
+            {% endfor %}
+        </fieldset>
+
+        <p class="tiempo-tienda">{{ icono("reloj") }}
+            <span>Estará listo en <strong>{{ texto_tiempo(tienda.tiempo_min) }}</strong>
+            {{ "desde que pides." if tienda.auto_aceptar else "desde que la tienda lo acepte." }} Te avisaremos en Avisos.</span>
         </p>
-        <p class="total"><span>Total</span><strong id="total">$0</strong></p>
-        <button class="boton" type="submit">Hacer pedido</button>
-        <p class="ayuda">Pagas al recoger en la tienda. Te avisaremos en 🔔 cada vez que tu pedido avance.</p>
-    </aside>
+        <button class="boton" type="submit">Confirmar pedido · <span id="boton-total">$0</span></button>
+    </dialog>
+    <noscript><button class="boton" type="submit">Hacer pedido (pago en efectivo)</button></noscript>
+    {% endif %}
 </form>
+
 <script>
     (function () {
         const form = document.getElementById("form-pedido");
-        const total = document.getElementById("total");
+        const barra = document.getElementById("barra-carrito");
+        const hoja = document.getElementById("hoja-pago");
+        if (!barra) return;
+        const pesos = (n) => "$" + n.toLocaleString("es-CO");
+
         function actualizar() {
-            let suma = 0;
-            form.querySelectorAll("[data-precio]").forEach(function (campo) {
-                suma += Number(campo.dataset.precio) * (Number(campo.value) || 0);
+            let total = 0, unidades = 0;
+            const resumen = [];
+            form.querySelectorAll(".stepper").forEach(function (s) {
+                const campo = s.querySelector("input");
+                const n = Math.max(0, Math.min(Number(campo.max), parseInt(campo.value, 10) || 0));
+                campo.value = n;
+                s.classList.toggle("con-cantidad", n > 0);
+                if (n > 0) {
+                    const subtotal = n * Number(s.dataset.precio);
+                    total += subtotal; unidades += n;
+                    resumen.push([n, s.dataset.producto, subtotal]);
+                }
             });
-            total.textContent = "$" + suma.toLocaleString("es-CO");
+            barra.hidden = unidades === 0;
+            document.body.classList.toggle("con-carrito", unidades > 0);
+            document.getElementById("carrito-cantidad").textContent = unidades;
+            ["carrito-total", "resumen-total", "boton-total"].forEach((id) => document.getElementById(id).textContent = pesos(total));
+            const lista = document.getElementById("resumen-items");
+            lista.replaceChildren(...resumen.map(function ([n, nombre, subtotal]) {
+                const li = document.createElement("li");
+                const a = document.createElement("span"); a.textContent = n + " × " + nombre;
+                const b = document.createElement("span"); b.textContent = pesos(subtotal);
+                li.append(a, b); return li;
+            }));
+            if (unidades === 0 && hoja.open) hoja.close();
         }
+
+        form.addEventListener("click", function (e) {
+            const boton = e.target.closest(".stepper-boton");
+            if (!boton) return;
+            const campo = boton.parentElement.querySelector("input");
+            campo.value = (parseInt(campo.value, 10) || 0) + Number(boton.dataset.paso);
+            actualizar();
+        });
         form.addEventListener("input", actualizar);
+        document.getElementById("abrir-pago").addEventListener("click", () => hoja.showModal());
+        document.getElementById("cerrar-pago").addEventListener("click", () => hoja.close());
+        hoja.addEventListener("click", (e) => { if (e.target === hoja) hoja.close(); });
         actualizar();
     })();
 </script>

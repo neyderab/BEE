@@ -2,7 +2,7 @@
 
 import re
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import RedirectResponse
 
 from app.db import campos_foto, conectar, ejecutar, todos, uno
@@ -12,11 +12,13 @@ from app.pedidos import (
     TIEMPOS,
     TRANSICIONES,
     agregar_items,
+    leer_hora,
     mensaje_para_estudiante,
     menus_con_productos,
     notificar,
     texto_tiempo,
 )
+from app.fotos import leer_foto
 from app.plantillas import mostrar_mensaje, render
 from app.sesion import tienda_en_sesion
 from app.validacion import Formulario
@@ -53,7 +55,7 @@ def validar_producto(nombre: str, descripcion: str, precio: str):
 def ver_pedidos(request: Request, usuario: dict = Depends(tienda_en_sesion)):
     pedidos = agregar_items(todos(
         f"""
-        SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en,
+        SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en, p.metodo_pago,
                p.tiempo_min, p.tiempo_max, p.aceptado_en, p.estudiante_id,
                u.nombre, u.apellido, u.telefono, {campos_foto("u")}
         FROM pedidos p
@@ -80,23 +82,39 @@ def guardar_disponibilidad(
     request: Request,
     tiempo_min: str = Form(""),
     auto_aceptar: str = Form(""),
+    hora_apertura: str = Form(""),
+    hora_cierre: str = Form(""),
     usuario: dict = Depends(tienda_en_sesion),
 ):
-    try:
-        minutos = int(tiempo_min)
-    except ValueError:
-        minutos = None
+    minutos = int(tiempo_min) if tiempo_min.isdigit() else None
+    apertura, cierre = leer_hora(hora_apertura), leer_hora(hora_cierre)
     if minutos not in TIEMPOS:
         mostrar_mensaje(request, "Elige un tiempo de preparación válido.", "error")
-        return RedirectResponse("/tienda", 303)
+    elif (apertura is None) != (cierre is None) or (apertura and apertura == cierre):
+        mostrar_mensaje(request, "Escribe la hora de apertura y la de cierre (distintas), o deja las dos vacías.", "error")
+    else:
+        activar = auto_aceptar == "on"
+        ejecutar(
+            """
+            UPDATE tiendas SET tiempo_min = %s, auto_aceptar = %s, hora_apertura = %s, hora_cierre = %s
+            WHERE id = %s
+            """,
+            (minutos, activar, apertura, cierre, usuario["tienda_id"]),
+        )
+        modo = "se aceptan automáticamente" if activar else "los aceptas tú manualmente"
+        horario = f" Horario: {apertura:%H:%M} a {cierre:%H:%M}." if apertura else ""
+        mostrar_mensaje(request, f"Guardado: pedidos listos en {texto_tiempo(minutos)} y {modo}.{horario}")
+    return RedirectResponse("/tienda", 303)
 
-    activar = auto_aceptar == "on"
-    ejecutar(
-        "UPDATE tiendas SET tiempo_min = %s, auto_aceptar = %s WHERE id = %s",
-        (minutos, activar, usuario["tienda_id"]),
+
+@router.post("/abrir-cerrar")
+def abrir_cerrar(request: Request, usuario: dict = Depends(tienda_en_sesion)):
+    fila = uno("UPDATE tiendas SET abierta = NOT abierta WHERE id = %s RETURNING abierta", (usuario["tienda_id"],))
+    mostrar_mensaje(
+        request,
+        "Tu tienda está abierta y recibe pedidos." if fila["abierta"]
+        else "Cerraste la tienda: los estudiantes no pueden hacer pedidos.",
     )
-    modo = "se aceptan automáticamente" if activar else "los aceptas tú manualmente"
-    mostrar_mensaje(request, f"Guardado: pedidos listos en {texto_tiempo(minutos)} y {modo}.")
     return RedirectResponse("/tienda", 303)
 
 
@@ -249,3 +267,26 @@ def eliminar_producto(request: Request, producto_id: int, usuario: dict = Depend
         (producto_id, usuario["tienda_id"]),
     )
     return resultado(request, fila, lambda p: f"Producto «{p['nombre']}» eliminado.", "El producto no existe.")
+
+
+@router.post("/productos/{producto_id}/foto")
+async def subir_foto_producto(
+    request: Request, producto_id: int, foto: UploadFile = File(...), usuario: dict = Depends(tienda_en_sesion)
+):
+    jpeg, error = await leer_foto(foto, 480)
+    if error:
+        return resultado(request, None, "", error)
+    fila = uno(
+        f"UPDATE productos SET foto = %s, foto_actualizada = now() WHERE id = %s AND {DE_MI_TIENDA} RETURNING nombre",
+        (jpeg, producto_id, usuario["tienda_id"]),
+    )
+    return resultado(request, fila, lambda p: f"Foto de «{p['nombre']}» actualizada.", "El producto no existe.")
+
+
+@router.post("/productos/{producto_id}/foto/eliminar")
+def eliminar_foto_producto(request: Request, producto_id: int, usuario: dict = Depends(tienda_en_sesion)):
+    fila = uno(
+        f"UPDATE productos SET foto = NULL, foto_actualizada = NULL WHERE id = %s AND {DE_MI_TIENDA} RETURNING nombre",
+        (producto_id, usuario["tienda_id"]),
+    )
+    return resultado(request, fila, lambda p: f"Quitaste la foto de «{p['nombre']}».", "El producto no existe.")

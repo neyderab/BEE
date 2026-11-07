@@ -1,6 +1,6 @@
--- Esquema de la base de datos de Bee (PostgreSQL).
--- Es idempotente: se ejecuta al iniciar la aplicación y puede correrse varias
--- veces sin perder datos. También migra la tabla `usuarios` original.
+-- Esquema inicial de la base de datos de Bee (PostgreSQL).
+-- Lo aplica la migración 0001. Es idempotente. NO SE EDITA: los cambios
+-- nuevos van en migraciones/versiones/ (ver README, "Migraciones").
 
 CREATE TABLE IF NOT EXISTS universidades (
     id SERIAL PRIMARY KEY,

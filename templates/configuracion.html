@@ -17,6 +17,7 @@
             {{ avatar(usuario.id, usuario.tiene_foto, usuario.foto_version, usuario.nombre, usuario.apellido, "avatar-grande") }}
             <div class="foto-acciones">
                 <form action="/configuracion/foto" method="post" enctype="multipart/form-data" id="form-foto">
+{{ campo_csrf() }}
                     <label class="boton boton-auto boton-secundario selector-archivo">
                         {{ "Cambiar foto" if usuario.tiene_foto else "Subir foto" }}
                         <input type="file" name="foto" accept="image/jpeg,image/png,image/webp" required
@@ -26,6 +27,7 @@
                 </form>
                 {% if usuario.tiene_foto %}
                 <form action="/configuracion/foto/eliminar" method="post">
+{{ campo_csrf() }}
                     <button class="enlace-peligro" type="submit">Quitar foto</button>
                 </form>
                 {% endif %}
@@ -37,6 +39,7 @@
     <section class="tarjeta">
         <h2>Tus datos</h2>
         <form action="/configuracion/perfil" method="post">
+{{ campo_csrf() }}
             <div class="dos-columnas">
                 <div>
                     <label for="nombre">Nombre</label>
@@ -65,6 +68,10 @@
         </form>
     </section>
 
+    {% if usuario.rol == "Estudiante" %}
+    <a class="boton boton-secundario" href="/logout">Cerrar sesión</a>
+    {% endif %}
+
     <section class="tarjeta zona-peligro">
         <h2>Cerrar cuenta</h2>
         {% if usuario.rol == "Admin" %}
@@ -80,6 +87,7 @@
         <details class="confirmar-cierre">
             <summary class="enlace-peligro">Quiero cerrar mi cuenta</summary>
             <form action="/configuracion/cerrar-cuenta" method="post">
+{{ campo_csrf() }}
                 <label for="confirmacion">Escribe <strong>ELIMINAR</strong> para confirmar</label>
                 <input class="campo" id="confirmacion" name="confirmacion" autocomplete="off" required
                        pattern="[Ee][Ll][Ii][Mm][Ii][Nn][Aa][Rr]">

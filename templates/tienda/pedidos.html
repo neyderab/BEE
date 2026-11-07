@@ -9,9 +9,20 @@
         <p class="sobretitulo">Panel de tu tienda</p>
         <h1>{{ usuario.tienda }}</h1>
     </div>
+    {% set abierta = tienda_abierta(usuario) %}
+    <form action="/tienda/abrir-cerrar" method="post" class="estado-tienda-panel">
+{{ campo_csrf() }}
+        <span class="punto-estado {{ 'abierta' if abierta else 'cerrada' }}"></span>
+        <span><strong>{{ "Abierta" if abierta else "Cerrada" }}</strong>
+            <small>{% if usuario.abierta and not abierta %}Fuera de horario{% elif abierta %}Recibiendo pedidos{% else %}No recibe pedidos{% endif %}</small></span>
+        <button class="boton boton-auto {{ 'boton-secundario' if usuario.abierta else '' }}" type="submit">
+            {{ "Cerrar tienda" if usuario.abierta else "Abrir tienda" }}
+        </button>
+    </form>
 </div>
 
 <form class="tarjeta disponibilidad" action="/tienda/disponibilidad" method="post">
+{{ campo_csrf() }}
     <div class="disponibilidad-campo">
         <label for="tiempo_min">Los pedidos se pueden recoger en</label>
         <select class="campo" id="tiempo_min" name="tiempo_min">
@@ -19,6 +30,16 @@
             <option value="{{ t }}" {% if usuario.tiempo_min == t %}selected{% endif %}>{{ texto_tiempo(t) }}</option>
             {% endfor %}
         </select>
+    </div>
+    <div class="disponibilidad-campo">
+        <label>Horario fijo <small class="opcional">(opcional)</small></label>
+        <div class="horario">
+            <input class="campo" type="time" name="hora_apertura" aria-label="Hora de apertura"
+                   value="{{ usuario.hora_apertura.strftime('%H:%M') if usuario.hora_apertura else '' }}">
+            <span>a</span>
+            <input class="campo" type="time" name="hora_cierre" aria-label="Hora de cierre"
+                   value="{{ usuario.hora_cierre.strftime('%H:%M') if usuario.hora_cierre else '' }}">
+        </div>
     </div>
     <label class="interruptor">
         <input type="checkbox" name="auto_aceptar" {% if usuario.auto_aceptar %}checked{% endif %}>
@@ -54,11 +75,12 @@
         <li><span>{{ i.cantidad }} × {{ i.nombre_producto }}</span><span>{{ (i.precio_unitario * i.cantidad)|pesos }}</span></li>
         {% endfor %}
     </ul>
-    <p class="total"><span>Total</span><strong>{{ p.total|pesos }}</strong></p>
+    <p class="total"><span>Total · {{ METODOS_PAGO[p.metodo_pago][0] }}</span><strong>{{ p.total|pesos }}</strong></p>
     <div class="acciones">
         {% for siguiente in transiciones[p.estado] %}
         <form action="/tienda/pedidos/{{ p.id }}/estado" method="post"
               {% if siguiente == 'cancelado' %}onsubmit="return confirm('¿Cancelar el pedido #{{ p.id }}? Le avisaremos al estudiante.')"{% endif %}>
+{{ campo_csrf() }}
             <input type="hidden" name="estado" value="{{ siguiente }}">
             <button class="boton boton-pequeno {% if siguiente == 'cancelado' %}boton-peligro{% endif %}" type="submit">
                 {{ "Rechazar" if siguiente == "cancelado" and p.estado == "pendiente" else ACCIONES[siguiente] }}

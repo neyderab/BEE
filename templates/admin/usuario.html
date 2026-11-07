@@ -32,6 +32,7 @@
     <section class="tarjeta">
         <h2>Datos</h2>
         <form action="/admin/usuarios/{{ objetivo.id }}/datos" method="post">
+{{ campo_csrf() }}
             <div class="dos-columnas">
                 <div>
                     <label for="nombre">Nombre</label>
@@ -74,6 +75,7 @@
         <p class="ayuda ayuda-suelta">No puedes cambiar tus propios permisos.</p>
         {% elif tiene_permiso(usuario, P.GESTIONAR_PERMISOS) %}
         <form action="/admin/usuarios/{{ objetivo.id }}/permisos" method="post">
+{{ campo_csrf() }}
             {{ casillas(permisos, objetivo.permisos, usuario) }}
             <button class="boton boton-auto" type="submit">Guardar permisos</button>
         </form>
@@ -88,6 +90,7 @@
         <h2>Cuenta</h2>
         {% if tiene_permiso(usuario, P.EDITAR_USUARIOS) %}
         <form class="accion-cuenta" action="/admin/usuarios/{{ objetivo.id }}/estado" method="post">
+{{ campo_csrf() }}
             <input type="hidden" name="activo" value="{{ '0' if objetivo.activo else '1' }}">
             <div>
                 <strong>{{ "Suspender cuenta" if objetivo.activo else "Reactivar cuenta" }}</strong>
@@ -99,6 +102,7 @@
         {% if tiene_permiso(usuario, P.ELIMINAR_USUARIOS) %}
         <form class="accion-cuenta" action="/admin/usuarios/{{ objetivo.id }}/eliminar" method="post"
               onsubmit='return confirm({{ ("¿Eliminar definitivamente la cuenta de " ~ objetivo.nombre ~ " " ~ objetivo.apellido ~ "? No se puede deshacer.")|tojson }})'>
+{{ campo_csrf() }}
             <div>
                 <strong>Eliminar cuenta</strong>
                 <p>
