@@ -1,0 +1,65 @@
+{% extends "app_base.html" %}
+{% set seccion = "tiendas" %}
+{% block titulo %}{{ tienda.nombre }}{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo"><a href="/estudiante">← Tiendas</a></p>
+        <h1>{{ tienda.nombre }}</h1>
+    </div>
+</div>
+
+{% if menus %}
+<form action="/estudiante/tiendas/{{ tienda.id }}/pedido" method="post" id="form-pedido" class="pedido-layout">
+    <div>
+        {% for menu in menus %}
+        <section class="tarjeta menu">
+            <h2>{{ menu.nombre }}</h2>
+            <ul class="productos">
+                {% for p in menu.productos %}
+                <li class="producto">
+                    <div class="producto-info">
+                        <label for="cantidad_{{ p.id }}"><strong>{{ p.nombre }}</strong></label>
+                        {% if p.descripcion %}<small>{{ p.descripcion }}</small>{% endif %}
+                    </div>
+                    <span class="precio">{{ p.precio|pesos }}</span>
+                    <input class="campo campo-cantidad" type="number" id="cantidad_{{ p.id }}" name="cantidad_{{ p.id }}"
+                           min="0" max="{{ cantidad_maxima }}" value="0" data-precio="{{ p.precio }}">
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endfor %}
+    </div>
+
+    <aside class="tarjeta resumen">
+        <h2>Tu pedido</h2>
+        <label for="hora_recogida">¿A qué hora lo recoges?</label>
+        <input class="campo" type="time" id="hora_recogida" name="hora_recogida" required>
+        <p class="total"><span>Total</span><strong id="total">$0</strong></p>
+        <button class="boton" type="submit">Hacer pedido</button>
+        <p class="ayuda">Pagas al recoger en la tienda.</p>
+    </aside>
+</form>
+<script>
+    (function () {
+        const form = document.getElementById("form-pedido");
+        const total = document.getElementById("total");
+        function actualizar() {
+            let suma = 0;
+            form.querySelectorAll("[data-precio]").forEach(function (campo) {
+                suma += Number(campo.dataset.precio) * (Number(campo.value) || 0);
+            });
+            total.textContent = "$" + suma.toLocaleString("es-CO");
+        }
+        form.addEventListener("input", actualizar);
+        actualizar();
+    })();
+</script>
+{% else %}
+<div class="vacio">
+    <p>Esta tienda todavía no tiene productos disponibles.</p>
+    <a class="boton boton-auto" href="/estudiante">Ver otras tiendas</a>
+</div>
+{% endif %}
+{% endblock %}

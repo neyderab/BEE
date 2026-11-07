@@ -1,0 +1,27 @@
+{% extends "app_base.html" %}
+{% set seccion = "tiendas" %}
+{% block titulo %}Tiendas{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo">Hola, {{ usuario.nombre }}</p>
+        <h1>Tiendas en {{ usuario.universidad }}</h1>
+    </div>
+</div>
+
+{% if tiendas %}
+<div class="rejilla">
+    {% for t in tiendas %}
+    <a class="tarjeta tienda-enlace" href="/estudiante/tiendas/{{ t.id }}">
+        <span class="tienda-icono" aria-hidden="true">🏪</span>
+        <strong>{{ t.nombre }}</strong>
+        <small>{% if t.productos %}{{ t.productos }} producto{{ "s" if t.productos != 1 }} disponible{{ "s" if t.productos != 1 }}{% else %}Sin productos por ahora{% endif %}</small>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="vacio">
+    <p>Todavía no hay tiendas registradas en {{ usuario.universidad }}. ¡Vuelve pronto!</p>
+</div>
+{% endif %}
+{% endblock %}

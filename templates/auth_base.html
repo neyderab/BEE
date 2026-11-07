@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block clase_body %}pagina-centrada{% endblock %}
+{% block cuerpo %}
+<main class="contenedor-auth">
+    <section class="presentacion">
+        <div class="logo">BEE<span>.</span></div>
+        <div class="mensaje-marca">
+            <h1>{% block lema %}Pide antes.<br>Recoge sin fila.{% endblock %}</h1>
+            <p>{% block lema_texto %}Tu tiempo vale. Elige lo que quieres, haz tu pedido y recógelo cuando esté listo.{% endblock %}</p>
+            <div class="decoracion" aria-hidden="true">🐝</div>
+        </div>
+        <p class="pie">Una forma más fácil de disfrutar tu universidad.</p>
+    </section>
+    <section class="formulario">
+        {% include "_mensaje.html" %}
+        {% block formulario %}{% endblock %}
+    </section>
+</main>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "app_base.html" %}
+{% set seccion = "pedidos" %}
+{% block titulo %}Pedidos{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo">Panel de tu tienda</p>
+        <h1>{{ usuario.tienda }}</h1>
+    </div>
+    <a class="boton boton-auto boton-secundario" href="/tienda">Actualizar</a>
+</div>
+
+<h2 class="titulo-seccion">Pedidos en curso <span class="contador">{{ activos|length }}</span></h2>
+{% if activos %}
+<div class="rejilla">
+    {% for p in activos %}
+    <article class="tarjeta pedido estado-{{ p.estado }}">
+        <header class="pedido-cabecera">
+            <strong>#{{ p.id }}</strong>
+            <span class="insignia insignia-{{ p.estado }}">{{ estados[p.estado] }}</span>
+        </header>
+        <p class="recoger">Recoge a las <strong>{{ p.hora_recogida.strftime("%H:%M") }}</strong></p>
+        <p class="cliente">{{ p.nombre }} {{ p.apellido }} · +57 {{ p.telefono }}</p>
+        <ul class="items">
+            {% for i in p["items"] %}
+            <li><span>{{ i.cantidad }} × {{ i.nombre_producto }}</span><span>{{ (i.precio_unitario * i.cantidad)|pesos }}</span></li>
+            {% endfor %}
+        </ul>
+        <p class="total"><span>Total</span><strong>{{ p.total|pesos }}</strong></p>
+        <div class="acciones">
+            {% for siguiente in transiciones[p.estado] %}
+            <form action="/tienda/pedidos/{{ p.id }}/estado" method="post">
+                <input type="hidden" name="estado" value="{{ siguiente }}">
+                <button class="boton boton-pequeno {% if siguiente == 'cancelado' %}boton-peligro{% endif %}" type="submit"
+                        {% if siguiente == 'cancelado' %}onclick="return confirm('¿Cancelar el pedido #{{ p.id }}?')"{% endif %}>
+                    {% if siguiente == "preparando" %}Empezar a preparar
+                    {% elif siguiente == "listo" %}Marcar como listo
+                    {% elif siguiente == "entregado" %}Marcar como entregado
+                    {% else %}Cancelar{% endif %}
+                </button>
+            </form>
+            {% endfor %}
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="vacio">
+    <p>No tienes pedidos en curso. Cuando un estudiante de {{ usuario.universidad }} haga un pedido, aparecerá aquí.</p>
+    <a class="boton boton-auto" href="/tienda/menu">Revisar mi menú</a>
+</div>
+{% endif %}
+
+{% if finalizados %}
+<h2 class="titulo-seccion">Historial reciente</h2>
+<div class="tarjeta tabla-contenedor">
+    <table class="tabla">
+        <thead><tr><th>Pedido</th><th>Estudiante</th><th>Productos</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+            {% for p in finalizados %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td>{{ p.nombre }} {{ p.apellido }}</td>
+                <td>{% for i in p["items"] %}{{ i.cantidad }} × {{ i.nombre_producto }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+                <td>{{ p.total|pesos }}</td>
+                <td><span class="insignia insignia-{{ p.estado }}">{{ estados[p.estado] }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

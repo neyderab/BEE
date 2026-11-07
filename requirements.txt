@@ -6,6 +6,9 @@ exceptiongroup==1.3.1
 fastapi==0.128.8
 h11==0.16.0
 idna==3.20
+MarkupSafe==3.0.4
+itsdangerous==2.2.0
+Jinja2==3.1.6
 psycopg[binary]>=3.2,<4
 pydantic==2.13.5
 pydantic_core==2.46.5
@@ -15,3 +18,7 @@ starlette==0.49.3
 typing-inspection==0.4.2
 typing_extensions==4.16.0
 uvicorn==0.39.0
+
+# Pruebas
+pytest==9.2.0
+httpx==0.28.1

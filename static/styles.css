@@ -1,0 +1,979 @@
+/* Estilos compartidos de la aplicación BEE. */
+
+:root {
+    --amarillo: #ffdf35;
+    --amarillo-suave: #fff9d9;
+    --amarillo-borde: #f3e7a4;
+    --tinta: #202019;
+    --tinta-hover: #3b3b30;
+    --texto-suave: #6d6d64;
+    --fondo: #f7f7f2;
+    --blanco: #ffffff;
+    --borde: #deded7;
+    --enfoque: #c5a400;
+    --error: #b42318;
+    --error-suave: #fdecea;
+    --ok: #1e6b45;
+    --ok-suave: #e3f4ea;
+    --info: #1d4f91;
+    --info-suave: #e6eef9;
+    --radio: 12px;
+    --sombra: 0 15px 45px rgba(0, 0, 0, 0.07);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--fondo);
+    color: var(--tinta);
+    min-height: 100vh;
+    line-height: 1.4;
+}
+
+a {
+    color: inherit;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* ---------- Marca ---------- */
+
+.logo {
+    font-size: 38px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    text-decoration: none;
+}
+
+.logo span {
+    color: var(--blanco);
+}
+
+.tarjeta-centrada .logo span,
+.barra .logo span {
+    color: #e1bc00;
+}
+
+.logo-pequeno {
+    font-size: 28px;
+}
+
+/* ---------- Páginas de acceso (login, registro) ---------- */
+
+.pagina-centrada {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.contenedor-auth {
+    width: 100%;
+    max-width: 1000px;
+    min-height: 600px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--blanco);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: var(--sombra);
+}
+
+.presentacion {
+    background: var(--amarillo);
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.mensaje-marca h1 {
+    font-size: clamp(34px, 4vw, 52px);
+    line-height: 1.08;
+    margin-bottom: 20px;
+    letter-spacing: -2px;
+}
+
+.mensaje-marca p {
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 340px;
+}
+
+.decoracion {
+    font-size: 68px;
+    margin-top: 30px;
+}
+
+.pie {
+    font-size: 12px;
+    color: #514b22;
+}
+
+.formulario {
+    padding: 45px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.formulario h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+}
+
+.descripcion {
+    color: var(--texto-suave);
+    line-height: 1.6;
+    margin-bottom: 26px;
+    font-size: 14px;
+}
+
+.etiqueta,
+.sobretitulo {
+    display: inline-block;
+    font-size: 13px;
+    color: var(--texto-suave);
+}
+
+.etiqueta {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--amarillo-suave);
+    color: #68644d;
+    margin-bottom: 14px;
+    align-self: flex-start;
+}
+
+.sobretitulo a {
+    text-decoration: none;
+}
+
+.alternativa {
+    text-align: center;
+    font-size: 14px;
+    color: var(--texto-suave);
+    margin-top: 22px;
+}
+
+.alternativa a {
+    color: var(--tinta);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.alternativa a:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Formularios ---------- */
+
+label,
+legend {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.campo,
+.campo-telefono,
+.campo-precio {
+    width: 100%;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    background: var(--blanco);
+    color: var(--tinta);
+    font-size: 15px;
+    margin-bottom: 18px;
+}
+
+.campo {
+    padding: 14px;
+    font-family: inherit;
+}
+
+.campo:focus,
+.campo-telefono:focus-within,
+.campo-precio:focus-within {
+    outline: none;
+    border-color: var(--enfoque);
+    box-shadow: 0 0 0 3px rgba(197, 164, 0, 0.15);
+}
+
+.campo-telefono,
+.campo-precio {
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+}
+
+.campo-telefono input,
+.campo-precio input {
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 14px 12px;
+    font-size: 15px;
+    background: transparent;
+}
+
+.prefijo {
+    color: #55554d;
+    padding-right: 12px;
+    border-right: 1px solid var(--borde);
+}
+
+.con-error {
+    border-color: var(--error);
+}
+
+.error-campo {
+    color: var(--error);
+    font-size: 13px;
+    margin: -12px 0 16px;
+}
+
+.ayuda {
+    color: var(--texto-suave);
+    font-size: 13px;
+    margin: -10px 0 18px;
+}
+
+.dos-columnas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 14px;
+}
+
+.campo-codigo {
+    font-size: 22px;
+    letter-spacing: 6px;
+    text-align: center;
+}
+
+.codigo-prueba {
+    margin-bottom: 22px;
+    padding: 15px;
+    text-align: center;
+    background: var(--amarillo-suave);
+    border: 1px solid var(--amarillo-borde);
+    border-radius: var(--radio);
+    font-size: 14px;
+}
+
+.codigo-prueba strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 26px;
+    letter-spacing: 6px;
+}
+
+/* Selector de rol en el registro */
+.selector-rol {
+    border: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.selector-rol legend {
+    grid-column: 1 / -1;
+}
+
+.opcion-rol {
+    margin: 0;
+    cursor: pointer;
+}
+
+.opcion-rol input {
+    position: absolute;
+    opacity: 0;
+}
+
+.opcion-rol span {
+    display: block;
+    height: 100%;
+    padding: 14px;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.opcion-rol strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.opcion-rol small {
+    font-weight: normal;
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.opcion-rol input:checked + span {
+    border-color: var(--tinta);
+    background: var(--amarillo-suave);
+    box-shadow: inset 0 0 0 1px var(--tinta);
+}
+
+.opcion-rol input:focus-visible + span {
+    outline: 3px solid rgba(197, 164, 0, 0.4);
+}
+
+/* ---------- Botones ---------- */
+
+.boton {
+    display: block;
+    width: 100%;
+    border: none;
+    border-radius: var(--radio);
+    padding: 15px;
+    background: var(--tinta);
+    color: var(--blanco);
+    font-size: 15px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.boton:hover {
+    background: var(--tinta-hover);
+    transform: translateY(-1px);
+}
+
+.boton-auto {
+    display: inline-block;
+    width: auto;
+    padding: 12px 20px;
+    white-space: nowrap;
+}
+
+.boton-pequeno {
+    width: auto;
+    padding: 9px 14px;
+    font-size: 13px;
+}
+
+.boton-secundario {
+    background: var(--blanco);
+    color: var(--tinta);
+    border: 1px solid var(--borde);
+}
+
+.boton-secundario:hover {
+    background: var(--fondo);
+}
+
+.boton-peligro {
+    background: var(--blanco);
+    color: var(--error);
+    border: 1px solid #f1c3be;
+}
+
+.boton-peligro:hover {
+    background: var(--error-suave);
+}
+
+.enlace-peligro {
+    border: none;
+    background: none;
+    color: var(--error);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.enlace-peligro:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Avisos ---------- */
+
+.aviso {
+    padding: 12px 16px;
+    border-radius: var(--radio);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.aviso-ok {
+    background: var(--ok-suave);
+    color: var(--ok);
+}
+
+.aviso-error {
+    background: var(--error-suave);
+    color: var(--error);
+}
+
+/* ---------- Registro exitoso ---------- */
+
+.tarjeta-centrada {
+    max-width: 520px;
+    padding: 45px 35px;
+    text-align: center;
+}
+
+.tarjeta-centrada .logo {
+    display: block;
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.tarjeta-centrada h1 {
+    font-size: 30px;
+    letter-spacing: -1px;
+    margin-bottom: 15px;
+}
+
+.tarjeta-centrada .pie {
+    color: #99998f;
+    margin-top: 30px;
+}
+
+.icono-exito {
+    width: 85px;
+    height: 85px;
+    background: var(--amarillo);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    margin: 0 auto 25px;
+}
+
+/* ---------- Aplicación (después de iniciar sesión) ---------- */
+
+.barra {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 14px 32px;
+    background: var(--blanco);
+    border-bottom: 1px solid var(--borde);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.navegacion {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+}
+
+.navegacion a {
+    padding: 8px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 14px;
+    color: var(--texto-suave);
+}
+
+.navegacion a:hover {
+    color: var(--tinta);
+}
+
+.navegacion a[aria-current="page"] {
+    background: var(--amarillo);
+    color: var(--tinta);
+    font-weight: bold;
+}
+
+.cuenta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+}
+
+.chip {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--fondo);
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.enlace-salir {
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.contenido {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+}
+
+.encabezado {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.encabezado h1 {
+    font-size: 32px;
+    letter-spacing: -1px;
+}
+
+.titulo-seccion {
+    font-size: 18px;
+    margin: 28px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contador {
+    background: var(--tinta);
+    color: var(--blanco);
+    font-size: 12px;
+    border-radius: 20px;
+    padding: 2px 9px;
+}
+
+.tarjeta {
+    background: var(--blanco);
+    border-radius: 20px;
+    box-shadow: var(--sombra);
+    padding: 22px;
+    width: 100%;
+}
+
+.rejilla {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.vacio {
+    text-align: center;
+    padding: 48px 24px;
+    border: 2px dashed var(--borde);
+    border-radius: 20px;
+    color: var(--texto-suave);
+}
+
+.vacio p {
+    margin-bottom: 18px;
+}
+
+/* Insignias de estado */
+.insignia {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    border: none;
+    white-space: nowrap;
+}
+
+button.insignia {
+    cursor: pointer;
+}
+
+.insignia-pendiente {
+    background: var(--amarillo-suave);
+    color: #7a6200;
+}
+
+.insignia-preparando {
+    background: var(--info-suave);
+    color: var(--info);
+}
+
+.insignia-listo,
+.insignia-entregado {
+    background: var(--ok-suave);
+    color: var(--ok);
+}
+
+.insignia-entregado {
+    opacity: 0.75;
+}
+
+.insignia-cancelado {
+    background: var(--error-suave);
+    color: var(--error);
+}
+
+/* Tarjeta de pedido */
+.pedido {
+    border-top: 5px solid var(--borde);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.estado-pendiente { border-top-color: var(--amarillo); }
+.estado-preparando { border-top-color: var(--info); }
+.estado-listo { border-top-color: var(--ok); }
+
+.pedido-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.recoger,
+.cliente {
+    font-size: 14px;
+    color: var(--texto-suave);
+}
+
+.recoger strong {
+    color: var(--tinta);
+    font-size: 18px;
+}
+
+.items {
+    list-style: none;
+    border-top: 1px solid var(--fondo);
+    padding-top: 8px;
+    font-size: 14px;
+}
+
+.items li,
+.total {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 3px 0;
+}
+
+.total {
+    border-top: 1px solid var(--borde);
+    padding-top: 10px;
+    font-size: 15px;
+}
+
+.acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: auto;
+}
+
+/* Tabla de historial */
+.tabla-contenedor {
+    overflow-x: auto;
+    padding: 8px;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.tabla th,
+.tabla td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--fondo);
+}
+
+.tabla th {
+    color: var(--texto-suave);
+    font-weight: normal;
+}
+
+/* Menús y productos */
+.formulario-linea {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.formulario-linea label {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.formulario-linea .campo {
+    margin: 0;
+}
+
+.menu {
+    margin-bottom: 18px;
+}
+
+.menu h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.menu-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.productos {
+    list-style: none;
+    margin-bottom: 14px;
+}
+
+.producto {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--fondo);
+}
+
+.producto.agotado .producto-info,
+.producto.agotado .precio {
+    opacity: 0.5;
+}
+
+.producto-info {
+    flex: 1;
+    min-width: 160px;
+}
+
+.producto-info label {
+    margin: 0;
+    font-weight: normal;
+}
+
+.producto-info small {
+    display: block;
+    color: var(--texto-suave);
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+.precio {
+    font-weight: bold;
+}
+
+.producto-acciones {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.editar summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--texto-suave);
+}
+
+.editar[open] {
+    flex-basis: 100%;
+}
+
+.editar[open] summary {
+    margin-bottom: 10px;
+}
+
+.formulario-producto {
+    display: grid;
+    grid-template-columns: 2fr 3fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.formulario-producto .campo,
+.formulario-producto .campo-precio {
+    margin: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.campo-precio input {
+    padding: 0 0 0 6px;
+}
+
+.nuevo-producto {
+    padding-top: 14px;
+    border-top: 1px dashed var(--borde);
+}
+
+.editar .enlace-peligro {
+    margin-top: 8px;
+}
+
+/* Vista del estudiante */
+.tienda-enlace {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tienda-enlace:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.1);
+}
+
+.tienda-icono {
+    font-size: 30px;
+}
+
+.tienda-enlace strong {
+    font-size: 18px;
+}
+
+.tienda-enlace small {
+    color: var(--texto-suave);
+}
+
+.pedido-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+}
+
+.campo-cantidad {
+    width: 76px;
+    margin: 0;
+    padding: 10px;
+    text-align: center;
+}
+
+.resumen {
+    position: sticky;
+    top: 90px;
+}
+
+.resumen h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+}
+
+.resumen .total {
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+.resumen .ayuda {
+    margin: 12px 0 0;
+    text-align: center;
+}
+
+/* ---------- Pantallas pequeñas ---------- */
+
+@media (max-width: 800px) {
+    .pedido-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .resumen {
+        position: static;
+    }
+
+    .formulario-producto {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .formulario-producto .campo:first-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .pagina-centrada {
+        padding: 14px;
+    }
+
+    .contenedor-auth {
+        grid-template-columns: 1fr;
+        max-width: 460px;
+    }
+
+    .presentacion {
+        padding: 28px;
+        min-height: 200px;
+    }
+
+    .mensaje-marca h1 {
+        font-size: 32px;
+        margin-top: 24px;
+    }
+
+    .decoracion {
+        display: none;
+    }
+
+    .pie {
+        margin-top: 20px;
+    }
+
+    .formulario {
+        padding: 30px 22px;
+    }
+
+    .formulario h2 {
+        font-size: 28px;
+    }
+
+    .barra {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px 16px;
+    }
+
+    .navegacion {
+        order: 3;
+        flex-basis: 100%;
+    }
+
+    .cuenta {
+        margin-left: auto;
+    }
+
+    .cuenta .chip {
+        max-width: 160px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .contenido {
+        padding: 22px 16px 48px;
+    }
+
+    .encabezado h1 {
+        font-size: 26px;
+    }
+
+    .formulario-linea {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 420px) {
+    .dos-columnas,
+    .selector-rol {
+        grid-template-columns: 1fr;
+    }
+
+    .tarjeta-centrada {
+        padding: 30px 22px;
+    }
+}
