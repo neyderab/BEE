@@ -1,16 +1,12 @@
-"""Conexión a PostgreSQL y creación del esquema."""
+"""Conexión a PostgreSQL y migraciones."""
 
-import logging
 import os
 from pathlib import Path
 
 import psycopg
 from psycopg.rows import dict_row
 
-logger = logging.getLogger(__name__)
-
-ESQUEMA = Path(__file__).resolve().parent.parent / "schema.sql"
-
+RAIZ = Path(__file__).resolve().parent.parent
 
 def conectar() -> psycopg.Connection:
     """Abre una conexión nueva. Las filas se devuelven como diccionarios.
@@ -28,7 +24,6 @@ def conectar() -> psycopg.Connection:
         row_factory=dict_row,
     )
 
-
 # Atajos para consultas de una sola sentencia (cada una en su propia
 # transacción). Para varias sentencias que deben ir juntas, usa conectar().
 
@@ -36,16 +31,13 @@ def uno(sql: str, parametros=()) -> dict | None:
     with conectar() as conexion:
         return conexion.execute(sql, parametros).fetchone()
 
-
 def todos(sql: str, parametros=()) -> list[dict]:
     with conectar() as conexion:
         return conexion.execute(sql, parametros).fetchall()
 
-
 def ejecutar(sql: str, parametros=()) -> None:
     with conectar() as conexion:
         conexion.execute(sql, parametros)
-
 
 def campos_foto(alias: str) -> str:
     """Columnas para mostrar la foto de perfil del usuario `alias` sin cargarla."""
@@ -54,30 +46,15 @@ def campos_foto(alias: str) -> str:
         f"COALESCE(EXTRACT(EPOCH FROM {alias}.foto_actualizada)::BIGINT, 0) AS foto_version"
     )
 
-
 def inicializar_db() -> None:
-    """Crea las tablas que falten y agrega las universidades iniciales."""
-    with conectar() as conexion:
-        conexion.execute(ESQUEMA.read_text(encoding="utf-8"))
+    """Aplica las migraciones pendientes (migraciones/versiones/)."""
+    from alembic import command
+    from alembic.config import Config
 
-    # Va aparte: si la tabla original tiene teléfonos repetidos, el índice no
-    # se puede crear, pero la aplicación debe seguir funcionando.
-    try:
-        with conectar() as conexion:
-            conexion.execute(
-                "CREATE UNIQUE INDEX IF NOT EXISTS usuarios_telefono_idx "
-                "ON usuarios (telefono)"
-            )
-    except psycopg.errors.UniqueViolation:
-        logger.warning(
-            "Hay teléfonos repetidos en la tabla usuarios; "
-            "no se pudo crear el índice único."
-        )
-
+    command.upgrade(Config(str(RAIZ / "alembic.ini")), "head")
 
 def listar_universidades() -> list[dict]:
     return todos("SELECT id, nombre, ciudad FROM universidades ORDER BY nombre")
-
 
 def universidad_existe(universidad_id: int) -> bool:
     return uno("SELECT 1 FROM universidades WHERE id = %s", (universidad_id,)) is not None

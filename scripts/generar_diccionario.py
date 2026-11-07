@@ -1,8 +1,8 @@
 """Genera docs/diccionario.html a partir de la base de datos real.
 
-Lee las tablas, campos, llaves y descripciones (los COMMENT de schema.sql)
-de la base configurada en .env y reescribe el diccionario conservando su
-diseño. Ejecútalo después de cambiar schema.sql:
+Lee las tablas, campos, llaves y descripciones (los COMMENT de las
+migraciones) de la base configurada en .env y reescribe el diccionario
+conservando su diseño. Ejecútalo después de agregar una migración:
 
     python scripts/generar_diccionario.py
 """
@@ -39,13 +39,13 @@ FROM pg_class cl
 JOIN pg_namespace n ON n.oid = cl.relnamespace AND n.nspname = 'public'
 JOIN pg_attribute a ON a.attrelid = cl.oid AND a.attnum > 0 AND NOT a.attisdropped
 LEFT JOIN pg_attrdef d ON d.adrelid = cl.oid AND d.adnum = a.attnum
-WHERE cl.relkind = 'r'
+WHERE cl.relkind = 'r' AND cl.relname <> 'alembic_version'
 """
 
 TABLAS = """
 SELECT cl.relname AS tabla, obj_description(cl.oid) AS descripcion
 FROM pg_class cl JOIN pg_namespace n ON n.oid = cl.relnamespace AND n.nspname = 'public'
-WHERE cl.relkind = 'r'
+WHERE cl.relkind = 'r' AND cl.relname <> 'alembic_version'
 """
 
 # Llaves primarias, foráneas y campos únicos (restricciones e índices únicos).
@@ -58,6 +58,7 @@ JOIN pg_namespace n ON n.oid = cl.relnamespace AND n.nspname = 'public'
 JOIN pg_attribute a ON a.attrelid = cl.oid AND a.attnum = ANY(co.conkey)
 LEFT JOIN pg_class ref ON ref.oid = co.confrelid
 WHERE co.contype IN ('p', 'f', 'u') AND array_length(co.conkey, 1) >= 1
+  AND cl.relname <> 'alembic_version'
 UNION ALL
 SELECT cl.relname, a.attname, 'u', NULL
 FROM pg_index i
@@ -157,7 +158,7 @@ def main() -> None:
         '<p class="note"><strong>Llaves:</strong> PK = llave primaria; FK → tabla = llave foránea '
         "(apunta a otra tabla); Único = no se puede repetir. <strong>Nulo:</strong> indica si el campo "
         "puede quedar vacío. Este diccionario se genera automáticamente desde la base de datos de Bee "
-        "(<code>schema.sql</code>) con <code>scripts/generar_diccionario.py</code>.</p>",
+        "(<code>migraciones/</code>) con <code>scripts/generar_diccionario.py</code>.</p>",
         html, count=1, flags=re.S,
     )
     estilos_extra = (

@@ -5,6 +5,7 @@
 <p class="descripcion">Ingresa tu número de teléfono para continuar con Bee.</p>
 
 <form action="/login" method="post" novalidate>
+{{ campo_csrf() }}
     <label for="telefono">Número de teléfono</label>
     <div class="campo-telefono {% if error %}con-error{% endif %}">
         <span class="prefijo">+57</span>

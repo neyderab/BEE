@@ -1,0 +1,18 @@
+{# Íconos de línea (24×24) para la barra inferior y botones. #}
+{% macro icono(nombre, clase="icono") -%}
+<svg class="{{ clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+{%- if nombre == "tienda" %}<path d="M3.5 9.5 5 4h14l1.5 5.5"/><path d="M3.5 9.5a2.8 2.8 0 0 0 5.6 0 2.9 2.9 0 0 0 5.8 0 2.8 2.8 0 0 0 5.6 0"/><path d="M5 12.5V20h14v-7.5"/><path d="M10 20v-4.5h4V20"/>
+{%- elif nombre == "pedidos" %}<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>
+{%- elif nombre == "campana" %}<path d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2h16z"/><path d="M10 21h4"/>
+{%- elif nombre == "perfil" %}<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>
+{%- elif nombre == "atras" %}<path d="M15 5l-7 7 7 7"/>
+{%- elif nombre == "reloj" %}<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+{%- elif nombre == "mas" %}<path d="M12 5v14M5 12h14"/>
+{%- elif nombre == "menos" %}<path d="M5 12h14"/>
+{%- elif nombre == "repetir" %}<path d="M4 12a8 8 0 0 1 14-5.3L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3L4 15"/><path d="M4 20v-5h5"/>
+{%- elif nombre == "efectivo" %}<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/>
+{%- elif nombre == "tarjeta" %}<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/>
+{%- elif nombre == "celular" %}<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/>
+{%- endif -%}
+</svg>
+{%- endmacro %}

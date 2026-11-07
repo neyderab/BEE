@@ -24,3 +24,4 @@ uvicorn==0.39.0
 # Pruebas
 pytest==9.2.0
 httpx==0.28.1
+alembic==1.20.1

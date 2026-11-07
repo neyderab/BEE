@@ -10,6 +10,7 @@
 </div>
 
 <form class="tarjeta formulario-admin" action="/admin/usuarios" method="post" id="form-usuario">
+{{ campo_csrf() }}
     <fieldset class="selector-rol selector-rol-{{ roles|length }}">
         <legend>Tipo de usuario</legend>
         {% for r in roles %}

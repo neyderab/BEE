@@ -9,6 +9,7 @@
 </p>
 {% set valores = dict(valores, rol=usuario.rol) %}
 <form action="/completar-perfil" method="post">
+{{ campo_csrf() }}
     {% include "_campo_universidad.html" %}
     {% if usuario.rol == "Tienda" and not usuario.tienda_id %}
         {% include "_campo_tienda.html" %}
