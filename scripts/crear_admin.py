@@ -4,17 +4,21 @@ Los administradores no se pueden registrar desde la web: el primero se crea
 con este script y después ese administrador crea a los demás desde /admin.
 
 Uso:
-    python crear_admin.py 3001234567 Nombre Apellido
+    python scripts/crear_admin.py 3001234567 Nombre Apellido
 
 Usa la misma base de datos configurada en .env. Si el teléfono ya es de un
 administrador, le devuelve todos los permisos (sirve para recuperar el acceso).
 """
 
 import sys
+from pathlib import Path
 
-from dotenv import load_dotenv
+RAIZ = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(RAIZ))
 
-load_dotenv()
+from dotenv import load_dotenv  # noqa: E402
+
+load_dotenv(RAIZ / ".env")
 
 from app import permisos  # noqa: E402
 from app.db import conectar, inicializar_db  # noqa: E402

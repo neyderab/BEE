@@ -2,7 +2,7 @@
 
 from fastapi import HTTPException, Request
 
-from app.db import conectar
+from app.db import campos_foto, uno
 
 ESTUDIANTE = "Estudiante"
 TIENDA = "Tienda"
@@ -23,26 +23,19 @@ def redirigir(url: str) -> HTTPException:
 
 
 def cargar_usuario(usuario_id: int) -> dict | None:
-    with conectar() as conexion:
-        return conexion.execute(
-            """
-            SELECT u.id, u.telefono, u.nombre, u.apellido, u.rol,
-                   u.universidad_id, un.nombre AS universidad,
-                   u.foto IS NOT NULL AS tiene_foto,
-                   COALESCE(EXTRACT(EPOCH FROM u.foto_actualizada)::BIGINT, 0) AS foto_version,
-                   t.id AS tienda_id, t.nombre AS tienda,
-                   t.tiempo_min, t.auto_aceptar, u.activo,
-                   ARRAY(
-                       SELECT permiso FROM permisos_usuario
-                       WHERE usuario_id = u.id ORDER BY permiso
-                   ) AS permisos
-            FROM usuarios u
-            LEFT JOIN universidades un ON un.id = u.universidad_id
-            LEFT JOIN tiendas t ON t.usuario_id = u.id
-            WHERE u.id = %s
-            """,
-            (usuario_id,),
-        ).fetchone()
+    return uno(
+        f"""
+        SELECT u.id, u.telefono, u.nombre, u.apellido, u.rol, u.activo,
+               u.universidad_id, un.nombre AS universidad, {campos_foto("u")},
+               t.id AS tienda_id, t.nombre AS tienda, t.tiempo_min, t.auto_aceptar,
+               ARRAY(SELECT permiso FROM permisos_usuario WHERE usuario_id = u.id ORDER BY permiso) AS permisos
+        FROM usuarios u
+        LEFT JOIN universidades un ON un.id = u.universidad_id
+        LEFT JOIN tiendas t ON t.usuario_id = u.id
+        WHERE u.id = %s
+        """,
+        (usuario_id,),
+    )
 
 
 def perfil_completo(usuario: dict) -> bool:

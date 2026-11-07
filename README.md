@@ -84,7 +84,7 @@ Estas entidades sirven como base conceptual para organizar la información y las
 Nadie puede registrarse como administrador desde la web. El **primer administrador** se crea desde la terminal, con la base de datos configurada en `.env`; recibe todos los permisos:
 
 ```bash
-python crear_admin.py 3001234567 Nombre Apellido
+python scripts/crear_admin.py 3001234567 Nombre Apellido
 ```
 
 Después, ese administrador entra con su teléfono y crea a los demás en **Usuarios → Nuevo usuario**, marcando los permisos de cada uno:
@@ -110,7 +110,6 @@ Reglas de seguridad:
 BEE/
 ├── main.py                 # Crea la app FastAPI y registra las rutas
 ├── schema.sql              # Tablas, universidades y descripciones (se aplica al iniciar)
-├── crear_admin.py          # Crea el primer administrador
 ├── render.yaml             # Configuración para publicar en Render
 ├── app/
 │   ├── db.py               # Conexión a PostgreSQL
@@ -127,6 +126,7 @@ BEE/
 │       ├── cuenta.py       # Notificaciones, configuración y foto
 │       └── admin.py        # Panel de administración
 ├── scripts/
+│   ├── crear_admin.py      # Crea el primer administrador
 │   └── generar_diccionario.py  # Regenera docs/diccionario.html desde la base
 ├── templates/              # Páginas HTML (Jinja2)
 ├── static/styles.css       # Estilos compartidos
@@ -190,7 +190,7 @@ Pasos en [Render](https://render.com):
 
 1. **New → Blueprint** y elige este repositorio (usa `render.yaml`).
 2. Completa `DB_HOST`, `DB_USER`, `DB_PASSWORD` y `DB_NAME` con la base PostgreSQL que ya usan. `SECRET_KEY` se genera sola.
-3. Cuando esté funcionando, crea el primer administrador desde la pestaña **Shell** del servicio: `python crear_admin.py 3001234567 Nombre Apellido`.
+3. Cuando esté funcionando, crea el primer administrador desde la pestaña **Shell** del servicio: `python scripts/crear_admin.py 3001234567 Nombre Apellido`.
 4. En **Settings → Custom Domains** agrega `usebeeapp.com` y cambia los registros DNS del dominio como indique Render. Después desactiva GitHub Pages en el repositorio.
 
 > ⚠️ Antes de publicar para usuarios reales hay que reemplazar el código de prueba `123456` por el envío real de SMS. Con el código fijo, cualquiera que conozca un teléfono puede entrar a esa cuenta, incluidas las de administrador.

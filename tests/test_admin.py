@@ -3,7 +3,7 @@ import pytest
 from app import permisos as P
 from app.db import conectar
 from app.usuarios import insertar_usuario
-from crear_admin import main as crear_admin
+from scripts.crear_admin import main as crear_admin
 from tests.conftest import ANDES, USB, entrar, id_universidad, registrar
 
 
