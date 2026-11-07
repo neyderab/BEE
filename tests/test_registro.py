@@ -16,7 +16,7 @@ def test_hay_cinco_universidades_incluida_san_buenaventura(cliente):
 def test_registro_estudiante_guarda_universidad(cliente):
     respuesta = registrar(cliente, "3001112233")
     assert respuesta.status_code == 200
-    assert "Ya eres parte de BEE" in respuesta.text
+    assert "Ya eres parte de Bee" in respuesta.text
     with conectar() as conexion:
         usuario = conexion.execute(
             "SELECT rol, universidad_id FROM usuarios WHERE telefono = '3001112233'"

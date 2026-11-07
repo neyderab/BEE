@@ -4,11 +4,11 @@
 {% block lema_texto %}Crea tu cuenta y descubre una forma más fácil de pedir dentro de tu universidad.{% endblock %}
 {% block formulario %}
 <h2>Crear una cuenta</h2>
-<p class="descripcion">Completa tus datos para comenzar con BEE.</p>
+<p class="descripcion">Completa tus datos para comenzar con Bee.</p>
 
 <form action="/registrar" method="post" id="form-registro">
     <fieldset class="selector-rol">
-        <legend>¿Cómo vas a usar BEE?</legend>
+        <legend>¿Cómo vas a usar Bee?</legend>
         <label class="opcion-rol">
             <input type="radio" name="rol" value="Estudiante" {% if valores.rol != "Tienda" %}checked{% endif %}>
             <span><strong>🎓 Soy estudiante</strong><small>Quiero pedir y recoger sin fila</small></span>

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import FileResponse, RedirectResponse
 
 from app.db import conectar, listar_universidades
-from app.plantillas import render
+from app.plantillas import CORREO_SOPORTE, render
 from app.usuarios import insertar_usuario
 from app.validacion import leer_universidad, telefono_valido, validar_texto
 from app.sesion import (
@@ -150,7 +150,7 @@ def iniciar_sesion(request: Request, telefono: str = Form("")):
             request,
             "login.html",
             status_code=403,
-            error="Esta cuenta está suspendida. Comunícate con el equipo de BEE.",
+            error=f"Esta cuenta está suspendida. Escríbenos a {CORREO_SOPORTE}.",
             telefono=telefono,
         )
 

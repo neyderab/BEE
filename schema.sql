@@ -1,4 +1,4 @@
--- Esquema de la base de datos de BEE (PostgreSQL).
+-- Esquema de la base de datos de Bee (PostgreSQL).
 -- Es idempotente: se ejecuta al iniciar la aplicación y puede correrse varias
 -- veces sin perder datos. También migra la tabla `usuarios` original.
 
@@ -141,12 +141,12 @@ CREATE TABLE IF NOT EXISTS permisos_usuario (
 -- Descripciones (se usan para generar docs/diccionario.html).
 -- ---------------------------------------------------------------------------
 
-COMMENT ON TABLE universidades IS 'Universidades donde funciona BEE.';
+COMMENT ON TABLE universidades IS 'Universidades donde funciona Bee.';
 COMMENT ON COLUMN universidades.id IS 'Identificador de la universidad.';
 COMMENT ON COLUMN universidades.nombre IS 'Nombre oficial; no se repite.';
 COMMENT ON COLUMN universidades.ciudad IS 'Ciudad de la sede.';
 
-COMMENT ON TABLE usuarios IS 'Personas que usan BEE: estudiantes, tiendas y administradores.';
+COMMENT ON TABLE usuarios IS 'Personas que usan Bee: estudiantes, tiendas y administradores.';
 COMMENT ON COLUMN usuarios.id IS 'Identificador del usuario.';
 COMMENT ON COLUMN usuarios.telefono IS 'Celular de 10 dígitos con el que inicia sesión; no se repite.';
 COMMENT ON COLUMN usuarios.nombre IS 'Nombre de la persona.';

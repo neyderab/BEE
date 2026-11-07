@@ -242,7 +242,7 @@ def test_estudiante_cierra_su_cuenta(escenario):
 def test_tienda_no_puede_cerrar_cuenta_desde_la_app(escenario):
     tienda, _, _ = escenario
     pagina = tienda.get("/configuracion").text
-    assert "mailto:admin@useapp.com" in pagina
+    assert "mailto:admin@usebeeapp.com" in pagina
 
     respuesta = tienda.post("/configuracion/cerrar-cuenta", data={"confirmacion": "ELIMINAR"})
     assert "escríbenos por correo" in respuesta.text
