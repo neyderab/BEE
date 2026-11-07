@@ -11,7 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 load_dotenv()
 
 from app.db import inicializar_db  # noqa: E402  (después de cargar .env)
-from app.rutas import auth, estudiante, tienda  # noqa: E402
+from app.rutas import auth, cuenta, estudiante, tienda  # noqa: E402
 
 logger = logging.getLogger("bee")
 
@@ -38,3 +38,4 @@ app.mount(
 app.include_router(auth.router)
 app.include_router(tienda.router)
 app.include_router(estudiante.router)
+app.include_router(cuenta.router)

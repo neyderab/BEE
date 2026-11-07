@@ -594,6 +594,11 @@ button.insignia {
     color: #7a6200;
 }
 
+.insignia-aceptado {
+    background: #efe9fb;
+    color: #5b3fa3;
+}
+
 .insignia-preparando {
     background: var(--info-suave);
     color: var(--info);
@@ -623,6 +628,7 @@ button.insignia {
 }
 
 .estado-pendiente { border-top-color: var(--amarillo); }
+.estado-aceptado { border-top-color: #8b6fd6; }
 .estado-preparando { border-top-color: var(--info); }
 .estado-listo { border-top-color: var(--ok); }
 
@@ -876,7 +882,517 @@ button.insignia {
     text-align: center;
 }
 
+/* ---------- Avatar ---------- */
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-iniciales {
+    background: var(--amarillo);
+    color: var(--tinta);
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.avatar-pequeno {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+}
+
+.avatar-grande {
+    width: 96px;
+    height: 96px;
+    font-size: 32px;
+}
+
+.enlace-avatar {
+    display: inline-flex;
+    border-radius: 50%;
+    text-decoration: none;
+}
+
+.enlace-avatar:hover .avatar {
+    box-shadow: 0 0 0 3px var(--amarillo);
+}
+
+/* ---------- Campana de notificaciones ---------- */
+
+.campana {
+    position: relative;
+}
+
+.campana summary {
+    list-style: none;
+    cursor: pointer;
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.campana summary::-webkit-details-marker {
+    display: none;
+}
+
+.campana summary:hover,
+.campana[open] summary {
+    background: var(--fondo);
+}
+
+.contador-campana {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--error);
+    color: var(--blanco);
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 18px;
+    text-align: center;
+}
+
+.panel-notificaciones {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    width: min(360px, calc(100vw - 32px));
+    background: var(--blanco);
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--borde);
+    overflow: hidden;
+    z-index: 20;
+}
+
+.panel-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--fondo);
+}
+
+.panel-cabecera a {
+    font-size: 13px;
+    color: var(--texto-suave);
+}
+
+.lista-notificaciones {
+    list-style: none;
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.notificacion a {
+    display: block;
+    padding: 12px 16px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--fondo);
+    font-size: 14px;
+}
+
+.notificacion a:hover {
+    background: var(--fondo);
+}
+
+.notificacion small {
+    display: block;
+    color: var(--texto-suave);
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.notificacion.no-leida a {
+    background: var(--amarillo-suave);
+    border-left: 3px solid var(--amarillo);
+}
+
+.notificacion-vacia {
+    padding: 18px 16px;
+    color: var(--texto-suave);
+    font-size: 14px;
+}
+
+.lista-completa {
+    padding: 0;
+    max-height: none;
+    overflow: hidden;
+}
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    max-width: calc(100vw - 32px);
+    padding: 14px 20px;
+    border-radius: 14px;
+    background: var(--tinta);
+    color: var(--blanco);
+    font-size: 14px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    z-index: 30;
+}
+
+/* ---------- Disponibilidad de la tienda ---------- */
+
+.disponibilidad {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px 28px;
+    margin-bottom: 8px;
+}
+
+.disponibilidad-campo label {
+    margin-bottom: 6px;
+}
+
+.disponibilidad-campo .campo {
+    margin: 0;
+    min-width: 180px;
+    padding: 11px 14px;
+}
+
+.interruptor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    flex: 1;
+    min-width: 240px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.interruptor input {
+    position: absolute;
+    opacity: 0;
+}
+
+.interruptor small {
+    display: block;
+    color: var(--texto-suave);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.interruptor-pista {
+    position: relative;
+    flex-shrink: 0;
+    width: 46px;
+    height: 26px;
+    border-radius: 13px;
+    background: var(--borde);
+    transition: background 0.2s;
+}
+
+.interruptor-pista::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--blanco);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s;
+}
+
+.interruptor input:checked + .interruptor-pista {
+    background: var(--ok);
+}
+
+.interruptor input:checked + .interruptor-pista::after {
+    transform: translateX(20px);
+}
+
+.interruptor input:focus-visible + .interruptor-pista {
+    outline: 3px solid rgba(197, 164, 0, 0.4);
+}
+
+/* ---------- Tablero de pedidos de la tienda ---------- */
+
+.tablero {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    align-items: start;
+}
+
+.columna {
+    background: #efefe8;
+    border-radius: 18px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 120px;
+}
+
+.columna h3 {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px 0;
+}
+
+.contador-suave {
+    background: var(--blanco);
+    color: var(--tinta);
+}
+
+.columna-vacia {
+    text-align: center;
+    color: var(--texto-suave);
+    font-size: 13px;
+    padding: 20px 0;
+}
+
+.columna .tarjeta {
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.columna .acciones form,
+.columna .acciones .boton {
+    flex: 1;
+}
+
+.columna .acciones .boton {
+    width: 100%;
+}
+
+.pedido-cliente {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.pedido-cliente small {
+    display: block;
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.ayuda-centrada {
+    text-align: center;
+    margin: 16px 0 0;
+}
+
+/* ---------- Vista del estudiante ---------- */
+
+.chip-tiempo {
+    align-self: flex-start;
+    background: var(--amarillo-suave);
+    color: #68644d;
+}
+
+.tiempo-tienda {
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+    border-radius: var(--radio);
+    background: var(--amarillo-suave);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.lista-pedidos {
+    display: grid;
+    gap: 16px;
+    max-width: 720px;
+}
+
+.progreso {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    margin: 6px 0 4px;
+}
+
+.progreso li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--texto-suave);
+}
+
+.progreso li::before {
+    content: "";
+    position: absolute;
+    top: 7px;
+    right: 50%;
+    width: 100%;
+    height: 3px;
+    background: var(--borde);
+    z-index: 0;
+}
+
+.progreso li:first-child::before {
+    display: none;
+}
+
+.progreso .punto {
+    position: relative;
+    z-index: 1;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: var(--blanco);
+    border: 3px solid var(--borde);
+}
+
+.progreso li.hecho::before,
+.progreso li.actual::before {
+    background: var(--ok);
+}
+
+.progreso li.hecho .punto {
+    background: var(--ok);
+    border-color: var(--ok);
+}
+
+.progreso li.actual .punto {
+    border-color: var(--ok);
+    box-shadow: 0 0 0 4px var(--ok-suave);
+}
+
+.progreso li.actual {
+    color: var(--tinta);
+    font-weight: bold;
+}
+
+.aviso-compacto {
+    margin: 0;
+    padding: 10px 14px;
+}
+
+/* ---------- Configuración ---------- */
+
+.ajustes {
+    display: grid;
+    gap: 18px;
+    max-width: 720px;
+}
+
+.ajustes h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+.foto-perfil {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+}
+
+.foto-acciones {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.selector-archivo {
+    margin: 0;
+    font-weight: bold;
+}
+
+.selector-archivo input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.selector-archivo:focus-within {
+    outline: 3px solid rgba(197, 164, 0, 0.4);
+}
+
+.ayuda-suelta {
+    margin: 0;
+}
+
+.datos-fijos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 32px;
+    margin: 4px 0 20px;
+    font-size: 14px;
+}
+
+.datos-fijos dt {
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.zona-peligro {
+    border: 1px solid #f1c3be;
+    box-shadow: none;
+}
+
+.zona-peligro p {
+    color: var(--texto-suave);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.zona-peligro a {
+    color: var(--tinta);
+    font-weight: bold;
+}
+
+.confirmar-cierre {
+    margin-top: 14px;
+}
+
+.confirmar-cierre summary {
+    display: inline;
+    font-size: 14px;
+}
+
+.confirmar-cierre form {
+    margin-top: 14px;
+}
+
+.confirmar-cierre .campo {
+    max-width: 260px;
+}
+
 /* ---------- Pantallas pequeñas ---------- */
+
+@media (max-width: 1000px) {
+    .tablero {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
 
 @media (max-width: 800px) {
     .pedido-layout {
@@ -964,6 +1480,30 @@ button.insignia {
 
     .formulario-linea {
         flex-wrap: wrap;
+    }
+
+    .tablero {
+        grid-template-columns: 1fr;
+    }
+
+    .cuenta {
+        gap: 8px;
+    }
+
+    .cuenta .chip {
+        display: none;
+    }
+
+    .navegacion {
+        overflow-x: auto;
+    }
+
+    .navegacion a {
+        white-space: nowrap;
+    }
+
+    .progreso .etiqueta-paso {
+        font-size: 10px;
     }
 }
 

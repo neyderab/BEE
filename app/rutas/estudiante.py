@@ -1,13 +1,17 @@
 """Vista del estudiante: tiendas de su universidad, pedidos."""
 
-from datetime import time
-
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from app.db import conectar
-from app.pedidos import ESTADOS, agregar_items, menus_con_productos
-from app.plantillas import mostrar_mensaje, render
+from app.pedidos import (
+    RANGO_MINUTOS,
+    agregar_items,
+    mensaje_para_estudiante,
+    menus_con_productos,
+    notificar,
+)
+from app.plantillas import mostrar_mensaje, pesos, render
 from app.sesion import estudiante_en_sesion
 
 router = APIRouter(prefix="/estudiante")
@@ -24,7 +28,9 @@ def buscar_tienda(tienda_id: int, universidad_id: int) -> tuple[dict | None, int
     with conectar() as conexion:
         tienda = conexion.execute(
             """
-            SELECT t.id, t.nombre, u.universidad_id, un.nombre AS universidad
+            SELECT t.id, t.nombre, t.tiempo_min, t.auto_aceptar,
+                   t.usuario_id AS propietario_id,
+                   u.universidad_id, un.nombre AS universidad
             FROM tiendas t
             JOIN usuarios u ON u.id = t.usuario_id
             JOIN universidades un ON un.id = u.universidad_id
@@ -49,19 +55,12 @@ def tienda_no_disponible(request: Request, codigo: int):
     return render(request, "error.html", status_code=codigo, texto=texto, volver="/estudiante")
 
 
-def leer_hora(texto: str) -> time | None:
-    try:
-        return time.fromisoformat(texto)
-    except ValueError:
-        return None
-
-
 @router.get("")
 def ver_tiendas(request: Request, usuario: dict = Depends(estudiante_en_sesion)):
     with conectar() as conexion:
         tiendas = conexion.execute(
             """
-            SELECT t.id, t.nombre,
+            SELECT t.id, t.nombre, t.tiempo_min,
                    COUNT(p.id) FILTER (WHERE p.disponible) AS productos
             FROM tiendas t
             JOIN usuarios u ON u.id = t.usuario_id
@@ -123,11 +122,6 @@ async def crear_pedido(
         mostrar_mensaje(request, "Agrega al menos un producto a tu pedido.", "error")
         return volver
 
-    hora = leer_hora(str(formulario.get("hora_recogida", "")))
-    if hora is None:
-        mostrar_mensaje(request, "Elige la hora en la que vas a recoger tu pedido.", "error")
-        return volver
-
     with conectar() as conexion:
         productos = conexion.execute(
             """
@@ -148,13 +142,25 @@ async def crear_pedido(
             return volver
 
         total = sum(p["precio"] * cantidades[p["id"]] for p in productos)
+        # Se guarda el tiempo vigente: si la tienda lo cambia después, este
+        # pedido conserva el que el estudiante vio al pedir.
+        auto = tienda["auto_aceptar"]
         pedido = conexion.execute(
             """
-            INSERT INTO pedidos (estudiante_id, tienda_id, hora_recogida, total)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO pedidos
+                (estudiante_id, tienda_id, total, tiempo_min, tiempo_max, estado, aceptado_en)
+            VALUES (%s, %s, %s, %s, %s, %s, CASE WHEN %s THEN now() END)
             RETURNING id
             """,
-            (usuario["id"], tienda_id, hora, total),
+            (
+                usuario["id"],
+                tienda_id,
+                total,
+                tienda["tiempo_min"],
+                tienda["tiempo_min"] + RANGO_MINUTOS,
+                "aceptado" if auto else "pendiente",
+                auto,
+            ),
         ).fetchone()
         with conexion.cursor() as cursor:
             cursor.executemany(
@@ -169,7 +175,27 @@ async def crear_pedido(
                 ],
             )
 
-    mostrar_mensaje(request, f"¡Pedido #{pedido['id']} enviado a {tienda['nombre']}!")
+        cliente = f"{usuario['nombre']} {usuario['apellido']}".strip()
+        notificar(
+            conexion,
+            tienda["propietario_id"],
+            f"Nuevo pedido #{pedido['id']} de {cliente} por {pesos(total)}"
+            + (" (aceptado automáticamente)." if auto else ". Acéptalo para empezar."),
+            pedido["id"],
+        )
+        if auto:
+            notificar(
+                conexion,
+                usuario["id"],
+                mensaje_para_estudiante("aceptado", pedido["id"], tienda["nombre"], tienda["tiempo_min"]),
+                pedido["id"],
+            )
+
+    if auto:
+        aviso = f"¡{tienda['nombre']} aceptó tu pedido #{pedido['id']}!"
+    else:
+        aviso = f"Pedido #{pedido['id']} enviado. Te avisaremos cuando {tienda['nombre']} lo acepte."
+    mostrar_mensaje(request, aviso)
     return RedirectResponse("/estudiante/pedidos", 303)
 
 
@@ -179,6 +205,7 @@ def ver_mis_pedidos(request: Request, usuario: dict = Depends(estudiante_en_sesi
         pedidos = conexion.execute(
             """
             SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en,
+                   p.tiempo_min, p.tiempo_max, p.aceptado_en,
                    t.nombre AS tienda
             FROM pedidos p
             JOIN tiendas t ON t.id = p.tienda_id
@@ -189,5 +216,5 @@ def ver_mis_pedidos(request: Request, usuario: dict = Depends(estudiante_en_sesi
             (usuario["id"],),
         ).fetchall()
     return render(
-        request, "estudiante/pedidos.html", pedidos=agregar_items(pedidos), estados=ESTADOS
+        request, "estudiante/pedidos.html", pedidos=agregar_items(pedidos)
     )

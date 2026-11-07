@@ -15,6 +15,7 @@
     <a class="tarjeta tienda-enlace" href="/estudiante/tiendas/{{ t.id }}">
         <span class="tienda-icono" aria-hidden="true">🏪</span>
         <strong>{{ t.nombre }}</strong>
+        <span class="chip chip-tiempo">⏱️ {{ texto_tiempo(t.tiempo_min) }}</span>
         <small>{% if t.productos %}{{ t.productos }} producto{{ "s" if t.productos != 1 }} disponible{{ "s" if t.productos != 1 }}{% else %}Sin productos por ahora{% endif %}</small>
     </a>
     {% endfor %}

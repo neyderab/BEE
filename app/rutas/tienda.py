@@ -6,7 +6,17 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 
 from app.db import conectar
-from app.pedidos import ACTIVOS, ESTADOS, TRANSICIONES, agregar_items, menus_con_productos
+from app.pedidos import (
+    ACTIVOS,
+    ESTADOS,
+    TIEMPOS,
+    TRANSICIONES,
+    agregar_items,
+    mensaje_para_estudiante,
+    menus_con_productos,
+    notificar,
+    texto_tiempo,
+)
 from app.plantillas import mostrar_mensaje, render
 from app.sesion import tienda_en_sesion
 
@@ -48,16 +58,19 @@ def ver_pedidos(request: Request, usuario: dict = Depends(tienda_en_sesion)):
         pedidos = conexion.execute(
             """
             SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en,
-                   u.nombre, u.apellido, u.telefono
+                   p.tiempo_min, p.tiempo_max, p.aceptado_en, p.estudiante_id,
+                   u.nombre, u.apellido, u.telefono,
+                   u.foto IS NOT NULL AS tiene_foto,
+                   COALESCE(EXTRACT(EPOCH FROM u.foto_actualizada)::BIGINT, 0) AS foto_version
             FROM pedidos p
-            JOIN usuarios u ON u.id = p.estudiante_id
+            LEFT JOIN usuarios u ON u.id = p.estudiante_id
             WHERE p.tienda_id = %s
-            ORDER BY p.hora_recogida, p.id
+            ORDER BY p.creado_en, p.id
             """,
             (usuario["tienda_id"],),
         ).fetchall()
     agregar_items(pedidos)
-    activos = [p for p in pedidos if p["estado"] in ACTIVOS]
+    columnas = {estado: [p for p in pedidos if p["estado"] == estado] for estado in ACTIVOS}
     finalizados = sorted(
         (p for p in pedidos if p["estado"] not in ACTIVOS),
         key=lambda p: p["creado_en"],
@@ -66,11 +79,40 @@ def ver_pedidos(request: Request, usuario: dict = Depends(tienda_en_sesion)):
     return render(
         request,
         "tienda/pedidos.html",
-        activos=activos,
+        columnas=columnas,
+        en_curso=sum(len(c) for c in columnas.values()),
         finalizados=finalizados,
-        estados=ESTADOS,
         transiciones=TRANSICIONES,
     )
+
+
+@router.post("/disponibilidad")
+def guardar_disponibilidad(
+    request: Request,
+    tiempo_min: str = Form(""),
+    auto_aceptar: str = Form(""),
+    usuario: dict = Depends(tienda_en_sesion),
+):
+    try:
+        minutos = int(tiempo_min)
+    except ValueError:
+        minutos = None
+    if minutos not in TIEMPOS:
+        mostrar_mensaje(request, "Elige un tiempo de preparación válido.", "error")
+        return RedirectResponse("/tienda", 303)
+
+    activar = auto_aceptar == "on"
+    with conectar() as conexion:
+        conexion.execute(
+            "UPDATE tiendas SET tiempo_min = %s, auto_aceptar = %s WHERE id = %s",
+            (minutos, activar, usuario["tienda_id"]),
+        )
+    modo = "se aceptan automáticamente" if activar else "los aceptas tú manualmente"
+    mostrar_mensaje(
+        request,
+        f"Guardado: pedidos listos en {texto_tiempo(minutos)} y {modo}.",
+    )
+    return RedirectResponse("/tienda", 303)
 
 
 @router.post("/pedidos/{pedido_id}/estado")
@@ -82,7 +124,10 @@ def cambiar_estado(
 ):
     with conectar() as conexion:
         pedido = conexion.execute(
-            "SELECT estado FROM pedidos WHERE id = %s AND tienda_id = %s FOR UPDATE",
+            """
+            SELECT estado, estudiante_id, tiempo_min
+            FROM pedidos WHERE id = %s AND tienda_id = %s FOR UPDATE
+            """,
             (pedido_id, usuario["tienda_id"]),
         ).fetchone()
         if pedido is None:
@@ -91,7 +136,19 @@ def cambiar_estado(
             mostrar_mensaje(request, "Ese cambio de estado no es posible.", "error")
         else:
             conexion.execute(
-                "UPDATE pedidos SET estado = %s WHERE id = %s", (estado, pedido_id)
+                """
+                UPDATE pedidos
+                SET estado = %s,
+                    aceptado_en = CASE WHEN %s = 'aceptado' THEN now() ELSE aceptado_en END
+                WHERE id = %s
+                """,
+                (estado, estado, pedido_id),
+            )
+            notificar(
+                conexion,
+                pedido["estudiante_id"],
+                mensaje_para_estudiante(estado, pedido_id, usuario["tienda"], pedido["tiempo_min"]),
+                pedido_id,
             )
             mostrar_mensaje(request, f"Pedido #{pedido_id}: {ESTADOS[estado]}.")
     return RedirectResponse("/tienda", 303)

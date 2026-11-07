@@ -68,8 +68,14 @@ Estas entidades sirven como base conceptual para organizar la información y las
 - **Registro:** el usuario elige si es *estudiante* o *tienda* y selecciona su universidad. Las tiendas también escriben el nombre de la tienda.
 - **Universidades disponibles:** Universidad de San Buenaventura, Universidad Nacional de Colombia, Pontificia Universidad Javeriana, Universidad de los Andes y Universidad del Rosario (se crean en `schema.sql`).
 - **Inicio de sesión:** con el teléfono y un código de verificación (por ahora el código de prueba `123456`).
-- **Panel de la tienda** (`/tienda`): crea menús (por ejemplo "Desayunos"), agrega productos con precio, los edita, los marca como agotados y gestiona los pedidos (pendiente → en preparación → listo → entregado, o cancelado).
-- **Vista del estudiante** (`/estudiante`): ve solo las tiendas de **su universidad**, elige productos y hora de recogida, y sigue el estado de sus pedidos.
+- **Panel de la tienda** (`/tienda`):
+  - Define en cuánto tiempo se pueden recoger los pedidos: 5–10, 10–15, 15–20, 20–25 o 25–30 minutos.
+  - Elige si acepta los pedidos **automáticamente** o **manualmente**.
+  - Ve los pedidos en columnas (Por aceptar, Aceptado, En preparación, Listo para recoger) y los avanza con un botón.
+  - En "Menú y precios" crea menús, agrega productos con precio, los edita y los marca como agotados.
+- **Vista del estudiante** (`/estudiante`): ve solo las tiendas de **su universidad** con su tiempo de preparación, hace pedidos y sigue cada uno con una barra de progreso que indica entre qué horas pasar a recogerlo.
+- **Notificaciones:** la campana 🔔 avisa al estudiante cuando la tienda acepta, prepara, termina o cancela su pedido, y a la tienda cuando llega un pedido nuevo. Las páginas de pedidos se actualizan solas.
+- **Configuración** (`/configuracion`): ambos usuarios cambian su foto de perfil y su nombre (la tienda también el nombre de la tienda). El estudiante puede cerrar su cuenta desde ahí; la tienda debe escribir a admin@useapp.com.
 - **Regla de universidad:** un estudiante solo puede hacer pedidos en tiendas de su misma universidad. El servidor lo verifica en cada pedido.
 
 ## Estructura del proyecto
@@ -82,11 +88,12 @@ BEE/
 │   ├── db.py               # Conexión a PostgreSQL
 │   ├── sesion.py           # Usuario en sesión y permisos por rol
 │   ├── plantillas.py       # Jinja2 y mensajes
-│   ├── pedidos.py          # Estados de pedidos y consultas compartidas
+│   ├── pedidos.py          # Estados de pedidos, tiempos y notificaciones
 │   └── rutas/
 │       ├── auth.py         # Registro, login, verificación, perfil
 │       ├── tienda.py       # Panel de la tienda
-│       └── estudiante.py   # Tiendas y pedidos del estudiante
+│       ├── estudiante.py   # Tiendas y pedidos del estudiante
+│       └── cuenta.py       # Notificaciones, configuración y foto
 ├── templates/              # Páginas HTML (Jinja2)
 ├── static/styles.css       # Estilos compartidos
 ├── tests/                  # Pruebas automáticas (pytest)

@@ -1,5 +1,6 @@
 {% extends "app_base.html" %}
 {% set seccion = "pedidos" %}
+{% set recargar_con_novedades = True %}
 {% block titulo %}Mis pedidos{% endblock %}
 {% block contenido %}
 <div class="encabezado">
@@ -10,14 +11,36 @@
 </div>
 
 {% if pedidos %}
-<div class="rejilla">
+<div class="lista-pedidos">
     {% for p in pedidos %}
     <article class="tarjeta pedido estado-{{ p.estado }}">
         <header class="pedido-cabecera">
             <strong>#{{ p.id }} · {{ p.tienda }}</strong>
-            <span class="insignia insignia-{{ p.estado }}">{{ estados[p.estado] }}</span>
+            <span class="insignia insignia-{{ p.estado }}">{{ ESTADOS[p.estado] }}</span>
         </header>
-        <p class="recoger">Recoges a las <strong>{{ p.hora_recogida.strftime("%H:%M") }}</strong></p>
+
+        {% if p.estado == "cancelado" %}
+        <p class="aviso aviso-error aviso-compacto">La tienda canceló este pedido. No se te cobrará nada.</p>
+        {% else %}
+        {% set actual = PASOS.index(p.estado) %}
+        <ol class="progreso" aria-label="Estado del pedido">
+            {% for paso in PASOS %}
+            <li class="{% if loop.index0 < actual %}hecho{% elif loop.index0 == actual %}actual{% endif %}"
+                {% if loop.index0 == actual %}aria-current="step"{% endif %}>
+                <span class="punto" aria-hidden="true"></span>
+                <span class="etiqueta-paso">{{ "Enviado" if paso == "pendiente" else ESTADOS[paso] }}</span>
+            </li>
+            {% endfor %}
+        </ol>
+        {% endif %}
+
+        <p class="recoger">
+            {% if p.estado == "pendiente" %}Esperando que la tienda acepte tu pedido.{% if p.tiempo_min %} Estará listo {{ texto_tiempo(p.tiempo_min) }} después.{% endif %}
+            {% elif p.estado in ("aceptado", "preparando") and p.ventana %}Pásalo a recoger entre <strong>{{ p.ventana[0]|hora }}</strong> y <strong>{{ p.ventana[1]|hora }}</strong>
+            {% elif p.estado == "listo" %}<strong>¡Ya puedes recogerlo!</strong>
+            {% elif p.hora_recogida %}Hora de recogida: {{ p.hora_recogida.strftime("%H:%M") }}{% endif %}
+        </p>
+
         <ul class="items">
             {% for i in p["items"] %}
             <li><span>{{ i.cantidad }} × {{ i.nombre_producto }}</span><span>{{ (i.precio_unitario * i.cantidad)|pesos }}</span></li>

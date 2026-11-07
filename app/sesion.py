@@ -20,7 +20,10 @@ def cargar_usuario(usuario_id: int) -> dict | None:
             """
             SELECT u.id, u.telefono, u.nombre, u.apellido, u.rol,
                    u.universidad_id, un.nombre AS universidad,
-                   t.id AS tienda_id, t.nombre AS tienda
+                   u.foto IS NOT NULL AS tiene_foto,
+                   COALESCE(EXTRACT(EPOCH FROM u.foto_actualizada)::BIGINT, 0) AS foto_version,
+                   t.id AS tienda_id, t.nombre AS tienda,
+                   t.tiempo_min, t.auto_aceptar
             FROM usuarios u
             LEFT JOIN universidades un ON un.id = u.universidad_id
             LEFT JOIN tiendas t ON t.usuario_id = u.id

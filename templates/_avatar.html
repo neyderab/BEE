@@ -1,0 +1,8 @@
+{# Foto de perfil o, si no hay, las iniciales. #}
+{% macro avatar(usuario_id, tiene_foto, version, nombre, apellido, clase="") -%}
+{% if usuario_id and tiene_foto %}
+<img class="avatar {{ clase }}" src="/fotos/{{ usuario_id }}?v={{ version }}" alt="" width="40" height="40">
+{% else %}
+<span class="avatar avatar-iniciales {{ clase }}" aria-hidden="true">{{ iniciales(nombre, apellido) }}</span>
+{% endif %}
+{%- endmacro %}
