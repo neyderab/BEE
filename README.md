@@ -150,9 +150,12 @@ TEST_DB_HOST=localhost TEST_DB_USER=postgres TEST_DB_PASSWORD=tu_clave TEST_DB_N
 
 Proyecto desarrollado por:
 
-- **Camilo Cueto**
-- **Neyder Arenas**
-- **Nicole Lamprea**
+| Integrante | Rol |
+|---|---|
+| **Neyder Arenas** | Programación y backend |
+| **Nicole Lamprea** | Diseño visual y CSS |
+| **Camilo Cueto** | Documentación y pruebas |
+| **Daniel Muñoz** | Documentación, implementación de proyectos y pruebas |
 
 ## Documentación
 
