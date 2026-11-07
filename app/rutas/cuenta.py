@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from PIL import Image, ImageOps, UnidentifiedImageError
 
-from app.db import conectar
+from app.db import conectar, ejecutar, uno
 from app.pedidos import ACTIVOS, contar_sin_leer, notificaciones_recientes
 from app.plantillas import mostrar_mensaje, render
 from app.sesion import ADMIN, ESTUDIANTE, TIENDA, usuario_en_sesion
+from app.validacion import Formulario
 
 router = APIRouter()
 
@@ -35,12 +36,9 @@ def ver_notificaciones(request: Request, usuario: dict = Depends(usuario_en_sesi
 def resumen_notificaciones(usuario: dict = Depends(usuario_en_sesion)):
     """Lo consulta la página cada pocos segundos para avisar de novedades."""
     recientes = notificaciones_recientes(usuario["id"], limite=1)
+    ultima = recientes[0] if recientes else {"id": 0, "texto": ""}
     return JSONResponse(
-        {
-            "sin_leer": contar_sin_leer(usuario["id"]),
-            "ultima_id": recientes[0]["id"] if recientes else 0,
-            "ultima_texto": recientes[0]["texto"] if recientes else "",
-        }
+        {"sin_leer": contar_sin_leer(usuario["id"]), "ultima_id": ultima["id"], "ultima_texto": ultima["texto"]}
     )
 
 
@@ -53,11 +51,7 @@ def marcar_todas_leidas(request: Request, usuario: dict = Depends(usuario_en_ses
 
 
 def marcar_leidas(usuario_id: int) -> None:
-    with conectar() as conexion:
-        conexion.execute(
-            "UPDATE notificaciones SET leida = TRUE WHERE usuario_id = %s AND NOT leida",
-            (usuario_id,),
-        )
+    ejecutar("UPDATE notificaciones SET leida = TRUE WHERE usuario_id = %s AND NOT leida", (usuario_id,))
 
 
 # ---------- Configuración ----------
@@ -75,37 +69,22 @@ def guardar_perfil(
     nombre_tienda: str = Form(""),
     usuario: dict = Depends(usuario_en_sesion),
 ):
-    valores = {
-        **usuario,
-        "nombre": nombre.strip(),
-        "apellido": apellido.strip(),
-        "tienda": nombre_tienda.strip(),
-    }
-    errores = {}
-    for campo, etiqueta in (("nombre", "tu nombre"), ("apellido", "tu apellido")):
-        if not valores[campo]:
-            errores[campo] = f"Escribe {etiqueta}."
-        elif len(valores[campo]) > 50:
-            errores[campo] = "Máximo 50 caracteres."
+    f = Formulario(**{**usuario, "nombre": nombre, "apellido": apellido, "tienda": nombre_tienda})
+    f.texto("nombre", "tu nombre", 50)
+    f.texto("apellido", "tu apellido", 50)
     es_tienda = usuario["rol"] == TIENDA and usuario["tienda_id"]
-    if es_tienda and not 0 < len(valores["tienda"]) <= 80:
-        errores["tienda"] = "Escribe el nombre de la tienda (máximo 80 caracteres)."
-
-    if errores:
-        return render(
-            request, "configuracion.html", status_code=400, errores=errores, valores=valores
-        )
+    if es_tienda:
+        f.texto("tienda", "el nombre de la tienda", 80)
+    if not f.valido:
+        return render(request, "configuracion.html", status_code=400, errores=f.errores, valores=f.valores)
 
     with conectar() as conexion:
         conexion.execute(
             "UPDATE usuarios SET nombre = %s, apellido = %s WHERE id = %s",
-            (valores["nombre"], valores["apellido"], usuario["id"]),
+            (f["nombre"], f["apellido"], usuario["id"]),
         )
         if es_tienda:
-            conexion.execute(
-                "UPDATE tiendas SET nombre = %s WHERE id = %s",
-                (valores["tienda"], usuario["tienda_id"]),
-            )
+            conexion.execute("UPDATE tiendas SET nombre = %s WHERE id = %s", (f["tienda"], usuario["tienda_id"]))
     mostrar_mensaje(request, "Tus datos se guardaron.")
     return volver_a_configuracion()
 
@@ -139,32 +118,21 @@ async def subir_foto(
     if jpeg is None:
         mostrar_mensaje(request, "El archivo no es una imagen válida (usa JPG, PNG o WebP).", "error")
         return volver_a_configuracion()
-    with conectar() as conexion:
-        conexion.execute(
-            "UPDATE usuarios SET foto = %s, foto_actualizada = now() WHERE id = %s",
-            (jpeg, usuario["id"]),
-        )
+    ejecutar("UPDATE usuarios SET foto = %s, foto_actualizada = now() WHERE id = %s", (jpeg, usuario["id"]))
     mostrar_mensaje(request, "Tu foto de perfil se actualizó.")
     return volver_a_configuracion()
 
 
 @router.post("/configuracion/foto/eliminar")
 def eliminar_foto(request: Request, usuario: dict = Depends(usuario_en_sesion)):
-    with conectar() as conexion:
-        conexion.execute(
-            "UPDATE usuarios SET foto = NULL, foto_actualizada = NULL WHERE id = %s",
-            (usuario["id"],),
-        )
+    ejecutar("UPDATE usuarios SET foto = NULL, foto_actualizada = NULL WHERE id = %s", (usuario["id"],))
     mostrar_mensaje(request, "Quitaste tu foto de perfil.")
     return volver_a_configuracion()
 
 
 @router.get("/fotos/{usuario_id}")
 def ver_foto(usuario_id: int, usuario: dict = Depends(usuario_en_sesion)):
-    with conectar() as conexion:
-        fila = conexion.execute(
-            "SELECT foto FROM usuarios WHERE id = %s AND foto IS NOT NULL", (usuario_id,)
-        ).fetchone()
+    fila = uno("SELECT foto FROM usuarios WHERE id = %s AND foto IS NOT NULL", (usuario_id,))
     if fila is None:
         return Response(status_code=404)
     # La URL lleva ?v=<versión>, así que el navegador puede guardarla en caché.

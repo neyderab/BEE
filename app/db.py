@@ -29,6 +29,32 @@ def conectar() -> psycopg.Connection:
     )
 
 
+# Atajos para consultas de una sola sentencia (cada una en su propia
+# transacción). Para varias sentencias que deben ir juntas, usa conectar().
+
+def uno(sql: str, parametros=()) -> dict | None:
+    with conectar() as conexion:
+        return conexion.execute(sql, parametros).fetchone()
+
+
+def todos(sql: str, parametros=()) -> list[dict]:
+    with conectar() as conexion:
+        return conexion.execute(sql, parametros).fetchall()
+
+
+def ejecutar(sql: str, parametros=()) -> None:
+    with conectar() as conexion:
+        conexion.execute(sql, parametros)
+
+
+def campos_foto(alias: str) -> str:
+    """Columnas para mostrar la foto de perfil del usuario `alias` sin cargarla."""
+    return (
+        f"{alias}.foto IS NOT NULL AS tiene_foto, "
+        f"COALESCE(EXTRACT(EPOCH FROM {alias}.foto_actualizada)::BIGINT, 0) AS foto_version"
+    )
+
+
 def inicializar_db() -> None:
     """Crea las tablas que falten y agrega las universidades iniciales."""
     with conectar() as conexion:
@@ -50,15 +76,8 @@ def inicializar_db() -> None:
 
 
 def listar_universidades() -> list[dict]:
-    with conectar() as conexion:
-        return conexion.execute(
-            "SELECT id, nombre, ciudad FROM universidades ORDER BY nombre"
-        ).fetchall()
+    return todos("SELECT id, nombre, ciudad FROM universidades ORDER BY nombre")
 
 
 def universidad_existe(universidad_id: int) -> bool:
-    with conectar() as conexion:
-        fila = conexion.execute(
-            "SELECT 1 FROM universidades WHERE id = %s", (universidad_id,)
-        ).fetchone()
-    return fila is not None
+    return uno("SELECT 1 FROM universidades WHERE id = %s", (universidad_id,)) is not None

@@ -5,7 +5,7 @@ import re
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 
-from app.db import conectar
+from app.db import campos_foto, conectar, ejecutar, todos, uno
 from app.pedidos import (
     ACTIVOS,
     ESTADOS,
@@ -19,6 +19,7 @@ from app.pedidos import (
 )
 from app.plantillas import mostrar_mensaje, render
 from app.sesion import tienda_en_sesion
+from app.validacion import Formulario
 
 router = APIRouter(prefix="/tienda")
 
@@ -35,41 +36,33 @@ def leer_precio(texto: str) -> int | None:
 
 
 def validar_producto(nombre: str, descripcion: str, precio: str):
-    nombre, descripcion = nombre.strip(), descripcion.strip()
+    """Devuelve ((nombre, descripcion, precio), None) o (None, mensaje de error)."""
+    nombre, descripcion, valor = nombre.strip(), descripcion.strip(), leer_precio(precio)
     if not nombre or len(nombre) > 80:
         return None, "El nombre del producto es obligatorio (máximo 80 caracteres)."
     if len(descripcion) > 200:
         return None, "La descripción admite máximo 200 caracteres."
-    valor = leer_precio(precio)
     if valor is None:
         return None, "Escribe un precio válido en pesos, por ejemplo 4500."
     return (nombre, descripcion, valor), None
-
-
-def volver_al_menu() -> RedirectResponse:
-    return RedirectResponse("/tienda/menu", 303)
 
 
 # ---------- Pedidos ----------
 
 @router.get("")
 def ver_pedidos(request: Request, usuario: dict = Depends(tienda_en_sesion)):
-    with conectar() as conexion:
-        pedidos = conexion.execute(
-            """
-            SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en,
-                   p.tiempo_min, p.tiempo_max, p.aceptado_en, p.estudiante_id,
-                   u.nombre, u.apellido, u.telefono,
-                   u.foto IS NOT NULL AS tiene_foto,
-                   COALESCE(EXTRACT(EPOCH FROM u.foto_actualizada)::BIGINT, 0) AS foto_version
-            FROM pedidos p
-            LEFT JOIN usuarios u ON u.id = p.estudiante_id
-            WHERE p.tienda_id = %s
-            ORDER BY p.creado_en, p.id
-            """,
-            (usuario["tienda_id"],),
-        ).fetchall()
-    agregar_items(pedidos)
+    pedidos = agregar_items(todos(
+        f"""
+        SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en,
+               p.tiempo_min, p.tiempo_max, p.aceptado_en, p.estudiante_id,
+               u.nombre, u.apellido, u.telefono, {campos_foto("u")}
+        FROM pedidos p
+        LEFT JOIN usuarios u ON u.id = p.estudiante_id
+        WHERE p.tienda_id = %s
+        ORDER BY p.creado_en, p.id
+        """,
+        (usuario["tienda_id"],),
+    ))
     columnas = {estado: [p for p in pedidos if p["estado"] == estado] for estado in ACTIVOS}
     finalizados = sorted(
         (p for p in pedidos if p["estado"] not in ACTIVOS),
@@ -77,12 +70,8 @@ def ver_pedidos(request: Request, usuario: dict = Depends(tienda_en_sesion)):
         reverse=True,
     )[:20]
     return render(
-        request,
-        "tienda/pedidos.html",
-        columnas=columnas,
-        en_curso=sum(len(c) for c in columnas.values()),
-        finalizados=finalizados,
-        transiciones=TRANSICIONES,
+        request, "tienda/pedidos.html", columnas=columnas, finalizados=finalizados,
+        en_curso=sum(len(c) for c in columnas.values()), transiciones=TRANSICIONES,
     )
 
 
@@ -102,16 +91,12 @@ def guardar_disponibilidad(
         return RedirectResponse("/tienda", 303)
 
     activar = auto_aceptar == "on"
-    with conectar() as conexion:
-        conexion.execute(
-            "UPDATE tiendas SET tiempo_min = %s, auto_aceptar = %s WHERE id = %s",
-            (minutos, activar, usuario["tienda_id"]),
-        )
-    modo = "se aceptan automáticamente" if activar else "los aceptas tú manualmente"
-    mostrar_mensaje(
-        request,
-        f"Guardado: pedidos listos en {texto_tiempo(minutos)} y {modo}.",
+    ejecutar(
+        "UPDATE tiendas SET tiempo_min = %s, auto_aceptar = %s WHERE id = %s",
+        (minutos, activar, usuario["tienda_id"]),
     )
+    modo = "se aceptan automáticamente" if activar else "los aceptas tú manualmente"
+    mostrar_mensaje(request, f"Guardado: pedidos listos en {texto_tiempo(minutos)} y {modo}.")
     return RedirectResponse("/tienda", 303)
 
 
@@ -156,40 +141,44 @@ def cambiar_estado(
 
 # ---------- Menús y productos ----------
 
+# Condición para que solo se modifiquen productos de la tienda en sesión.
+DE_MI_TIENDA = "menu_id IN (SELECT id FROM menus WHERE tienda_id = %s)"
+
+
+def resultado(request: Request, fila: dict | None, exito, error: str) -> RedirectResponse:
+    """Si la consulta encontró la fila, muestra `exito` (texto o función de la fila); si no, `error`."""
+    if fila:
+        mostrar_mensaje(request, exito(fila) if callable(exito) else exito)
+    else:
+        mostrar_mensaje(request, error, "error")
+    return RedirectResponse("/tienda/menu", 303)
+
+
 @router.get("/menu")
 def ver_menu(request: Request, usuario: dict = Depends(tienda_en_sesion)):
     return render(request, "tienda/menu.html", menus=menus_con_productos(usuario["tienda_id"]))
 
 
 @router.post("/menus")
-def crear_menu(
-    request: Request, nombre: str = Form(""), usuario: dict = Depends(tienda_en_sesion)
-):
-    nombre = nombre.strip()
-    if not nombre or len(nombre) > 60:
-        mostrar_mensaje(request, "El nombre del menú es obligatorio (máximo 60 caracteres).", "error")
-        return volver_al_menu()
-    with conectar() as conexion:
-        conexion.execute(
-            "INSERT INTO menus (tienda_id, nombre) VALUES (%s, %s)",
-            (usuario["tienda_id"], nombre),
-        )
-    mostrar_mensaje(request, f"Menú «{nombre}» creado.")
-    return volver_al_menu()
+def crear_menu(request: Request, nombre: str = Form(""), usuario: dict = Depends(tienda_en_sesion)):
+    f = Formulario(nombre=nombre)
+    f.texto("nombre", "el nombre del menú", 60)
+    if not f.valido:
+        return resultado(request, None, "", f.errores["nombre"])
+    fila = uno(
+        "INSERT INTO menus (tienda_id, nombre) VALUES (%s, %s) RETURNING nombre",
+        (usuario["tienda_id"], f["nombre"]),
+    )
+    return resultado(request, fila, lambda m: f"Menú «{m['nombre']}» creado.", "")
 
 
 @router.post("/menus/{menu_id}/eliminar")
 def eliminar_menu(request: Request, menu_id: int, usuario: dict = Depends(tienda_en_sesion)):
-    with conectar() as conexion:
-        borrado = conexion.execute(
-            "DELETE FROM menus WHERE id = %s AND tienda_id = %s RETURNING nombre",
-            (menu_id, usuario["tienda_id"]),
-        ).fetchone()
-    if borrado:
-        mostrar_mensaje(request, f"Menú «{borrado['nombre']}» eliminado.")
-    else:
-        mostrar_mensaje(request, "El menú no existe.", "error")
-    return volver_al_menu()
+    fila = uno(
+        "DELETE FROM menus WHERE id = %s AND tienda_id = %s RETURNING nombre",
+        (menu_id, usuario["tienda_id"]),
+    )
+    return resultado(request, fila, lambda m: f"Menú «{m['nombre']}» eliminado.", "El menú no existe.")
 
 
 @router.post("/menus/{menu_id}/productos")
@@ -203,26 +192,16 @@ def crear_producto(
 ):
     datos, error = validar_producto(nombre, descripcion, precio)
     if error:
-        mostrar_mensaje(request, error, "error")
-        return volver_al_menu()
-    with conectar() as conexion:
-        creado = conexion.execute(
-            """
-            INSERT INTO productos (menu_id, nombre, descripcion, precio)
-            SELECT id, %s, %s, %s FROM menus WHERE id = %s AND tienda_id = %s
-            RETURNING id
-            """,
-            (*datos, menu_id, usuario["tienda_id"]),
-        ).fetchone()
-    if creado:
-        mostrar_mensaje(request, f"Producto «{datos[0]}» agregado.")
-    else:
-        mostrar_mensaje(request, "El menú no existe.", "error")
-    return volver_al_menu()
-
-
-# Condición para que solo se modifiquen productos de la tienda en sesión.
-DE_MI_TIENDA = "menu_id IN (SELECT id FROM menus WHERE tienda_id = %s)"
+        return resultado(request, None, "", error)
+    fila = uno(
+        """
+        INSERT INTO productos (menu_id, nombre, descripcion, precio)
+        SELECT id, %s, %s, %s FROM menus WHERE id = %s AND tienda_id = %s
+        RETURNING nombre
+        """,
+        (*datos, menu_id, usuario["tienda_id"]),
+    )
+    return resultado(request, fila, lambda p: f"Producto «{p['nombre']}» agregado.", "El menú no existe.")
 
 
 @router.post("/productos/{producto_id}/editar")
@@ -236,56 +215,37 @@ def editar_producto(
 ):
     datos, error = validar_producto(nombre, descripcion, precio)
     if error:
-        mostrar_mensaje(request, error, "error")
-        return volver_al_menu()
-    with conectar() as conexion:
-        editado = conexion.execute(
-            f"""
-            UPDATE productos SET nombre = %s, descripcion = %s, precio = %s
-            WHERE id = %s AND {DE_MI_TIENDA}
-            RETURNING id
-            """,
-            (*datos, producto_id, usuario["tienda_id"]),
-        ).fetchone()
-    if editado:
-        mostrar_mensaje(request, f"Producto «{datos[0]}» actualizado.")
-    else:
-        mostrar_mensaje(request, "El producto no existe.", "error")
-    return volver_al_menu()
+        return resultado(request, None, "", error)
+    fila = uno(
+        f"""
+        UPDATE productos SET nombre = %s, descripcion = %s, precio = %s
+        WHERE id = %s AND {DE_MI_TIENDA} RETURNING nombre
+        """,
+        (*datos, producto_id, usuario["tienda_id"]),
+    )
+    return resultado(request, fila, lambda p: f"Producto «{p['nombre']}» actualizado.", "El producto no existe.")
 
 
 @router.post("/productos/{producto_id}/disponibilidad")
-def cambiar_disponibilidad(
-    request: Request, producto_id: int, usuario: dict = Depends(tienda_en_sesion)
-):
-    with conectar() as conexion:
-        producto = conexion.execute(
-            f"""
-            UPDATE productos SET disponible = NOT disponible
-            WHERE id = %s AND {DE_MI_TIENDA}
-            RETURNING nombre, disponible
-            """,
-            (producto_id, usuario["tienda_id"]),
-        ).fetchone()
-    if producto:
-        estado = "disponible" if producto["disponible"] else "agotado"
-        mostrar_mensaje(request, f"«{producto['nombre']}» ahora está {estado}.")
-    else:
-        mostrar_mensaje(request, "El producto no existe.", "error")
-    return volver_al_menu()
+def cambiar_disponibilidad(request: Request, producto_id: int, usuario: dict = Depends(tienda_en_sesion)):
+    fila = uno(
+        f"""
+        UPDATE productos SET disponible = NOT disponible
+        WHERE id = %s AND {DE_MI_TIENDA} RETURNING nombre, disponible
+        """,
+        (producto_id, usuario["tienda_id"]),
+    )
+    return resultado(
+        request, fila,
+        lambda p: f"«{p['nombre']}» ahora está {'disponible' if p['disponible'] else 'agotado'}.",
+        "El producto no existe.",
+    )
 
 
 @router.post("/productos/{producto_id}/eliminar")
-def eliminar_producto(
-    request: Request, producto_id: int, usuario: dict = Depends(tienda_en_sesion)
-):
-    with conectar() as conexion:
-        borrado = conexion.execute(
-            f"DELETE FROM productos WHERE id = %s AND {DE_MI_TIENDA} RETURNING nombre",
-            (producto_id, usuario["tienda_id"]),
-        ).fetchone()
-    if borrado:
-        mostrar_mensaje(request, f"Producto «{borrado['nombre']}» eliminado.")
-    else:
-        mostrar_mensaje(request, "El producto no existe.", "error")
-    return volver_al_menu()
+def eliminar_producto(request: Request, producto_id: int, usuario: dict = Depends(tienda_en_sesion)):
+    fila = uno(
+        f"DELETE FROM productos WHERE id = %s AND {DE_MI_TIENDA} RETURNING nombre",
+        (producto_id, usuario["tienda_id"]),
+    )
+    return resultado(request, fila, lambda p: f"Producto «{p['nombre']}» eliminado.", "El producto no existe.")

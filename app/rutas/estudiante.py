@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
-from app.db import conectar
+from app.db import conectar, todos, uno
 from app.pedidos import (
     RANGO_MINUTOS,
     agregar_items,
@@ -25,19 +25,17 @@ def buscar_tienda(tienda_id: int, universidad_id: int) -> tuple[dict | None, int
     Si no, devuelve (None, código HTTP): 404 si no existe y 403 si es de otra
     universidad.
     """
-    with conectar() as conexion:
-        tienda = conexion.execute(
-            """
-            SELECT t.id, t.nombre, t.tiempo_min, t.auto_aceptar,
-                   t.usuario_id AS propietario_id,
-                   u.universidad_id, un.nombre AS universidad
-            FROM tiendas t
-            JOIN usuarios u ON u.id = t.usuario_id
-            JOIN universidades un ON un.id = u.universidad_id
-            WHERE t.id = %s
-            """,
-            (tienda_id,),
-        ).fetchone()
+    tienda = uno(
+        """
+        SELECT t.id, t.nombre, t.tiempo_min, t.auto_aceptar, t.usuario_id AS propietario_id,
+               u.universidad_id, un.nombre AS universidad
+        FROM tiendas t
+        JOIN usuarios u ON u.id = t.usuario_id
+        JOIN universidades un ON un.id = u.universidad_id
+        WHERE t.id = %s
+        """,
+        (tienda_id,),
+    )
     if tienda is None:
         return None, 404
     if tienda["universidad_id"] != universidad_id:
@@ -57,21 +55,19 @@ def tienda_no_disponible(request: Request, codigo: int):
 
 @router.get("")
 def ver_tiendas(request: Request, usuario: dict = Depends(estudiante_en_sesion)):
-    with conectar() as conexion:
-        tiendas = conexion.execute(
-            """
-            SELECT t.id, t.nombre, t.tiempo_min,
-                   COUNT(p.id) FILTER (WHERE p.disponible) AS productos
-            FROM tiendas t
-            JOIN usuarios u ON u.id = t.usuario_id
-            LEFT JOIN menus m ON m.tienda_id = t.id
-            LEFT JOIN productos p ON p.menu_id = m.id
-            WHERE u.universidad_id = %s
-            GROUP BY t.id
-            ORDER BY t.nombre
-            """,
-            (usuario["universidad_id"],),
-        ).fetchall()
+    tiendas = todos(
+        """
+        SELECT t.id, t.nombre, t.tiempo_min, COUNT(p.id) FILTER (WHERE p.disponible) AS productos
+        FROM tiendas t
+        JOIN usuarios u ON u.id = t.usuario_id
+        LEFT JOIN menus m ON m.tienda_id = t.id
+        LEFT JOIN productos p ON p.menu_id = m.id
+        WHERE u.universidad_id = %s
+        GROUP BY t.id
+        ORDER BY t.nombre
+        """,
+        (usuario["universidad_id"],),
+    )
     return render(request, "estudiante/tiendas.html", tiendas=tiendas)
 
 
@@ -81,11 +77,8 @@ def ver_tienda(request: Request, tienda_id: int, usuario: dict = Depends(estudia
     if tienda is None:
         return tienda_no_disponible(request, codigo)
     return render(
-        request,
-        "estudiante/tienda.html",
-        tienda=tienda,
+        request, "estudiante/tienda.html", tienda=tienda, cantidad_maxima=CANTIDAD_MAXIMA,
         menus=menus_con_productos(tienda_id, solo_disponibles=True),
-        cantidad_maxima=CANTIDAD_MAXIMA,
     )
 
 
@@ -111,9 +104,7 @@ async def crear_pedido(
             mostrar_mensaje(request, "Las cantidades deben ser números.", "error")
             return volver
         if not 0 <= cantidad <= CANTIDAD_MAXIMA:
-            mostrar_mensaje(
-                request, f"Puedes pedir entre 0 y {CANTIDAD_MAXIMA} unidades por producto.", "error"
-            )
+            mostrar_mensaje(request, f"Puedes pedir entre 0 y {CANTIDAD_MAXIMA} unidades por producto.", "error")
             return volver
         if cantidad:
             cantidades[producto_id] = cantidad
@@ -134,11 +125,7 @@ async def crear_pedido(
         ).fetchall()
 
         if len(productos) != len(cantidades):
-            mostrar_mensaje(
-                request,
-                "Algún producto ya no está disponible. Revisa tu pedido.",
-                "error",
-            )
+            mostrar_mensaje(request, "Algún producto ya no está disponible. Revisa tu pedido.", "error")
             return volver
 
         total = sum(p["precio"] * cantidades[p["id"]] for p in productos)
@@ -152,15 +139,8 @@ async def crear_pedido(
             VALUES (%s, %s, %s, %s, %s, %s, CASE WHEN %s THEN now() END)
             RETURNING id
             """,
-            (
-                usuario["id"],
-                tienda_id,
-                total,
-                tienda["tiempo_min"],
-                tienda["tiempo_min"] + RANGO_MINUTOS,
-                "aceptado" if auto else "pendiente",
-                auto,
-            ),
+            (usuario["id"], tienda_id, total, tienda["tiempo_min"], tienda["tiempo_min"] + RANGO_MINUTOS,
+             "aceptado" if auto else "pendiente", auto),
         ).fetchone()
         with conexion.cursor() as cursor:
             cursor.executemany(
@@ -201,20 +181,16 @@ async def crear_pedido(
 
 @router.get("/pedidos")
 def ver_mis_pedidos(request: Request, usuario: dict = Depends(estudiante_en_sesion)):
-    with conectar() as conexion:
-        pedidos = conexion.execute(
-            """
-            SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en,
-                   p.tiempo_min, p.tiempo_max, p.aceptado_en,
-                   t.nombre AS tienda
-            FROM pedidos p
-            JOIN tiendas t ON t.id = p.tienda_id
-            WHERE p.estudiante_id = %s
-            ORDER BY p.creado_en DESC
-            LIMIT 30
-            """,
-            (usuario["id"],),
-        ).fetchall()
-    return render(
-        request, "estudiante/pedidos.html", pedidos=agregar_items(pedidos)
+    pedidos = todos(
+        """
+        SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en,
+               p.tiempo_min, p.tiempo_max, p.aceptado_en, t.nombre AS tienda
+        FROM pedidos p
+        JOIN tiendas t ON t.id = p.tienda_id
+        WHERE p.estudiante_id = %s
+        ORDER BY p.creado_en DESC
+        LIMIT 30
+        """,
+        (usuario["id"],),
     )
+    return render(request, "estudiante/pedidos.html", pedidos=agregar_items(pedidos))
