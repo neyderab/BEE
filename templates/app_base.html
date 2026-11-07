@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block cuerpo %}
+<header class="barra">
+    <a class="logo logo-pequeno" href="/">BEE<span>.</span></a>
+    <nav class="navegacion">
+        {% if usuario.rol == "Tienda" %}
+            <a href="/tienda" {% if seccion == "pedidos" %}aria-current="page"{% endif %}>Pedidos</a>
+            <a href="/tienda/menu" {% if seccion == "menu" %}aria-current="page"{% endif %}>Menú y precios</a>
+        {% else %}
+            <a href="/estudiante" {% if seccion == "tiendas" %}aria-current="page"{% endif %}>Tiendas</a>
+            <a href="/estudiante/pedidos" {% if seccion == "pedidos" %}aria-current="page"{% endif %}>Mis pedidos</a>
+        {% endif %}
+    </nav>
+    <div class="cuenta">
+        <span class="chip">{{ usuario.universidad }}</span>
+        <a class="enlace-salir" href="/logout">Salir</a>
+    </div>
+</header>
+<main class="contenido">
+    {% include "_mensaje.html" %}
+    {% block contenido %}{% endblock %}
+</main>
+{% endblock %}

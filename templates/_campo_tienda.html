@@ -1,0 +1,8 @@
+<div id="datos-tienda" {% if valores.rol != "Tienda" %}hidden{% endif %}>
+    <label for="nombre_tienda">Nombre de la tienda</label>
+    <input class="campo {% if errores.nombre_tienda %}con-error{% endif %}" type="text" id="nombre_tienda"
+           name="nombre_tienda" value="{{ valores.nombre_tienda or '' }}" maxlength="80"
+           placeholder="Ej.: Café del Bloque C">
+    {% if errores.nombre_tienda %}<p class="error-campo">{{ errores.nombre_tienda }}</p>{% endif %}
+    <p class="ayuda">Los estudiantes de tu universidad verán este nombre al hacer pedidos.</p>
+</div>

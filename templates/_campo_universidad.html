@@ -1,0 +1,10 @@
+<label for="universidad_id" id="etiqueta-universidad">
+    {% if valores.rol == "Tienda" %}Universidad donde está tu tienda{% else %}¿En qué universidad estudias?{% endif %}
+</label>
+<select class="campo {% if errores.universidad_id %}con-error{% endif %}" id="universidad_id" name="universidad_id" required>
+    <option value="" disabled {% if not valores.universidad_id %}selected{% endif %}>Selecciona tu universidad</option>
+    {% for u in universidades %}
+    <option value="{{ u.id }}" {% if valores.universidad_id == u.id|string %}selected{% endif %}>{{ u.nombre }} · {{ u.ciudad }}</option>
+    {% endfor %}
+</select>
+{% if errores.universidad_id %}<p class="error-campo">{{ errores.universidad_id }}</p>{% endif %}

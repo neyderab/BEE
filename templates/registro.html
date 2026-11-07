@@ -1,278 +1,78 @@
+{% extends "auth_base.html" %}
+{% block titulo %}Crear cuenta{% endblock %}
+{% block lema %}Tu próxima<br>pausa empieza aquí.{% endblock %}
+{% block lema_texto %}Crea tu cuenta y descubre una forma más fácil de pedir dentro de tu universidad.{% endblock %}
+{% block formulario %}
+<h2>Crear una cuenta</h2>
+<p class="descripcion">Completa tus datos para comenzar con BEE.</p>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear cuenta | BEE</title>
+<form action="/registrar" method="post" id="form-registro">
+    <fieldset class="selector-rol">
+        <legend>¿Cómo vas a usar BEE?</legend>
+        <label class="opcion-rol">
+            <input type="radio" name="rol" value="Estudiante" {% if valores.rol != "Tienda" %}checked{% endif %}>
+            <span><strong>🎓 Soy estudiante</strong><small>Quiero pedir y recoger sin fila</small></span>
+        </label>
+        <label class="opcion-rol">
+            <input type="radio" name="rol" value="Tienda" {% if valores.rol == "Tienda" %}checked{% endif %}>
+            <span><strong>🏪 Tengo una tienda</strong><small>Quiero recibir pedidos</small></span>
+        </label>
+    </fieldset>
+    {% if errores.rol %}<p class="error-campo">{{ errores.rol }}</p>{% endif %}
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+    {% include "_campo_universidad.html" %}
+    {% include "_campo_tienda.html" %}
+
+    <div class="dos-columnas">
+        <div>
+            <label for="nombre">Nombre</label>
+            <input class="campo {% if errores.nombre %}con-error{% endif %}" type="text" id="nombre" name="nombre"
+                   value="{{ valores.nombre or '' }}" placeholder="Tu nombre" maxlength="50" autocomplete="given-name" required>
+            {% if errores.nombre %}<p class="error-campo">{{ errores.nombre }}</p>{% endif %}
+        </div>
+        <div>
+            <label for="apellido">Apellido</label>
+            <input class="campo {% if errores.apellido %}con-error{% endif %}" type="text" id="apellido" name="apellido"
+                   value="{{ valores.apellido or '' }}" placeholder="Tu apellido" maxlength="50" autocomplete="family-name" required>
+            {% if errores.apellido %}<p class="error-campo">{{ errores.apellido }}</p>{% endif %}
+        </div>
+    </div>
+
+    <label for="telefono">Número de teléfono</label>
+    <div class="campo-telefono {% if errores.telefono %}con-error{% endif %}">
+        <span class="prefijo">+57</span>
+        <input type="tel" id="telefono" name="telefono" value="{{ valores.telefono or '' }}"
+               placeholder="300 123 4567" inputmode="numeric" pattern="[0-9]{10}" maxlength="10"
+               autocomplete="tel-national" required>
+    </div>
+    {% if errores.telefono %}<p class="error-campo">{{ errores.telefono }}</p>{% endif %}
+
+    <button class="boton" type="submit">Crear mi cuenta</button>
+</form>
+
+<p class="alternativa">¿Ya tienes cuenta? <a href="/login">Iniciar sesión</a></p>
+
+<script>
+    // Muestra el nombre de la tienda solo cuando se elige el rol "Tienda".
+    (function () {
+        const form = document.getElementById("form-registro");
+        const datosTienda = document.getElementById("datos-tienda");
+        const nombreTienda = document.getElementById("nombre_tienda");
+        const etiqueta = document.getElementById("etiqueta-universidad");
+
+        function actualizar() {
+            const esTienda = form.rol.value === "Tienda";
+            datosTienda.hidden = !esTienda;
+            nombreTienda.required = esTienda;
+            etiqueta.textContent = esTienda
+                ? "Universidad donde está tu tienda"
+                : "¿En qué universidad estudias?";
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #f7f7f2;
-            color: #202019;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-
-        .contenedor {
-            width: 100%;
-            max-width: 1000px;
-            min-height: 600px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            background: white;
-            border-radius: 28px;
-            overflow: hidden;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.08);
-        }
-
-        .presentacion {
-            background: #ffdf35;
-            padding: 48px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .logo {
-            font-size: 38px;
-            font-weight: 900;
-            letter-spacing: -2px;
-        }
-
-        .logo span {
-            color: white;
-        }
-
-        .mensaje h1 {
-            font-size: clamp(34px, 4vw, 52px);
-            line-height: 1.08;
-            margin-bottom: 20px;
-            letter-spacing: -2px;
-        }
-
-        .mensaje p {
-            font-size: 16px;
-            line-height: 1.7;
-            max-width: 340px;
-        }
-
-        .decoracion {
-            font-size: 68px;
-            margin-top: 30px;
-        }
-
-        .pie {
-            font-size: 12px;
-            color: #514b22;
-        }
-
-        .formulario {
-            padding: 45px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .formulario h2 {
-            font-size: 32px;
-            margin-bottom: 12px;
-            letter-spacing: -1px;
-        }
-
-        .descripcion {
-            color: #77776f;
-            line-height: 1.6;
-            margin-bottom: 28px;
-            font-size: 14px;
-        }
-
-        label {
-            display: block;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 9px;
-        }
-
-        input, select {
-            width: 100%;
-            border: 1px solid #deded7;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 19px;
-            font-size: 15px;
-            background: white;
-            color: #202019;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #c5a400;
-        }
-
-        .boton {
-            width: 100%;
-            border: none;
-            border-radius: 12px;
-            padding: 16px;
-            background: #202019;
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
-        }
-
-        .boton:hover {
-            background: #3b3b30;
-            transform: translateY(-1px);
-        }
-
-        .registro {
-            text-align: center;
-            font-size: 14px;
-            color: #77776f;
-            margin-top: 23px;
-        }
-
-        .registro a {
-            color: #202019;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .registro a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 700px) {
-            body {
-                padding: 14px;
-            }
-
-            .contenedor {
-                grid-template-columns: 1fr;
-                max-width: 430px;
-            }
-
-            .presentacion {
-                padding: 28px;
-                min-height: 235px;
-            }
-
-            .mensaje h1 {
-                font-size: 34px;
-                margin-top: 28px;
-            }
-
-            .mensaje p {
-                font-size: 14px;
-            }
-
-            .decoracion {
-                display: none;
-            }
-
-            .pie {
-                margin-top: 25px;
-            }
-
-            .formulario {
-                padding: 30px 26px;
-            }
-
-            .formulario h2 {
-                font-size: 28px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <main class="contenedor">
-
-        <section class="presentacion">
-            <div class="logo">BEE<span>.</span></div>
-
-            <div class="mensaje">
-                <h1>Tu próxima<br>pausa empieza aquí.</h1>
-                <p>
-                    Crea tu cuenta y descubre una forma más
-                    fácil de pedir dentro de tu universidad.
-                </p>
-                <div class="decoracion">🐝</div>
-            </div>
-
-            <p class="pie">Pide antes. Recoge sin fila.</p>
-        </section>
-
-        <section class="formulario">
-            <h2>Crear una cuenta</h2>
-            <p class="descripcion">
-                Completa tus datos para comenzar con BEE.
-            </p>
-
-            <form action="/registrar" method="post">
-                <label for="telefono">Número de teléfono</label>
-                <input
-                    type="tel"
-                    id="telefono"
-                    name="telefono"
-                    placeholder="3001234567"
-                    inputmode="numeric"
-                    pattern="[0-9]{10}"
-                    minlength="10"
-                    maxlength="10"
-                    required
-                >
-
-                <label for="nombre">Nombre</label>
-                <input
-                    type="text"
-                    id="nombre"
-                    name="nombre"
-                    placeholder="Tu nombre"
-                    maxlength="50"
-                    required
-                >
-
-                <label for="apellido">Apellido</label>
-                <input
-                    type="text"
-                    id="apellido"
-                    name="apellido"
-                    placeholder="Tu apellido"
-                    maxlength="50"
-                    required
-                >
-
-                <label for="rol">Tipo de usuario</label>
-                <select id="rol" name="rol" required>
-                    <option value="Estudiante">Estudiante</option>
-                    <option value="Tienda">Tienda</option>
-                </select>
-
-                <button class="boton" type="submit">
-                    Crear mi cuenta
-                </button>
-            </form>
-
-            <p class="registro">
-                ¿Ya tienes cuenta?
-                <a href="/login">Iniciar sesión</a>
-            </p>
-        </section>
-
-    </main>
-</body>
-</html>
+        form.addEventListener("change", function (evento) {
+            if (evento.target.name === "rol") actualizar();
+        });
+        actualizar();
+    })();
+</script>
+{% endblock %}

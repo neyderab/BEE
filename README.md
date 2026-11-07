@@ -46,7 +46,8 @@ La plataforma busca conectar a los estudiantes con las tiendas disponibles dentr
 | CSS | Diseño y estilos de la interfaz |
 | Python | Desarrollo del backend |
 | FastAPI | Creación de rutas y servicios web |
-| MySQL | Base de datos utilizada en el desarrollo local |
+| PostgreSQL | Base de datos |
+| Jinja2 | Plantillas HTML |
 | Git y GitHub | Control de versiones y alojamiento del código |
 | GitHub Pages | Publicación de la página de presentación |
 
@@ -62,73 +63,83 @@ El proyecto contempla la organización del sistema mediante entidades que repres
 
 Estas entidades sirven como base conceptual para organizar la información y las responsabilidades del sistema.
 
-## Estructura del proyecto
+## Cómo funciona hoy
 
-La estructura puede variar a medida que avance el desarrollo. La organización principal contempla:
+- **Registro:** el usuario elige si es *estudiante* o *tienda* y selecciona su universidad. Las tiendas también escriben el nombre de la tienda.
+- **Universidades disponibles:** Universidad de San Buenaventura, Universidad Nacional de Colombia, Pontificia Universidad Javeriana, Universidad de los Andes y Universidad del Rosario (se crean en `schema.sql`).
+- **Inicio de sesión:** con el teléfono y un código de verificación (por ahora el código de prueba `123456`).
+- **Panel de la tienda** (`/tienda`): crea menús (por ejemplo "Desayunos"), agrega productos con precio, los edita, los marca como agotados y gestiona los pedidos (pendiente → en preparación → listo → entregado, o cancelado).
+- **Vista del estudiante** (`/estudiante`): ve solo las tiendas de **su universidad**, elige productos y hora de recogida, y sigue el estado de sus pedidos.
+- **Regla de universidad:** un estudiante solo puede hacer pedidos en tiendas de su misma universidad. El servidor lo verifica en cada pedido.
+
+## Estructura del proyecto
 
 ```text
 BEE/
-├── docs/
-│   ├── index.html
-│   ├── styles.css
-│   └── imagenes/
-├── templates/
-│   ├── login.html
-│   ├── registro.html
-│   └── registro_exitoso.html
-├── main.py
-├── requirements.txt
-└── README.md
+├── main.py                 # Crea la app FastAPI y registra las rutas
+├── schema.sql              # Tablas y universidades (se aplica al iniciar)
+├── app/
+│   ├── db.py               # Conexión a PostgreSQL
+│   ├── sesion.py           # Usuario en sesión y permisos por rol
+│   ├── plantillas.py       # Jinja2 y mensajes
+│   ├── pedidos.py          # Estados de pedidos y consultas compartidas
+│   └── rutas/
+│       ├── auth.py         # Registro, login, verificación, perfil
+│       ├── tienda.py       # Panel de la tienda
+│       └── estudiante.py   # Tiendas y pedidos del estudiante
+├── templates/              # Páginas HTML (Jinja2)
+├── static/styles.css       # Estilos compartidos
+├── tests/                  # Pruebas automáticas (pytest)
+└── docs/                   # Página de presentación (GitHub Pages)
 ```
 
 ## Ejecución local del backend
 
-Para ejecutar el backend en un entorno local, necesitas tener Python instalado y acceso a una instancia de MySQL configurada para el proyecto.
+Necesitas Python 3.10 o superior y una base de datos PostgreSQL.
 
-1. Clona el repositorio:
+1. Clona el repositorio y entra en la carpeta:
 
 ```bash
 git clone https://github.com/neyderab/BEE.git
 ```
 
-2. Entra en la carpeta del proyecto:
-
 ```bash
 cd BEE
 ```
 
-3. Crea un entorno virtual:
+2. Crea y activa un entorno virtual (macOS o Linux):
 
 ```bash
 python3 -m venv .venv
 ```
 
-4. Activa el entorno virtual en macOS o Linux:
-
 ```bash
 source .venv/bin/activate
 ```
 
-5. Instala las dependencias, si existe el archivo `requirements.txt`:
+3. Instala las dependencias:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-6. Configura las variables de conexión a la base de datos según la configuración de tu entorno.
+4. Copia `.env.example` como `.env` y completa los datos de la base de datos y `SECRET_KEY`.
 
-7. Inicia el servidor FastAPI:
+5. Inicia el servidor. Al arrancar, la aplicación crea las tablas que falten y agrega las universidades. Si ya tenías la tabla `usuarios`, se conservan los datos: los usuarios antiguos eligen su universidad la próxima vez que inicien sesión.
 
 ```bash
 python3 -m uvicorn main:app --reload
 ```
 
-8. Abre en el navegador:
+6. Abre http://127.0.0.1:8000 en el navegador.
 
-- Aplicación local: http://127.0.0.1:8000
-- Documentación interactiva de la API: http://127.0.0.1:8000/docs
+### Pruebas
 
-**Importante:** los pasos anteriores requieren que el archivo `main.py`, las dependencias y la configuración de la base de datos estén presentes y correctamente configurados.
+Las pruebas **borran y recrean todas las tablas**, así que usa una base de datos separada solo para pruebas:
+
+```bash
+TEST_DB_HOST=localhost TEST_DB_USER=postgres TEST_DB_PASSWORD=tu_clave TEST_DB_NAME=bee_test TEST_DB_SSLMODE=disable pytest
+```
 
 ## Página del proyecto
 

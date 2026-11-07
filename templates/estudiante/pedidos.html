@@ -1,0 +1,36 @@
+{% extends "app_base.html" %}
+{% set seccion = "pedidos" %}
+{% block titulo %}Mis pedidos{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo">{{ usuario.universidad }}</p>
+        <h1>Mis pedidos</h1>
+    </div>
+</div>
+
+{% if pedidos %}
+<div class="rejilla">
+    {% for p in pedidos %}
+    <article class="tarjeta pedido estado-{{ p.estado }}">
+        <header class="pedido-cabecera">
+            <strong>#{{ p.id }} · {{ p.tienda }}</strong>
+            <span class="insignia insignia-{{ p.estado }}">{{ estados[p.estado] }}</span>
+        </header>
+        <p class="recoger">Recoges a las <strong>{{ p.hora_recogida.strftime("%H:%M") }}</strong></p>
+        <ul class="items">
+            {% for i in p["items"] %}
+            <li><span>{{ i.cantidad }} × {{ i.nombre_producto }}</span><span>{{ (i.precio_unitario * i.cantidad)|pesos }}</span></li>
+            {% endfor %}
+        </ul>
+        <p class="total"><span>Total</span><strong>{{ p.total|pesos }}</strong></p>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="vacio">
+    <p>Todavía no has hecho pedidos.</p>
+    <a class="boton boton-auto" href="/estudiante">Ver tiendas</a>
+</div>
+{% endif %}
+{% endblock %}
