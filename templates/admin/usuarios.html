@@ -1,0 +1,55 @@
+{% extends "app_base.html" %}
+{% from "_avatar.html" import avatar %}
+{% block titulo %}Usuarios{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo">Administración</p>
+        <h1>Usuarios</h1>
+    </div>
+    {% if tiene_permiso(usuario, P.CREAR_USUARIOS) %}
+    <a class="boton boton-auto" href="/admin/usuarios/nuevo">+ Nuevo usuario</a>
+    {% endif %}
+</div>
+
+<form class="tarjeta filtros" method="get">
+    <input class="campo" type="search" name="q" value="{{ filtros.q }}" placeholder="Buscar por nombre, teléfono o tienda" aria-label="Buscar">
+    <select class="campo" name="rol" aria-label="Tipo de usuario">
+        <option value="">Todos los tipos</option>
+        {% for r in roles %}<option value="{{ r }}" {% if filtros.rol == r %}selected{% endif %}>{{ "Administrador" if r == "Admin" else r }}</option>{% endfor %}
+    </select>
+    <select class="campo" name="estado" aria-label="Estado">
+        <option value="">Activos y suspendidos</option>
+        <option value="activo" {% if filtros.estado == "activo" %}selected{% endif %}>Solo activos</option>
+        <option value="suspendido" {% if filtros.estado == "suspendido" %}selected{% endif %}>Solo suspendidos</option>
+    </select>
+    <button class="boton boton-auto" type="submit">Filtrar</button>
+</form>
+
+{% if usuarios %}
+<div class="tarjeta tabla-contenedor">
+    <table class="tabla tabla-usuarios">
+        <thead><tr><th>Usuario</th><th>Tipo</th><th>Teléfono</th><th>Universidad</th><th>Estado</th></tr></thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td>
+                    <a class="celda-usuario" href="/admin/usuarios/{{ u.id }}">
+                        {{ avatar(u.id, u.tiene_foto, u.foto_version, u.nombre, u.apellido, "avatar-pequeno") }}
+                        <span><strong>{{ u.nombre }} {{ u.apellido }}</strong>{% if u.tienda %}<small>{{ u.tienda }}</small>{% endif %}</span>
+                    </a>
+                </td>
+                <td><span class="insignia insignia-rol-{{ u.rol|lower }}">{{ "Administrador" if u.rol == "Admin" else u.rol }}</span></td>
+                <td>+57 {{ u.telefono }}</td>
+                <td>{{ u.universidad or "—" }}</td>
+                <td>{% if u.activo %}<span class="insignia insignia-listo">Activo</span>{% else %}<span class="insignia insignia-cancelado">Suspendido</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if usuarios|length == 200 %}<p class="ayuda ayuda-centrada">Se muestran los 200 más recientes. Usa la búsqueda para encontrar a alguien.</p>{% endif %}
+{% else %}
+<div class="vacio"><p>No hay usuarios con esos filtros.</p></div>
+{% endif %}
+{% endblock %}

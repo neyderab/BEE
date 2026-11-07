@@ -9,7 +9,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from app.db import conectar
 from app.pedidos import ACTIVOS, contar_sin_leer, notificaciones_recientes
 from app.plantillas import mostrar_mensaje, render
-from app.sesion import ESTUDIANTE, TIENDA, usuario_en_sesion
+from app.sesion import ADMIN, ESTUDIANTE, TIENDA, usuario_en_sesion
 
 router = APIRouter()
 
@@ -183,6 +183,9 @@ def cerrar_cuenta(
     confirmacion: str = Form(""),
     usuario: dict = Depends(usuario_en_sesion),
 ):
+    if usuario["rol"] == ADMIN:
+        mostrar_mensaje(request, "Pide a otro administrador que elimine tu cuenta.", "error")
+        return volver_a_configuracion()
     if usuario["rol"] != ESTUDIANTE:
         # Las tiendas cierran su cuenta escribiendo al correo de soporte.
         mostrar_mensaje(request, "Para cerrar la cuenta de una tienda escríbenos por correo.", "error")

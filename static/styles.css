@@ -1386,6 +1386,198 @@ button.insignia {
     max-width: 260px;
 }
 
+/* ---------- Administración ---------- */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.chip-admin {
+    background: var(--tinta);
+    color: var(--blanco);
+}
+
+.estadisticas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+}
+
+.estadistica strong {
+    display: block;
+    font-size: 30px;
+    letter-spacing: -1px;
+}
+
+.estadistica span {
+    color: var(--texto-suave);
+    font-size: 14px;
+}
+
+.lista-permisos {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px 24px;
+    margin-bottom: 16px;
+}
+
+.lista-permisos li {
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.lista-permisos small,
+.casilla small {
+    display: block;
+    color: var(--texto-suave);
+    font-size: 12px;
+    font-weight: normal;
+    margin-top: 2px;
+}
+
+.lista-permisos .con-permiso > span {
+    color: var(--ok);
+    font-weight: bold;
+}
+
+.lista-permisos .sin-permiso {
+    opacity: 0.55;
+}
+
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.filtros .campo {
+    margin: 0;
+    width: auto;
+    flex: 1 1 180px;
+    padding: 11px 14px;
+}
+
+.filtros .campo-con-error {
+    flex: 1 1 220px;
+}
+
+.filtros .campo-con-error .campo {
+    width: 100%;
+}
+
+.filtros .error-campo {
+    margin: 6px 0 0;
+}
+
+.celda-usuario {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.celda-usuario small {
+    display: block;
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.celda-usuario:hover strong {
+    text-decoration: underline;
+}
+
+.insignia-rol-estudiante {
+    background: var(--info-suave);
+    color: var(--info);
+}
+
+.insignia-rol-tienda {
+    background: var(--amarillo-suave);
+    color: #7a6200;
+}
+
+.insignia-rol-admin {
+    background: var(--tinta);
+    color: var(--blanco);
+}
+
+.selector-rol-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.casillas-permisos {
+    border: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.casilla {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.casilla input {
+    margin-top: 3px;
+    accent-color: var(--tinta);
+}
+
+.casilla:has(input:checked) {
+    border-color: var(--tinta);
+    background: var(--amarillo-suave);
+}
+
+.casilla-bloqueada {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.ficha-usuario {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.ficha-usuario .datos-fijos {
+    margin: 0;
+}
+
+.accion-cuenta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-top: 1px solid var(--fondo);
+}
+
+.accion-cuenta:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+
+.accion-cuenta p {
+    margin-top: 2px;
+}
+
 /* ---------- Pantallas pequeñas ---------- */
 
 @media (max-width: 1000px) {
@@ -1486,6 +1678,14 @@ button.insignia {
         grid-template-columns: 1fr;
     }
 
+    .selector-rol-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .accion-cuenta {
+        flex-wrap: wrap;
+    }
+
     .cuenta {
         gap: 8px;
     }
@@ -1509,7 +1709,8 @@ button.insignia {
 
 @media (max-width: 420px) {
     .dos-columnas,
-    .selector-rol {
+    .selector-rol,
+    .selector-rol-3 {
         grid-template-columns: 1fr;
     }
 

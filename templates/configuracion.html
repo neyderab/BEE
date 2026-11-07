@@ -5,7 +5,7 @@
 {% block contenido %}
 <div class="encabezado">
     <div>
-        <p class="sobretitulo">{{ "Cuenta de tienda" if usuario.rol == "Tienda" else "Cuenta de estudiante" }}</p>
+        <p class="sobretitulo">{{ {"Tienda": "Cuenta de tienda", "Admin": "Cuenta de administrador"}.get(usuario.rol, "Cuenta de estudiante") }}</p>
         <h1>Configuración</h1>
     </div>
 </div>
@@ -59,7 +59,7 @@
             {% endif %}
             <dl class="datos-fijos">
                 <div><dt>Teléfono</dt><dd>+57 {{ usuario.telefono }}</dd></div>
-                <div><dt>Universidad</dt><dd>{{ usuario.universidad }}</dd></div>
+                {% if usuario.universidad %}<div><dt>Universidad</dt><dd>{{ usuario.universidad }}</dd></div>{% endif %}
             </dl>
             <button class="boton boton-auto" type="submit">Guardar cambios</button>
         </form>
@@ -67,7 +67,9 @@
 
     <section class="tarjeta zona-peligro">
         <h2>Cerrar cuenta</h2>
-        {% if usuario.rol == "Tienda" %}
+        {% if usuario.rol == "Admin" %}
+        <p>Por seguridad, la cuenta de un administrador solo la puede eliminar otro administrador que tenga el permiso «Gestionar administradores».</p>
+        {% elif usuario.rol == "Tienda" %}
         <p>
             Para cerrar la cuenta de tu tienda escríbenos a
             <a href="mailto:{{ CORREO_SOPORTE }}?subject={{ ('Cerrar cuenta de tienda: ' ~ usuario.tienda)|urlencode }}">{{ CORREO_SOPORTE }}</a>
