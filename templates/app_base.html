@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_avatar.html" import avatar %}
 {% block cuerpo %}
 <header class="barra">
     <a class="logo logo-pequeno" href="/">BEE<span>.</span></a>
@@ -10,9 +11,30 @@
             <a href="/estudiante" {% if seccion == "tiendas" %}aria-current="page"{% endif %}>Tiendas</a>
             <a href="/estudiante/pedidos" {% if seccion == "pedidos" %}aria-current="page"{% endif %}>Mis pedidos</a>
         {% endif %}
+        <a href="/configuracion" {% if seccion == "configuracion" %}aria-current="page"{% endif %}>Configuración</a>
     </nav>
     <div class="cuenta">
         <span class="chip">{{ usuario.universidad }}</span>
+
+        <details class="campana" id="campana">
+            <summary aria-label="Notificaciones">
+                <span aria-hidden="true">🔔</span>
+                <span class="contador-campana" id="contador-campana" {% if not sin_leer %}hidden{% endif %}>{{ sin_leer }}</span>
+            </summary>
+            <div class="panel-notificaciones">
+                <div class="panel-cabecera">
+                    <strong>Notificaciones</strong>
+                    <a href="/notificaciones">Ver todas</a>
+                </div>
+                <ul id="lista-notificaciones" class="lista-notificaciones" data-cargada="false">
+                    <li class="notificacion-vacia">Cargando…</li>
+                </ul>
+            </div>
+        </details>
+
+        <a href="/configuracion" class="enlace-avatar" title="Configuración">
+            {{ avatar(usuario.id, usuario.tiene_foto, usuario.foto_version, usuario.nombre, usuario.apellido) }}
+        </a>
         <a class="enlace-salir" href="/logout">Salir</a>
     </div>
 </header>
@@ -20,4 +42,65 @@
     {% include "_mensaje.html" %}
     {% block contenido %}{% endblock %}
 </main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+    // Campana de notificaciones: revisa novedades cada 15 segundos.
+    (function () {
+        const campana = document.getElementById("campana");
+        const contador = document.getElementById("contador-campana");
+        const lista = document.getElementById("lista-notificaciones");
+        const toast = document.getElementById("toast");
+        // En las páginas de pedidos, la página se recarga sola si hay novedades.
+        const recargar = {{ "true" if recargar_con_novedades else "false" }};
+        let ultimaId = null;
+
+        function mostrarContador(n) {
+            contador.textContent = n > 9 ? "9+" : n;
+            contador.hidden = n === 0;
+        }
+
+        function mostrarToast(texto) {
+            toast.textContent = texto;
+            toast.hidden = false;
+            clearTimeout(toast.temporizador);
+            toast.temporizador = setTimeout(function () { toast.hidden = true; }, 6000);
+        }
+
+        async function revisar() {
+            try {
+                const r = await fetch("/notificaciones/resumen", { headers: { "Accept": "application/json" } });
+                if (!r.ok || !r.headers.get("content-type").includes("json")) return;
+                const datos = await r.json();
+                if (ultimaId !== null && datos.ultima_id > ultimaId) {
+                    if (recargar) { location.reload(); return; }
+                    mostrarToast(datos.ultima_texto);
+                    lista.dataset.cargada = "false";
+                }
+                ultimaId = datos.ultima_id;
+                mostrarContador(datos.sin_leer);
+            } catch (e) { /* sin conexión: se intenta en la próxima vuelta */ }
+        }
+
+        async function cargarLista() {
+            const r = await fetch("/notificaciones", { headers: { "Accept": "text/html" } });
+            const html = new DOMParser().parseFromString(await r.text(), "text/html");
+            const items = html.querySelectorAll("#todas-notificaciones > li");
+            lista.replaceChildren(...Array.from(items).slice(0, 8));
+            if (!items.length) lista.innerHTML = '<li class="notificacion-vacia">No tienes notificaciones.</li>';
+            lista.dataset.cargada = "true";
+            mostrarContador(0);  // Abrir la lista las marca como leídas.
+        }
+
+        campana.addEventListener("toggle", function () {
+            if (campana.open && lista.dataset.cargada !== "true") cargarLista();
+        });
+        document.addEventListener("click", function (e) {
+            if (campana.open && !campana.contains(e.target)) campana.open = false;
+        });
+
+        revisar();
+        setInterval(revisar, 15000);
+    })();
+</script>
 {% endblock %}

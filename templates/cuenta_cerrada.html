@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titulo %}Cuenta cerrada{% endblock %}
+{% block clase_body %}pagina-centrada{% endblock %}
+{% block cuerpo %}
+<main class="tarjeta tarjeta-centrada">
+    <div class="logo">BEE<span>.</span></div>
+    <div class="icono-exito" aria-hidden="true">👋</div>
+    <h1>Tu cuenta se cerró</h1>
+    <p class="descripcion">Borramos tus datos de BEE. Gracias por haber hecho parte. Si algún día quieres volver, puedes crear una cuenta nueva.</p>
+    <a href="/registro" class="boton">Crear una cuenta nueva</a>
+</main>
+{% endblock %}

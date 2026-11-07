@@ -34,11 +34,14 @@
 
     <aside class="tarjeta resumen">
         <h2>Tu pedido</h2>
-        <label for="hora_recogida">¿A qué hora lo recoges?</label>
-        <input class="campo" type="time" id="hora_recogida" name="hora_recogida" required>
+        <p class="tiempo-tienda">
+            <span aria-hidden="true">⏱️</span>
+            <span>Listo para recoger en <strong>{{ texto_tiempo(tienda.tiempo_min) }}</strong>
+            {% if tienda.auto_aceptar %}desde que haces el pedido.{% else %}desde que la tienda lo acepta.{% endif %}</span>
+        </p>
         <p class="total"><span>Total</span><strong id="total">$0</strong></p>
         <button class="boton" type="submit">Hacer pedido</button>
-        <p class="ayuda">Pagas al recoger en la tienda.</p>
+        <p class="ayuda">Pagas al recoger en la tienda. Te avisaremos en 🔔 cada vez que tu pedido avance.</p>
     </aside>
 </form>
 <script>

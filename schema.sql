@@ -79,3 +79,45 @@ CREATE TABLE IF NOT EXISTS pedido_items (
 
 CREATE INDEX IF NOT EXISTS pedidos_tienda_idx ON pedidos (tienda_id, estado);
 CREATE INDEX IF NOT EXISTS pedidos_estudiante_idx ON pedidos (estudiante_id);
+
+-- ---------------------------------------------------------------------------
+-- Tiempos de preparación, aceptación de pedidos, notificaciones y perfil.
+-- ---------------------------------------------------------------------------
+
+-- La tienda define en cuánto tiempo se puede recoger un pedido:
+-- tiempo_min = 5 significa "de 5 a 10 minutos", 10 = "de 10 a 15", etc.
+ALTER TABLE tiendas
+    ADD COLUMN IF NOT EXISTS tiempo_min INTEGER NOT NULL DEFAULT 10
+        CHECK (tiempo_min IN (5, 10, 15, 20, 25));
+ALTER TABLE tiendas
+    ADD COLUMN IF NOT EXISTS auto_aceptar BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Ahora la hora de recogida la calcula la tienda (ya no la escribe el estudiante).
+ALTER TABLE pedidos ALTER COLUMN hora_recogida DROP NOT NULL;
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS tiempo_min INTEGER;
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS tiempo_max INTEGER;
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS aceptado_en TIMESTAMPTZ;
+
+-- Si un estudiante cierra su cuenta, sus pedidos pasados se conservan en el
+-- historial de la tienda (sin datos del estudiante).
+ALTER TABLE pedidos ALTER COLUMN estudiante_id DROP NOT NULL;
+ALTER TABLE pedidos DROP CONSTRAINT IF EXISTS pedidos_estudiante_id_fkey;
+ALTER TABLE pedidos
+    ADD CONSTRAINT pedidos_estudiante_id_fkey FOREIGN KEY (estudiante_id)
+        REFERENCES usuarios (id) ON DELETE SET NULL;
+
+-- Foto de perfil (JPEG de 256×256 generado por la aplicación).
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS foto BYTEA;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS foto_actualizada TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS notificaciones (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
+    pedido_id INTEGER REFERENCES pedidos (id) ON DELETE CASCADE,
+    texto VARCHAR(200) NOT NULL,
+    leida BOOLEAN NOT NULL DEFAULT FALSE,
+    creada_en TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS notificaciones_usuario_idx
+    ON notificaciones (usuario_id, leida, id DESC);

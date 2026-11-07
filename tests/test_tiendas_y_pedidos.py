@@ -82,19 +82,19 @@ def test_flujo_completo_de_pedido(cliente, nuevo_cliente, tienda_usb):
 
     respuesta = alumno.post(
         f"/estudiante/tiendas/{tienda_id}/pedido",
-        data={f"cantidad_{empanada['id']}": "2", f"cantidad_{tinto['id']}": "1",
-              "hora_recogida": "10:30"},
+        data={f"cantidad_{empanada['id']}": "2", f"cantidad_{tinto['id']}": "1"},
     )
     assert str(respuesta.url).endswith("/estudiante/pedidos")
     assert "$6.500" in respuesta.text  # 2 × 2.500 + 1.500
+    assert "Esperando confirmación" in respuesta.text
 
     panel = tienda_usb.get("/tienda").text
-    assert "2 × Empanada" in panel and "10:30" in panel and "Ana Pérez" in panel
+    assert "2 × Empanada" in panel and "Ana Pérez" in panel and "Aceptar pedido" in panel
 
     with conectar() as conexion:
         pedido_id = conexion.execute("SELECT id FROM pedidos").fetchone()["id"]
-    tienda_usb.post(f"/tienda/pedidos/{pedido_id}/estado", data={"estado": "preparando"})
-    tienda_usb.post(f"/tienda/pedidos/{pedido_id}/estado", data={"estado": "listo"})
+    for estado in ("aceptado", "preparando", "listo"):
+        tienda_usb.post(f"/tienda/pedidos/{pedido_id}/estado", data={"estado": estado})
     assert "Listo para recoger" in alumno.get("/estudiante/pedidos").text
 
     # No se puede saltar de "listo" a "cancelado".
@@ -111,7 +111,7 @@ def test_estudiante_de_otra_universidad_no_puede_pedir(cliente, nuevo_cliente, t
     assert alumno.get(f"/estudiante/tiendas/{tienda_id}").status_code == 403
     respuesta = alumno.post(
         f"/estudiante/tiendas/{tienda_id}/pedido",
-        data={f"cantidad_{producto('Tinto')['id']}": "1", "hora_recogida": "10:30"},
+        data={f"cantidad_{producto('Tinto')['id']}": "1"},
     )
     assert respuesta.status_code == 403
     assert "no pertenece a tu universidad" in respuesta.text
@@ -126,7 +126,7 @@ def test_no_se_pide_un_producto_agotado(cliente, nuevo_cliente, tienda_usb):
     with conectar() as conexion:
         tienda_id = conexion.execute("SELECT id FROM tiendas").fetchone()["id"]
     respuesta = alumno.post(f"/estudiante/tiendas/{tienda_id}/pedido",
-                            data={f"cantidad_{tinto['id']}": "1", "hora_recogida": "10:30"})
+                            data={f"cantidad_{tinto['id']}": "1"})
     assert "ya no está disponible" in respuesta.text
     with conectar() as conexion:
         assert conexion.execute("SELECT COUNT(*) AS n FROM pedidos").fetchone()["n"] == 0
