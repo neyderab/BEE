@@ -232,3 +232,17 @@ def test_universidad_de_otra_tienda_sigue_bloqueada(escenario, cliente, nuevo_cl
     andes = nuevo_cliente()
     entrar(andes, "3200000003")
     assert pedir(andes).status_code == 403
+
+
+# ---------- Íconos y caché del navegador ----------
+
+def test_iconos_tienen_tamano_propio_y_estilos_versionados(escenario):
+    """Si el navegador usa estilos viejos guardados, los íconos no deben crecer."""
+    import re
+
+    _, alumno = escenario
+    pagina = alumno.get(f"/estudiante/tiendas/{ids()['tienda']}").text
+    svgs = re.findall(r"<svg[^>]*>", pagina)
+    assert svgs and all('width="' in s and 'height="' in s for s in svgs)
+    assert re.search(r'href="/static/styles\.css\?v=\d+"', pagina)
+    assert re.search(r'src="/static/avisos\.js\?v=\d+"', pagina)

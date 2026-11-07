@@ -1,6 +1,7 @@
 {# Íconos de línea (24×24) para la barra inferior y botones. #}
-{% macro icono(nombre, clase="icono") -%}
-<svg class="{{ clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+{# width/height dan un tamaño aunque los estilos no hayan cargado; el CSS lo ajusta. #}
+{% macro icono(nombre, clase="icono", tamano=22) -%}
+<svg class="{{ clase }}" width="{{ tamano }}" height="{{ tamano }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 {%- if nombre == "tienda" %}<path d="M3.5 9.5 5 4h14l1.5 5.5"/><path d="M3.5 9.5a2.8 2.8 0 0 0 5.6 0 2.9 2.9 0 0 0 5.8 0 2.8 2.8 0 0 0 5.6 0"/><path d="M5 12.5V20h14v-7.5"/><path d="M10 20v-4.5h4V20"/>
 {%- elif nombre == "pedidos" %}<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>
 {%- elif nombre == "campana" %}<path d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2h16z"/><path d="M10 21h4"/>

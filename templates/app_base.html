@@ -88,5 +88,5 @@
 
 <div class="toast" id="toast" role="status" hidden></div>
 <div id="config-avisos" data-recargar="{{ '1' if recargar_con_novedades else '0' }}" hidden></div>
-<script src="/static/avisos.js" defer></script>
+<script src="{{ estatico('avisos.js') }}" defer></script>
 {% endblock %}
