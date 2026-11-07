@@ -22,11 +22,25 @@ from app.pedidos import (
 )
 
 CARPETA = Path(__file__).resolve().parent.parent / "templates"
+ESTATICOS = Path(__file__).resolve().parent.parent / "static"
 
 # Correo al que las tiendas escriben para cerrar su cuenta.
 CORREO_SOPORTE = "admin@usebeeapp.com"
 
 templates = Jinja2Templates(directory=CARPETA)
+
+
+def estatico(archivo: str) -> str:
+    """URL de un archivo de static/ con su versión (?v=...).
+
+    La versión cambia cada vez que se modifica el archivo, así el navegador
+    descarga los estilos nuevos en vez de usar los que guardó antes.
+    """
+    try:
+        version = int((ESTATICOS / archivo).stat().st_mtime)
+    except FileNotFoundError:
+        version = 0
+    return f"/static/{archivo}?v={version}"
 
 
 def pesos(valor: int) -> str:
@@ -66,6 +80,7 @@ templates.env.globals.update(
     P=P,
     tiene_permiso=P.tiene,
     campo_csrf=campo_csrf,
+    estatico=estatico,
 )
 
 
