@@ -1,13 +1,15 @@
 """Registro, inicio de sesión, verificación y perfil."""
 
-import re
+from pathlib import Path
 
 import psycopg
 from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse
 
-from app.db import conectar, listar_universidades, universidad_existe
+from app.db import conectar, listar_universidades
 from app.plantillas import render
+from app.usuarios import insertar_usuario
+from app.validacion import leer_universidad, telefono_valido, validar_texto
 from app.sesion import (
     ESTUDIANTE,
     ROLES,
@@ -20,37 +22,28 @@ from app.sesion import (
 
 router = APIRouter()
 
+# Página de presentación (la misma que publica GitHub Pages desde docs/).
+DOCS = Path(__file__).resolve().parent.parent.parent / "docs"
+PRESENTACION = DOCS / "index.html"
+
 # Código fijo de prueba mientras no exista el envío real por SMS.
 CODIGO_PRUEBA = "123456"
 
-
-def telefono_valido(telefono: str) -> bool:
-    return re.fullmatch(r"\d{10}", telefono) is not None
-
-
-def leer_universidad(valor: str, errores: dict) -> int | None:
-    try:
-        universidad_id = int(valor)
-    except ValueError:
-        universidad_id = None
-    if universidad_id is None or not universidad_existe(universidad_id):
-        errores["universidad_id"] = "Selecciona tu universidad."
-        return None
-    return universidad_id
-
-
-def validar_texto(valor: str, campo: str, etiqueta: str, maximo: int, errores: dict):
-    if not valor:
-        errores[campo] = f"Escribe {etiqueta}."
-    elif len(valor) > maximo:
-        errores[campo] = f"Máximo {maximo} caracteres."
+# Teléfono que pidió el código. Se guarda en la sesión (firmada) y no en el
+# formulario, para que nadie pueda cambiarlo y entrar a la cuenta de otro.
+CLAVE_TELEFONO = "telefono_por_verificar"
 
 
 @router.get("/")
 def inicio(request: Request):
+    """Con sesión, lleva al panel; sin sesión, muestra la página de presentación."""
     usuario_id = request.session.get("usuario_id")
     usuario = cargar_usuario(usuario_id) if usuario_id else None
-    return RedirectResponse(pagina_inicio(usuario) if usuario else "/login", 303)
+    if usuario and usuario["activo"]:
+        return RedirectResponse(pagina_inicio(usuario), 303)
+    if PRESENTACION.exists():
+        return FileResponse(PRESENTACION)
+    return RedirectResponse("/login", 303)
 
 
 # ---------- Registro ----------
@@ -101,19 +94,15 @@ def registrar_usuario(
     if not errores:
         try:
             with conectar() as conexion:
-                usuario = conexion.execute(
-                    """
-                    INSERT INTO usuarios (telefono, nombre, apellido, rol, universidad_id)
-                    VALUES (%s, %s, %s, %s, %s)
-                    RETURNING id
-                    """,
-                    (valores["telefono"], valores["nombre"], valores["apellido"], rol, universidad),
-                ).fetchone()
-                if rol == TIENDA:
-                    conexion.execute(
-                        "INSERT INTO tiendas (usuario_id, nombre) VALUES (%s, %s)",
-                        (usuario["id"], valores["nombre_tienda"]),
-                    )
+                insertar_usuario(
+                    conexion,
+                    valores["telefono"],
+                    valores["nombre"],
+                    valores["apellido"],
+                    rol,
+                    universidad,
+                    valores["nombre_tienda"],
+                )
         except psycopg.errors.UniqueViolation:
             errores["telefono"] = "Este teléfono ya está registrado. Inicia sesión."
 
@@ -151,17 +140,30 @@ def iniciar_sesion(request: Request, telefono: str = Form("")):
 
     with conectar() as conexion:
         usuario = conexion.execute(
-            "SELECT id FROM usuarios WHERE telefono = %s", (telefono,)
+            "SELECT id, activo FROM usuarios WHERE telefono = %s", (telefono,)
         ).fetchone()
 
     if usuario is None:
         return render(request, "cuenta_no_encontrada.html", status_code=404)
+    if not usuario["activo"]:
+        return render(
+            request,
+            "login.html",
+            status_code=403,
+            error="Esta cuenta está suspendida. Comunícate con el equipo de BEE.",
+            telefono=telefono,
+        )
 
+    request.session[CLAVE_TELEFONO] = telefono
     return render(request, "verificar.html", telefono=telefono, codigo_prueba=CODIGO_PRUEBA)
 
 
 @router.post("/verificar-codigo")
-def verificar_codigo(request: Request, telefono: str = Form(""), codigo: str = Form("")):
+def verificar_codigo(request: Request, codigo: str = Form("")):
+    telefono = request.session.get(CLAVE_TELEFONO)
+    if not telefono:
+        return RedirectResponse("/login", 303)
+
     if codigo.strip() != CODIGO_PRUEBA:
         return render(
             request,
@@ -174,11 +176,12 @@ def verificar_codigo(request: Request, telefono: str = Form(""), codigo: str = F
 
     with conectar() as conexion:
         usuario = conexion.execute(
-            "SELECT id FROM usuarios WHERE telefono = %s", (telefono.strip(),)
+            "SELECT id FROM usuarios WHERE telefono = %s AND activo", (telefono,)
         ).fetchone()
 
     if usuario is None:
-        return render(request, "cuenta_no_encontrada.html", status_code=404)
+        request.session.pop(CLAVE_TELEFONO, None)
+        return RedirectResponse("/login", 303)
 
     request.session.clear()
     request.session["usuario_id"] = usuario["id"]

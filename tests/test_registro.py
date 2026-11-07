@@ -82,9 +82,34 @@ def test_login_redirige_segun_rol(cliente, nuevo_cliente):
 
 def test_codigo_incorrecto(cliente):
     registrar(cliente, "3001112233")
-    respuesta = cliente.post("/verificar-codigo", data={"telefono": "3001112233", "codigo": "000000"})
+    cliente.post("/login", data={"telefono": "3001112233"})
+    respuesta = cliente.post("/verificar-codigo", data={"codigo": "000000"})
     assert respuesta.status_code == 400
     assert "no es correcto" in respuesta.text
+
+
+def test_no_se_puede_entrar_a_otra_cuenta_cambiando_el_telefono(cliente, nuevo_cliente):
+    registrar(cliente, "3001112233")
+    registrar(cliente, "3004445566", rol="Tienda", nombre_tienda="Café USB")
+    atacante = nuevo_cliente()
+    atacante.post("/login", data={"telefono": "3001112233"})
+    # Antes el teléfono viajaba en un campo oculto; ahora se ignora.
+    respuesta = atacante.post(
+        "/verificar-codigo", data={"telefono": "3004445566", "codigo": "123456"}
+    )
+    assert str(respuesta.url).endswith("/estudiante")
+
+
+def test_verificar_sin_pedir_codigo_vuelve_al_login(cliente):
+    respuesta = cliente.post("/verificar-codigo", data={"codigo": "123456"})
+    assert str(respuesta.url).endswith("/login")
+
+
+def test_inicio_muestra_la_presentacion_sin_sesion(cliente):
+    respuesta = cliente.get("/")
+    assert "Pide antes" in respuesta.text
+    assert cliente.get("/styles.css").status_code == 200
+    assert cliente.get("/favicon.png").headers["content-type"] == "image/png"
 
 
 def test_paginas_privadas_piden_sesion(cliente):

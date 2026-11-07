@@ -1,0 +1,17 @@
+{# Casillas de permisos. Solo se pueden marcar los que tiene quien edita. #}
+{% macro casillas(permisos, marcados, actor) %}
+<fieldset class="casillas-permisos">
+    <legend class="sr-only">Permisos</legend>
+    {% for clave, (nombre, descripcion) in permisos.items() %}
+    {% set puede = clave in actor.permisos %}
+    <label class="casilla {% if not puede %}casilla-bloqueada{% endif %}">
+        <input type="checkbox" name="permisos" value="{{ clave }}"
+               {% if clave in marcados %}checked{% endif %} {% if not puede %}disabled{% endif %}>
+        <span>
+            <strong>{{ nombre }}</strong>
+            <small>{{ descripcion }}{% if not puede %} · No puedes asignarlo porque no lo tienes.{% endif %}</small>
+        </span>
+    </label>
+    {% endfor %}
+</fieldset>
+{% endmacro %}

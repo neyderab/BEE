@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
+from app import permisos as P
 from app.pedidos import ACCIONES, ESTADOS, PASOS, TIEMPOS, contar_sin_leer, texto_tiempo
 
 CARPETA = Path(__file__).resolve().parent.parent / "templates"
@@ -49,6 +50,8 @@ templates.env.globals.update(
     texto_tiempo=texto_tiempo,
     iniciales=iniciales,
     CORREO_SOPORTE=CORREO_SOPORTE,
+    P=P,
+    tiene_permiso=P.tiene,
 )
 
 

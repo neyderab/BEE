@@ -1,0 +1,33 @@
+{% extends "app_base.html" %}
+{% block titulo %}Universidades{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo">Administración</p>
+        <h1>Universidades</h1>
+    </div>
+</div>
+
+<form class="tarjeta filtros" action="/admin/universidades" method="post">
+    <div class="campo-con-error">
+        <input class="campo {% if errores.nombre %}con-error{% endif %}" name="nombre" value="{{ valores.nombre or '' }}" maxlength="120" placeholder="Nombre de la universidad" aria-label="Nombre de la universidad" required>
+        {% if errores.nombre %}<p class="error-campo">{{ errores.nombre }}</p>{% endif %}
+    </div>
+    <div class="campo-con-error">
+        <input class="campo {% if errores.ciudad %}con-error{% endif %}" name="ciudad" value="{{ valores.ciudad or '' }}" maxlength="60" placeholder="Ciudad" aria-label="Ciudad" required>
+        {% if errores.ciudad %}<p class="error-campo">{{ errores.ciudad }}</p>{% endif %}
+    </div>
+    <button class="boton boton-auto" type="submit">Agregar universidad</button>
+</form>
+
+<div class="tarjeta tabla-contenedor">
+    <table class="tabla">
+        <thead><tr><th>Universidad</th><th>Ciudad</th><th>Estudiantes</th><th>Tiendas</th></tr></thead>
+        <tbody>
+            {% for u in universidades %}
+            <tr><td><strong>{{ u.nombre }}</strong></td><td>{{ u.ciudad }}</td><td>{{ u.estudiantes }}</td><td>{{ u.tiendas }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -76,24 +76,58 @@ Estas entidades sirven como base conceptual para organizar la información y las
 - **Vista del estudiante** (`/estudiante`): ve solo las tiendas de **su universidad** con su tiempo de preparación, hace pedidos y sigue cada uno con una barra de progreso que indica entre qué horas pasar a recogerlo.
 - **Notificaciones:** la campana 🔔 avisa al estudiante cuando la tienda acepta, prepara, termina o cancela su pedido, y a la tienda cuando llega un pedido nuevo. Las páginas de pedidos se actualizan solas.
 - **Configuración** (`/configuracion`): ambos usuarios cambian su foto de perfil y su nombre (la tienda también el nombre de la tienda). El estudiante puede cerrar su cuenta desde ahí; la tienda debe escribir a admin@useapp.com.
+- **Administración** (`/admin`): los administradores crean estudiantes, tiendas y otros administradores, editan datos, suspenden o eliminan cuentas, ven los pedidos de todas las tiendas y agregan universidades. Cada administrador solo puede hacer lo que sus **permisos** le autorizan (ver más abajo).
 - **Regla de universidad:** un estudiante solo puede hacer pedidos en tiendas de su misma universidad. El servidor lo verifica en cada pedido.
+
+## Administradores y permisos
+
+Nadie puede registrarse como administrador desde la web. El **primer administrador** se crea desde la terminal, con la base de datos configurada en `.env`; recibe todos los permisos:
+
+```bash
+python crear_admin.py 3001234567 Nombre Apellido
+```
+
+Después, ese administrador entra con su teléfono y crea a los demás en **Usuarios → Nuevo usuario**, marcando los permisos de cada uno:
+
+| Permiso | Qué permite |
+|---|---|
+| Ver usuarios | Consultar la lista de usuarios y sus datos |
+| Crear usuarios | Registrar estudiantes y tiendas |
+| Editar usuarios | Cambiar nombres y universidad; suspender o reactivar cuentas |
+| Eliminar usuarios | Borrar cuentas (no se permite si tienen pedidos en curso) |
+| Gestionar administradores | Crear otros administradores y asignarles permisos |
+| Ver pedidos | Consultar los pedidos de todas las tiendas |
+| Gestionar universidades | Agregar universidades nuevas |
+
+Reglas de seguridad:
+- Nadie puede dar un permiso que no tiene.
+- Nadie puede cambiar sus propios permisos, suspenderse ni eliminarse.
+- Para crear, editar, suspender o eliminar a otro administrador se necesita «Gestionar administradores». Así siempre queda al menos un administrador con ese permiso.
 
 ## Estructura del proyecto
 
 ```text
 BEE/
 ├── main.py                 # Crea la app FastAPI y registra las rutas
-├── schema.sql              # Tablas y universidades (se aplica al iniciar)
+├── schema.sql              # Tablas, universidades y descripciones (se aplica al iniciar)
+├── crear_admin.py          # Crea el primer administrador
+├── render.yaml             # Configuración para publicar en Render
 ├── app/
 │   ├── db.py               # Conexión a PostgreSQL
 │   ├── sesion.py           # Usuario en sesión y permisos por rol
+│   ├── permisos.py         # Permisos de los administradores
+│   ├── usuarios.py         # Creación de usuarios
+│   ├── validacion.py       # Validaciones de formularios
 │   ├── plantillas.py       # Jinja2 y mensajes
 │   ├── pedidos.py          # Estados de pedidos, tiempos y notificaciones
 │   └── rutas/
 │       ├── auth.py         # Registro, login, verificación, perfil
 │       ├── tienda.py       # Panel de la tienda
 │       ├── estudiante.py   # Tiendas y pedidos del estudiante
-│       └── cuenta.py       # Notificaciones, configuración y foto
+│       ├── cuenta.py       # Notificaciones, configuración y foto
+│       └── admin.py        # Panel de administración
+├── scripts/
+│   └── generar_diccionario.py  # Regenera docs/diccionario.html desde la base
 ├── templates/              # Páginas HTML (Jinja2)
 ├── static/styles.css       # Estilos compartidos
 ├── tests/                  # Pruebas automáticas (pytest)
@@ -146,6 +180,27 @@ Las pruebas **borran y recrean todas las tablas**, así que usa una base de dato
 
 ```bash
 TEST_DB_HOST=localhost TEST_DB_USER=postgres TEST_DB_PASSWORD=tu_clave TEST_DB_NAME=bee_test TEST_DB_SSLMODE=disable pytest
+```
+
+## Publicar la aplicación
+
+La aplicación también sirve la página de presentación (`docs/`) en la raíz. Si **usebeeapp.com** apunta a la aplicación publicada, la portada sigue igual y los botones **Iniciar sesión** y **Registrarse** funcionan. Mientras el dominio apunte a GitHub Pages, esos botones no tienen a dónde llevar.
+
+Pasos en [Render](https://render.com):
+
+1. **New → Blueprint** y elige este repositorio (usa `render.yaml`).
+2. Completa `DB_HOST`, `DB_USER`, `DB_PASSWORD` y `DB_NAME` con la base PostgreSQL que ya usan. `SECRET_KEY` se genera sola.
+3. Cuando esté funcionando, crea el primer administrador desde la pestaña **Shell** del servicio: `python crear_admin.py 3001234567 Nombre Apellido`.
+4. En **Settings → Custom Domains** agrega `usebeeapp.com` y cambia los registros DNS del dominio como indique Render. Después desactiva GitHub Pages en el repositorio.
+
+> ⚠️ Antes de publicar para usuarios reales hay que reemplazar el código de prueba `123456` por el envío real de SMS. Con el código fijo, cualquiera que conozca un teléfono puede entrar a esa cuenta, incluidas las de administrador.
+
+## Diccionario de datos
+
+`docs/diccionario.html` se genera desde la base de datos real, con las descripciones de `schema.sql`. Después de cambiar el esquema, actualízalo con:
+
+```bash
+python scripts/generar_diccionario.py
 ```
 
 ## Página del proyecto

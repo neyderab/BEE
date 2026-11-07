@@ -1,0 +1,45 @@
+{% extends "app_base.html" %}
+{% block titulo %}Pedidos{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo">Administración</p>
+        <h1>Pedidos de todas las tiendas</h1>
+    </div>
+</div>
+
+<form class="tarjeta filtros" method="get">
+    <select class="campo" name="universidad_id" aria-label="Universidad">
+        <option value="">Todas las universidades</option>
+        {% for u in universidades %}<option value="{{ u.id }}" {% if filtros.universidad_id == u.id|string %}selected{% endif %}>{{ u.nombre }}</option>{% endfor %}
+    </select>
+    <select class="campo" name="estado" aria-label="Estado">
+        <option value="">Todos los estados</option>
+        {% for clave, nombre in ESTADOS.items() %}<option value="{{ clave }}" {% if filtros.estado == clave %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+    </select>
+    <button class="boton boton-auto" type="submit">Filtrar</button>
+</form>
+
+{% if pedidos %}
+<div class="tarjeta tabla-contenedor">
+    <table class="tabla">
+        <thead><tr><th>Pedido</th><th>Fecha</th><th>Tienda</th><th>Universidad</th><th>Estudiante</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+            {% for p in pedidos %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td>{{ p.creado_en|fecha_corta }}</td>
+                <td>{{ p.tienda }}</td>
+                <td>{{ p.universidad or "—" }}</td>
+                <td>{% if p.estudiante_id %}{{ p.nombre }} {{ p.apellido }}{% else %}<em>Cuenta eliminada</em>{% endif %}</td>
+                <td>{{ p.total|pesos }}</td>
+                <td><span class="insignia insignia-{{ p.estado }}">{{ ESTADOS[p.estado] }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="vacio"><p>No hay pedidos con esos filtros.</p></div>
+{% endif %}
+{% endblock %}

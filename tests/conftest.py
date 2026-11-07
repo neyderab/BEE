@@ -81,4 +81,4 @@ def registrar(cliente, telefono, rol="Estudiante", universidad=USB, **extra):
 
 def entrar(cliente, telefono):
     cliente.post("/login", data={"telefono": telefono})
-    return cliente.post("/verificar-codigo", data={"telefono": telefono, "codigo": "123456"})
+    return cliente.post("/verificar-codigo", data={"codigo": "123456"})

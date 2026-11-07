@@ -6,7 +6,15 @@ from app.db import conectar
 
 ESTUDIANTE = "Estudiante"
 TIENDA = "Tienda"
+ADMIN = "Admin"
+# Roles que cualquiera puede elegir al registrarse. Los administradores solo
+# los crea otro administrador.
 ROLES = (ESTUDIANTE, TIENDA)
+TODOS_LOS_ROLES = (ESTUDIANTE, TIENDA, ADMIN)
+
+
+class SinPermiso(Exception):
+    """El usuario no tiene permiso para ver esta página (main.py la muestra)."""
 
 
 def redirigir(url: str) -> HTTPException:
@@ -23,7 +31,11 @@ def cargar_usuario(usuario_id: int) -> dict | None:
                    u.foto IS NOT NULL AS tiene_foto,
                    COALESCE(EXTRACT(EPOCH FROM u.foto_actualizada)::BIGINT, 0) AS foto_version,
                    t.id AS tienda_id, t.nombre AS tienda,
-                   t.tiempo_min, t.auto_aceptar
+                   t.tiempo_min, t.auto_aceptar, u.activo,
+                   ARRAY(
+                       SELECT permiso FROM permisos_usuario
+                       WHERE usuario_id = u.id ORDER BY permiso
+                   ) AS permisos
             FROM usuarios u
             LEFT JOIN universidades un ON un.id = u.universidad_id
             LEFT JOIN tiendas t ON t.usuario_id = u.id
@@ -34,6 +46,8 @@ def cargar_usuario(usuario_id: int) -> dict | None:
 
 
 def perfil_completo(usuario: dict) -> bool:
+    if usuario["rol"] == ADMIN:
+        return True  # Los administradores no pertenecen a una universidad.
     if usuario["universidad_id"] is None:
         return False
     if usuario["rol"] == TIENDA and usuario["tienda_id"] is None:
@@ -48,6 +62,8 @@ def pagina_inicio(usuario: dict) -> str:
         return "/tienda"
     if usuario["rol"] == ESTUDIANTE:
         return "/estudiante"
+    if usuario["rol"] == ADMIN:
+        return "/admin"
     return "/logout"  # Rol desconocido: evita un ciclo de redirecciones.
 
 
@@ -55,7 +71,7 @@ def usuario_en_sesion(request: Request) -> dict:
     """Dependencia: exige una sesión iniciada."""
     usuario_id = request.session.get("usuario_id")
     usuario = cargar_usuario(usuario_id) if usuario_id else None
-    if usuario is None:
+    if usuario is None or not usuario["activo"]:
         request.session.clear()
         raise redirigir("/login")
     request.state.usuario = usuario
@@ -75,3 +91,19 @@ def estudiante_en_sesion(request: Request) -> dict:
 
 def tienda_en_sesion(request: Request) -> dict:
     return _exigir_rol(request, TIENDA)
+
+
+def admin_en_sesion(request: Request) -> dict:
+    return _exigir_rol(request, ADMIN)
+
+
+def requiere_permiso(permiso: str):
+    """Dependencia: exige un administrador con `permiso`."""
+
+    def dependencia(request: Request) -> dict:
+        usuario = admin_en_sesion(request)
+        if permiso not in usuario["permisos"]:
+            raise SinPermiso()
+        return usuario
+
+    return dependencia

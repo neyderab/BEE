@@ -7,6 +7,11 @@
         {% if usuario.rol == "Tienda" %}
             <a href="/tienda" {% if seccion == "pedidos" %}aria-current="page"{% endif %}>Pedidos</a>
             <a href="/tienda/menu" {% if seccion == "menu" %}aria-current="page"{% endif %}>Menú y precios</a>
+        {% elif usuario.rol == "Admin" %}
+            <a href="/admin" {% if seccion == "panel" %}aria-current="page"{% endif %}>Panel</a>
+            {% if tiene_permiso(usuario, P.VER_USUARIOS) %}<a href="/admin/usuarios" {% if seccion == "usuarios" %}aria-current="page"{% endif %}>Usuarios</a>{% endif %}
+            {% if tiene_permiso(usuario, P.VER_PEDIDOS) %}<a href="/admin/pedidos" {% if seccion == "pedidos" %}aria-current="page"{% endif %}>Pedidos</a>{% endif %}
+            {% if tiene_permiso(usuario, P.GESTIONAR_UNIVERSIDADES) %}<a href="/admin/universidades" {% if seccion == "universidades" %}aria-current="page"{% endif %}>Universidades</a>{% endif %}
         {% else %}
             <a href="/estudiante" {% if seccion == "tiendas" %}aria-current="page"{% endif %}>Tiendas</a>
             <a href="/estudiante/pedidos" {% if seccion == "pedidos" %}aria-current="page"{% endif %}>Mis pedidos</a>
@@ -14,7 +19,8 @@
         <a href="/configuracion" {% if seccion == "configuracion" %}aria-current="page"{% endif %}>Configuración</a>
     </nav>
     <div class="cuenta">
-        <span class="chip">{{ usuario.universidad }}</span>
+        {% if usuario.rol == "Admin" %}<span class="chip chip-admin">Administrador</span>
+        {% elif usuario.universidad %}<span class="chip">{{ usuario.universidad }}</span>{% endif %}
 
         <details class="campana" id="campana">
             <summary aria-label="Notificaciones">

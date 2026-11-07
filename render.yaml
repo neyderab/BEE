@@ -1,0 +1,30 @@
+# Configuración para publicar BEE en Render (https://render.com).
+# En Render: New → Blueprint → elige este repositorio. Después completa las
+# variables DB_* con los datos de la base PostgreSQL que ya usan.
+services:
+  - type: web
+    name: bee
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips "*"
+    healthCheckPath: /login
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: SECRET_KEY
+        generateValue: true
+      - key: COOKIE_SEGURA
+        value: "1"
+      - key: DB_SSLMODE
+        value: require
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false

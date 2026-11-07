@@ -11,7 +11,6 @@
 </div>
 
 <form action="/verificar-codigo" method="post">
-    <input type="hidden" name="telefono" value="{{ telefono }}">
     <label for="codigo">Código de seis dígitos</label>
     <input class="campo campo-codigo {% if error %}con-error{% endif %}" type="text" id="codigo"
            name="codigo" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
