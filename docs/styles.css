@@ -1,6 +1,6 @@
 /* =====================================================
    BEE - PROYECTO DE GRADO
-   DISEÃ‘O PROFESIONAL
+   DISEÑO PROFESIONAL
 ===================================================== */
 
 
@@ -45,7 +45,7 @@
 
 
 /* =====================================================
-   CONFIGURACIÃ“N GENERAL
+   CONFIGURACIÓN GENERAL
 ===================================================== */
 
 * {
@@ -189,7 +189,7 @@ a {
 
 
 /* =====================================================
-   MENÃš
+   MENÚ
 ===================================================== */
 
 
@@ -609,7 +609,7 @@ nav a.btn-primary:hover {
 
 
 /* =====================================================
-   TÃTULOS
+   TÍTULOS
 ===================================================== */
 
 .section-title {
@@ -954,6 +954,25 @@ nav a.btn-primary:hover {
 }
 
 
+.member-initials {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 56px;
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+    color: var(--teal-dark);
+
+}
+
+
 .member-photo img {
 
     width: 100%;
@@ -977,6 +996,21 @@ nav a.btn-primary:hover {
 .member-info {
 
     padding: 22px;
+
+}
+
+
+.member-info h4 {
+
+    margin-top: 6px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    line-height: 1.45;
+
+    color: var(--text);
 
 }
 
