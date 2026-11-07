@@ -1,4 +1,4 @@
-"""Crea el primer administrador de BEE (con todos los permisos).
+"""Crea el primer administrador de Bee (con todos los permisos).
 
 Los administradores no se pueden registrar desde la web: el primero se crea
 con este script y después ese administrador crea a los demás desde /admin.

@@ -2,11 +2,11 @@
 
 **Pide antes. Recoge sin fila.**
 
-BEE es un proyecto de desarrollo de software que busca mejorar la experiencia de compra dentro de las universidades mediante una plataforma que permite a los estudiantes consultar productos, realizar pedidos anticipadamente y recogerlos en un horario seleccionado, reduciendo los tiempos de espera en las tiendas universitarias.
+Bee es un proyecto de desarrollo de software que busca mejorar la experiencia de compra dentro de las universidades mediante una plataforma que permite a los estudiantes consultar productos, realizar pedidos anticipadamente y recogerlos en un horario seleccionado, reduciendo los tiempos de espera en las tiendas universitarias.
 
 ##  Descripción del proyecto
 
-Durante los descansos universitarios, los estudiantes suelen encontrar filas y tiempos de espera en las tiendas y cafeterías del campus. BEE propone una alternativa digital para organizar las compras de manera rápida, sencilla y eficiente.
+Durante los descansos universitarios, los estudiantes suelen encontrar filas y tiempos de espera en las tiendas y cafeterías del campus. Bee propone una alternativa digital para organizar las compras de manera rápida, sencilla y eficiente.
 
 La plataforma busca conectar a los estudiantes con las tiendas disponibles dentro de su universidad, facilitando la consulta de productos y la gestión de pedidos.
 
@@ -75,7 +75,7 @@ Estas entidades sirven como base conceptual para organizar la información y las
   - En "Menú y precios" crea menús, agrega productos con precio, los edita y los marca como agotados.
 - **Vista del estudiante** (`/estudiante`): ve solo las tiendas de **su universidad** con su tiempo de preparación, hace pedidos y sigue cada uno con una barra de progreso que indica entre qué horas pasar a recogerlo.
 - **Notificaciones:** la campana 🔔 avisa al estudiante cuando la tienda acepta, prepara, termina o cancela su pedido, y a la tienda cuando llega un pedido nuevo. Las páginas de pedidos se actualizan solas.
-- **Configuración** (`/configuracion`): ambos usuarios cambian su foto de perfil y su nombre (la tienda también el nombre de la tienda). El estudiante puede cerrar su cuenta desde ahí; la tienda debe escribir a admin@useapp.com.
+- **Configuración** (`/configuracion`): ambos usuarios cambian su foto de perfil y su nombre (la tienda también el nombre de la tienda). El estudiante puede cerrar su cuenta desde ahí; la tienda debe escribir a admin@usebeeapp.com.
 - **Administración** (`/admin`): los administradores crean estudiantes, tiendas y otros administradores, editan datos, suspenden o eliminan cuentas, ven los pedidos de todas las tiendas y agregan universidades. Cada administrador solo puede hacer lo que sus **permisos** le autorizan (ver más abajo).
 - **Regla de universidad:** un estudiante solo puede hacer pedidos en tiendas de su misma universidad. El servidor lo verifica en cada pedido.
 
@@ -233,8 +233,8 @@ Bee busca evolucionar hacia una plataforma que facilite la interacción entre es
 
 **En desarrollo.**
 
-BEE continúa en construcción como proyecto académico de desarrollo de software.
+Bee continúa en construcción como proyecto académico de desarrollo de software.
 
 ---
 
-*BEE — Buy, Enjoy & Exit. Pide antes. Recoge sin fila.*
+*Bee — Buy, Enjoy & Exit. Pide antes. Recoge sin fila.*

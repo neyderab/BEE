@@ -14,7 +14,7 @@ CARPETA = Path(__file__).resolve().parent.parent / "templates"
 ZONA_HORARIA = ZoneInfo("America/Bogota")
 
 # Correo al que las tiendas escriben para cerrar su cuenta.
-CORREO_SOPORTE = "admin@useapp.com"
+CORREO_SOPORTE = "admin@usebeeapp.com"
 
 templates = Jinja2Templates(directory=CARPETA)
 

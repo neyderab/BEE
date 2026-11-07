@@ -1,4 +1,4 @@
-/* Estilos compartidos de la aplicación BEE. */
+/* Estilos compartidos de la aplicación Bee. */
 
 :root {
     --amarillo: #ffdf35;
@@ -122,6 +122,23 @@ a {
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+.volver-inicio {
+    align-self: flex-start;
+    margin-bottom: 22px;
+    padding: 8px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 20px;
+    color: var(--texto-suave);
+    font-size: 13px;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.volver-inicio:hover {
+    border-color: var(--tinta);
+    color: var(--tinta);
 }
 
 .formulario h2 {

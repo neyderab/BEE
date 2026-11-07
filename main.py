@@ -29,7 +29,7 @@ async def ciclo_de_vida(app: FastAPI):
     yield
 
 
-app = FastAPI(title="BEE", lifespan=ciclo_de_vida)
+app = FastAPI(title="Bee", lifespan=ciclo_de_vida)
 # En producción (HTTPS) define COOKIE_SEGURA=1 para que la cookie de sesión
 # solo viaje cifrada.
 app.add_middleware(

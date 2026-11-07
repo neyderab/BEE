@@ -1,4 +1,4 @@
-# Configuración para publicar BEE en Render (https://render.com).
+# Configuración para publicar Bee en Render (https://render.com).
 # En Render: New → Blueprint → elige este repositorio. Después completa las
 # variables DB_* con los datos de la base PostgreSQL que ya usan.
 services:

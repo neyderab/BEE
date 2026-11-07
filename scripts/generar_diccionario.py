@@ -156,7 +156,7 @@ def main() -> None:
         r'<p class="note">.*?</p>',
         '<p class="note"><strong>Llaves:</strong> PK = llave primaria; FK → tabla = llave foránea '
         "(apunta a otra tabla); Único = no se puede repetir. <strong>Nulo:</strong> indica si el campo "
-        "puede quedar vacío. Este diccionario se genera automáticamente desde la base de datos de BEE "
+        "puede quedar vacío. Este diccionario se genera automáticamente desde la base de datos de Bee "
         "(<code>schema.sql</code>) con <code>scripts/generar_diccionario.py</code>.</p>",
         html, count=1, flags=re.S,
     )

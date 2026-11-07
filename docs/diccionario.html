@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Diccionario de datos de la base de datos del proyecto BEE.">
-<title>Diccionario de datos | BEE</title>
+<meta name="description" content="Diccionario de datos de la base de datos del proyecto Bee.">
+<title>Diccionario de datos | Bee</title>
 <style>
 :root{--navy:#142b4a;--blue:#2463eb;--yellow:#f4c542;--ink:#1d2939;--muted:#667085;--line:#e4e9f0;--surface:#fff;--bg:#f5f7fb}
 *{box-sizing:border-box}
@@ -47,19 +47,20 @@ footer{padding:22px;text-align:center;color:var(--muted);font-size:.85rem}
 @media(max-width:650px){.topbar{align-items:flex-start}.controls{grid-template-columns:1fr}.stats{gap:10px}.stat{padding:15px}.hero{margin-top:24px}}
 .tables-list{margin-bottom:22px}.tables-list ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px 18px}.tables-list li{display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--muted)}.tables-list code{align-self:flex-start;font-weight:700}td.desc{white-space:normal;min-width:260px;color:#475467}
 </style>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2">
+    <link rel="icon" href="favicon.ico?v=2" sizes="any">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 </head>
 <body>
 <header>
   <div class="topbar">
-    <a class="brand" href="index.html">🐝 BEE</a>
+    <a class="brand" href="index.html">🐝 Bee</a>
     <a class="back" href="index.html">← Volver al inicio</a>
   </div>
   <div class="hero">
     <div class="eyebrow">DOCUMENTACIÓN DEL PROYECTO</div>
     <h1>Diccionario de datos</h1>
-    <p>Referencia de la estructura de la base de datos de BEE: tablas, campos, tipos de datos, restricciones y valores predeterminados.</p>
+    <p>Referencia de la estructura de la base de datos de Bee: tablas, campos, tipos de datos, restricciones y valores predeterminados.</p>
   </div>
 </header>
 <main class="wrap">
@@ -68,7 +69,7 @@ footer{padding:22px;text-align:center;color:var(--muted);font-size:.85rem}
     <div class="stat"><strong>51</strong><span>Campos documentados</span></div>
   </section>
   <section class="panel tables-list" aria-label="Tablas">
-    <ul><li><code>universidades</code><span>Universidades donde funciona BEE.</span></li><li><code>usuarios</code><span>Personas que usan BEE: estudiantes, tiendas y administradores.</span></li><li><code>permisos_usuario</code><span>Permisos de cada administrador.</span></li><li><code>tiendas</code><span>Tienda administrada por un usuario con rol Tienda.</span></li><li><code>menus</code><span>Secciones del menú de una tienda (Desayunos, Bebidas...).</span></li><li><code>productos</code><span>Productos que vende una tienda.</span></li><li><code>pedidos</code><span>Pedidos que hacen los estudiantes a las tiendas de su universidad.</span></li><li><code>pedido_items</code><span>Productos de cada pedido.</span></li><li><code>notificaciones</code><span>Avisos de la campana sobre los pedidos.</span></li></ul>
+    <ul><li><code>universidades</code><span>Universidades donde funciona Bee.</span></li><li><code>usuarios</code><span>Personas que usan Bee: estudiantes, tiendas y administradores.</span></li><li><code>permisos_usuario</code><span>Permisos de cada administrador.</span></li><li><code>tiendas</code><span>Tienda administrada por un usuario con rol Tienda.</span></li><li><code>menus</code><span>Secciones del menú de una tienda (Desayunos, Bebidas...).</span></li><li><code>productos</code><span>Productos que vende una tienda.</span></li><li><code>pedidos</code><span>Pedidos que hacen los estudiantes a las tiendas de su universidad.</span></li><li><code>pedido_items</code><span>Productos de cada pedido.</span></li><li><code>notificaciones</code><span>Avisos de la campana sobre los pedidos.</span></li></ul>
   </section>
   <section class="panel">
     <div class="controls">
@@ -87,10 +88,10 @@ footer{padding:22px;text-align:center;color:var(--muted);font-size:.85rem}
       </table>
       <div id="empty" class="empty">No se encontraron campos con esos criterios.</div>
     </div>
-    <p class="note"><strong>Llaves:</strong> PK = llave primaria; FK → tabla = llave foránea (apunta a otra tabla); Único = no se puede repetir. <strong>Nulo:</strong> indica si el campo puede quedar vacío. Este diccionario se genera automáticamente desde la base de datos de BEE (<code>schema.sql</code>) con <code>scripts/generar_diccionario.py</code>.</p>
+    <p class="note"><strong>Llaves:</strong> PK = llave primaria; FK → tabla = llave foránea (apunta a otra tabla); Único = no se puede repetir. <strong>Nulo:</strong> indica si el campo puede quedar vacío. Este diccionario se genera automáticamente desde la base de datos de Bee (<code>schema.sql</code>) con <code>scripts/generar_diccionario.py</code>.</p>
   </section>
 </main>
-<footer>BEE · Buy, Enjoy &amp; Exit · Diccionario de datos</footer>
+<footer>Bee · Buy, Enjoy &amp; Exit · Diccionario de datos</footer>
 <script>
 const searchInput = document.getElementById('search');
 const tableFilter = document.getElementById('tableFilter');
