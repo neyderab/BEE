@@ -10,8 +10,8 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
-from app import push
-from app.db import ejecutar, uno
+from app.servicios import push
+from app.modelos.base_datos import ejecutar, uno
 from tests.conftest import USB, entrar, registrar
 
 
@@ -89,7 +89,7 @@ def test_los_codigos_listos_de_una_tienda_no_se_repiten(escenario, monkeypatch):
     primero = pedido_listo(tienda, alumno)
     # Aunque el azar repita el número, el segundo pedido recibe otro código.
     valores = iter([int(primero["codigo_recogida"]), int(primero["codigo_recogida"]), 4321])
-    monkeypatch.setattr("app.pedidos.secrets.randbelow", lambda _: next(valores))
+    monkeypatch.setattr("app.modelos.pedidos.secrets.randbelow", lambda _: next(valores))
     segundo = pedido_listo(tienda, alumno)
     assert segundo["codigo_recogida"] == "4321"
 
@@ -177,7 +177,7 @@ def test_si_el_celular_ya_no_existe_se_borra_la_suscripcion(escenario, servicio_
 def test_cambiar_el_pedido_envia_aviso_push(escenario, monkeypatch):
     tienda, alumno = escenario
     enviados = []
-    monkeypatch.setattr("app.push.enviar_en_segundo_plano", lambda uid, texto, url="/app": enviados.append((texto, url)))
+    monkeypatch.setattr("app.servicios.push.enviar_en_segundo_plano", lambda uid, texto, url="/app": enviados.append((texto, url)))
     pedido = pedido_listo(tienda, alumno)
     textos = [t for t, _ in enviados]
     assert any(t.startswith("Nuevo pedido") for t in textos)  # A la tienda.

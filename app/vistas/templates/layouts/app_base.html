@@ -1,0 +1,94 @@
+{% extends "layouts/base.html" %}
+{% from "parciales/avatar.html" import avatar %}
+{% from "parciales/iconos.html" import icono %}
+{# Estudiantes: diseño tipo app con barra inferior. Tienda y administrador: barra superior. #}
+{% block clase_body %}{{ "app-estudiante" if usuario.rol == "Estudiante" }}{% endblock %}
+{% block cuerpo %}
+{% if usuario.rol == "Estudiante" %}
+
+<header class="app-cabecera">
+    {% block cabecera_estudiante %}
+    <a class="logo logo-pequeno" href="/estudiante">Bee<span>.</span></a>
+    {% endblock %}
+    <a class="app-boton-icono" href="/notificaciones" aria-label="Avisos">
+        {{ icono("campana") }}
+        <span class="contador-campana" data-contador-avisos {% if not sin_leer %}hidden{% endif %}>{{ sin_leer }}</span>
+    </a>
+</header>
+
+<main class="app-contenido">
+    {% include "parciales/mensaje.html" %}
+    {% block contenido %}{% endblock %}
+</main>
+
+<nav class="tabbar" aria-label="Navegación principal">
+    {% for clave, ruta, etiqueta in [
+        ("tiendas", "/estudiante", "Tiendas"),
+        ("pedidos", "/estudiante/pedidos", "Pedidos"),
+        ("avisos", "/notificaciones", "Avisos"),
+        ("perfil", "/configuracion", "Perfil")] %}
+    <a href="{{ ruta }}" {% if seccion == clave or (clave == "perfil" and seccion == "configuracion") %}aria-current="page"{% endif %}>
+        <span class="tab-icono">
+            {{ icono({"tiendas": "tienda", "pedidos": "pedidos", "avisos": "campana", "perfil": "perfil"}[clave]) }}
+            {% if clave == "avisos" %}<span class="contador-campana" data-contador-avisos {% if not sin_leer %}hidden{% endif %}>{{ sin_leer }}</span>{% endif %}
+        </span>
+        <span>{{ etiqueta }}</span>
+    </a>
+    {% endfor %}
+</nav>
+
+{% else %}
+
+<header class="barra">
+    <a class="logo logo-pequeno" href="/">Bee<span>.</span></a>
+    <nav class="navegacion">
+        {% if usuario.rol == "Tienda" %}
+            <a href="/tienda" {% if seccion == "pedidos" %}aria-current="page"{% endif %}>Pedidos</a>
+            <a href="/tienda/menu" {% if seccion == "menu" %}aria-current="page"{% endif %}>Menú y precios</a>
+        {% elif usuario.rol == "Admin" %}
+            <a href="/admin" {% if seccion == "panel" %}aria-current="page"{% endif %}>Panel</a>
+            {% if tiene_permiso(usuario, P.VER_USUARIOS) %}<a href="/admin/usuarios" {% if seccion == "usuarios" %}aria-current="page"{% endif %}>Usuarios</a>{% endif %}
+            {% if tiene_permiso(usuario, P.VER_PEDIDOS) %}<a href="/admin/pedidos" {% if seccion == "pedidos" %}aria-current="page"{% endif %}>Pedidos</a>{% endif %}
+            {% if tiene_permiso(usuario, P.GESTIONAR_UNIVERSIDADES) %}<a href="/admin/universidades" {% if seccion == "universidades" %}aria-current="page"{% endif %}>Universidades</a>{% endif %}
+        {% endif %}
+        <a href="/configuracion" {% if seccion == "configuracion" %}aria-current="page"{% endif %}>Configuración</a>
+    </nav>
+    <div class="cuenta">
+        {% if usuario.rol == "Admin" %}<span class="chip chip-admin">Administrador</span>
+        {% elif usuario.universidad %}<span class="chip">{{ usuario.universidad }}</span>{% endif %}
+
+        <details class="campana" id="campana">
+            <summary aria-label="Notificaciones">
+                {{ icono("campana") }}
+                <span class="contador-campana" data-contador-avisos {% if not sin_leer %}hidden{% endif %}>{{ sin_leer }}</span>
+            </summary>
+            <div class="panel-notificaciones">
+                <div class="panel-cabecera">
+                    <strong>Notificaciones</strong>
+                    <a href="/notificaciones">Ver todas</a>
+                </div>
+                <ul id="lista-notificaciones" class="lista-notificaciones" data-cargada="false">
+                    <li class="notificacion-vacia">Cargando…</li>
+                </ul>
+            </div>
+        </details>
+
+        <a href="/configuracion" class="enlace-avatar" title="Configuración">
+            {{ avatar(usuario.id, usuario.tiene_foto, usuario.foto_version, usuario.nombre, usuario.apellido) }}
+        </a>
+        <a class="enlace-salir" href="/logout">Salir</a>
+    </div>
+</header>
+<main class="contenido">
+    {% include "parciales/mensaje.html" %}
+    {{ self.contenido() }}
+</main>
+
+{% endif %}
+
+<div class="toast" id="toast" role="status" hidden></div>
+<div id="config-avisos" data-recargar="{{ '1' if recargar_con_novedades else '0' }}" hidden></div>
+<meta name="csrf-token" content="{{ valor_csrf() }}">
+<script src="{{ estatico('avisos.js') }}" defer></script>
+<script src="{{ estatico('push.js') }}" defer></script>
+{% endblock %}

@@ -15,11 +15,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from dotenv import load_dotenv  # noqa: E402
-
-load_dotenv(RAIZ / ".env")
-
-from app.db import conectar, inicializar_db  # noqa: E402
+from app.modelos.base_datos import aplicar_migraciones, conectar  # noqa: E402  (carga el .env)
 
 DICCIONARIO = RAIZ / "docs" / "diccionario.html"
 
@@ -90,7 +86,7 @@ def texto_llaves(tipos: set, referencias: list) -> str:
 
 
 def main() -> None:
-    inicializar_db()
+    aplicar_migraciones()
     with conectar() as conexion:
         campos = conexion.execute(CAMPOS).fetchall()
         tablas = {f["tabla"]: f["descripcion"] or "" for f in conexion.execute(TABLAS)}

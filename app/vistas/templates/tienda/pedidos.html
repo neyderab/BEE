@@ -1,0 +1,144 @@
+{% extends "layouts/app_base.html" %}
+{% from "parciales/avatar.html" import avatar %}
+{% set seccion = "pedidos" %}
+{% set recargar_con_novedades = True %}
+{% block titulo %}Pedidos{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo">Panel de tu tienda</p>
+        <h1>{{ usuario.tienda }}</h1>
+    </div>
+    {% set abierta = tienda_abierta(usuario) %}
+    <form action="/tienda/abrir-cerrar" method="post" class="estado-tienda-panel">
+{{ campo_csrf() }}
+        <span class="punto-estado {{ 'abierta' if abierta else 'cerrada' }}"></span>
+        <span><strong>{{ "Abierta" if abierta else "Cerrada" }}</strong>
+            <small>{% if usuario.abierta and not abierta %}Fuera de horario{% elif abierta %}Recibiendo pedidos{% else %}No recibe pedidos{% endif %}</small></span>
+        <button class="boton boton-auto {{ 'boton-secundario' if usuario.abierta else '' }}" type="submit">
+            {{ "Cerrar tienda" if usuario.abierta else "Abrir tienda" }}
+        </button>
+    </form>
+</div>
+
+<form class="tarjeta disponibilidad" action="/tienda/disponibilidad" method="post">
+{{ campo_csrf() }}
+    <div class="disponibilidad-campo">
+        <label for="tiempo_min">Los pedidos se pueden recoger en</label>
+        <select class="campo" id="tiempo_min" name="tiempo_min">
+            {% for t in TIEMPOS %}
+            <option value="{{ t }}" {% if usuario.tiempo_min == t %}selected{% endif %}>{{ texto_tiempo(t) }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="disponibilidad-campo">
+        <label>Horario fijo <small class="opcional">(opcional)</small></label>
+        <div class="horario">
+            <input class="campo" type="time" name="hora_apertura" aria-label="Hora de apertura"
+                   value="{{ usuario.hora_apertura.strftime('%H:%M') if usuario.hora_apertura else '' }}">
+            <span>a</span>
+            <input class="campo" type="time" name="hora_cierre" aria-label="Hora de cierre"
+                   value="{{ usuario.hora_cierre.strftime('%H:%M') if usuario.hora_cierre else '' }}">
+        </div>
+    </div>
+    <label class="interruptor">
+        <input type="checkbox" name="auto_aceptar" {% if usuario.auto_aceptar %}checked{% endif %}>
+        <span class="interruptor-pista" aria-hidden="true"></span>
+        <span>
+            <strong>Aceptar pedidos automáticamente</strong>
+            <small>Si lo desactivas, cada pedido nuevo espera a que lo aceptes.</small>
+        </span>
+    </label>
+    <button class="boton boton-auto" type="submit">Guardar</button>
+</form>
+
+{% include "parciales/avisos_push.html" %}
+
+<h2 class="titulo-seccion">Pedidos en curso <span class="contador">{{ en_curso }}</span></h2>
+
+{% macro tarjeta_pedido(p) %}
+<article class="tarjeta pedido estado-{{ p.estado }}">
+    <header class="pedido-cabecera">
+        <div class="pedido-cliente">
+            {{ avatar(p.estudiante_id, p.tiene_foto, p.foto_version, p.nombre, p.apellido, "avatar-pequeno") }}
+            <div>
+                <strong>#{{ p.id }} · {% if p.estudiante_id %}{{ p.nombre }} {{ p.apellido }}{% else %}Cuenta eliminada{% endif %}</strong>
+                {% if p.telefono %}<small>+57 {{ p.telefono }}</small>{% endif %}
+            </div>
+        </div>
+    </header>
+    <p class="recoger">
+        {% if p.ventana %}Recoge entre <strong>{{ p.ventana[0]|hora }}</strong> y <strong>{{ p.ventana[1]|hora }}</strong>
+        {% elif p.tiempo_min %}Listo en {{ texto_tiempo(p.tiempo_min) }} después de aceptarlo
+        {% elif p.hora_recogida %}Recoge a las <strong>{{ p.hora_recogida.strftime("%H:%M") }}</strong>{% endif %}
+    </p>
+    <ul class="items">
+        {% for i in p["items"] %}
+        <li><span>{{ i.cantidad }} × {{ i.nombre_producto }}</span><span>{{ (i.precio_unitario * i.cantidad)|pesos }}</span></li>
+        {% endfor %}
+    </ul>
+    <p class="total"><span>Total · {{ METODOS_PAGO[p.metodo_pago][0] }}</span><strong>{{ p.total|pesos }}</strong></p>
+    {% if p.estado == "listo" %}<p class="ayuda ayuda-suelta">Pide al estudiante su código de 4 dígitos para entregarlo.</p>{% endif %}
+    <div class="acciones">
+        {% for siguiente in transiciones[p.estado] %}
+        <form action="/tienda/pedidos/{{ p.id }}/estado" method="post"
+              {% if siguiente == 'cancelado' %}onsubmit="return confirm('¿Cancelar el pedido #{{ p.id }}? Le avisaremos al estudiante.')"{% endif %}>
+{{ campo_csrf() }}
+            <input type="hidden" name="estado" value="{{ siguiente }}">
+            <button class="boton boton-pequeno {% if siguiente == 'cancelado' %}boton-peligro{% endif %}" type="submit">
+                {{ "Rechazar" if siguiente == "cancelado" and p.estado == "pendiente" else ACCIONES[siguiente] }}
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+</article>
+{% endmacro %}
+
+<div class="tablero">
+    {% for estado, pedidos in columnas.items() %}
+    <section class="columna columna-{{ estado }}">
+        <h3>{{ "Por aceptar" if estado == "pendiente" else ESTADOS[estado] }} <span class="contador contador-suave">{{ pedidos|length }}</span></h3>
+        {% if estado == "listo" %}
+        <form class="entregar-codigo" action="/tienda/entregar" method="post">
+{{ campo_csrf() }}
+            <label for="codigo-entrega">Entregar con el código del estudiante</label>
+            <div>
+                <input class="campo" id="codigo-entrega" name="codigo" inputmode="numeric" pattern="[0-9]{4}"
+                       maxlength="4" placeholder="0000" autocomplete="off" required>
+                <button class="boton boton-auto" type="submit">Entregar</button>
+            </div>
+        </form>
+        {% endif %}
+        {% for p in pedidos %}
+            {{ tarjeta_pedido(p) }}
+        {% else %}
+            <p class="columna-vacia">Sin pedidos</p>
+        {% endfor %}
+    </section>
+    {% endfor %}
+</div>
+
+{% if not en_curso %}
+<p class="ayuda ayuda-centrada">Cuando un estudiante de {{ usuario.universidad }} haga un pedido, aparecerá aquí y te llegará una notificación.</p>
+{% endif %}
+
+{% if finalizados %}
+<h2 class="titulo-seccion">Historial reciente</h2>
+<div class="tarjeta tabla-contenedor">
+    <table class="tabla">
+        <thead><tr><th>Pedido</th><th>Estudiante</th><th>Productos</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+            {% for p in finalizados %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td>{% if p.estudiante_id %}{{ p.nombre }} {{ p.apellido }}{% else %}<em>Cuenta eliminada</em>{% endif %}</td>
+                <td>{% for i in p["items"] %}{{ i.cantidad }} × {{ i.nombre_producto }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+                <td>{{ p.total|pesos }}</td>
+                <td><span class="insignia insignia-{{ p.estado }}">{{ ESTADOS[p.estado] }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

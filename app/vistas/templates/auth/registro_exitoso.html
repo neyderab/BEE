@@ -1,0 +1,21 @@
+{% extends "layouts/base.html" %}
+{% block titulo %}Registro exitoso{% endblock %}
+{% block clase_body %}pagina-centrada{% endblock %}
+{% block cuerpo %}
+<main class="tarjeta tarjeta-centrada">
+    <div class="logo">Bee<span>.</span></div>
+    <div class="icono-exito" aria-hidden="true">✓</div>
+    <h1>¡Ya eres parte de Bee!</h1>
+    <p class="descripcion">
+        {% if rol == "Tienda" %}
+        Tu tienda quedó registrada. Inicia sesión para crear tu menú y empezar a recibir pedidos
+        de los estudiantes de tu universidad.
+        {% else %}
+        Tu registro se completó correctamente. Inicia sesión para ver las tiendas de tu
+        universidad y hacer tu primer pedido.
+        {% endif %}
+    </p>
+    <a href="/login" class="boton">Ir a iniciar sesión</a>
+    <p class="pie">Bee · Pide antes. Recoge sin fila.</p>
+</main>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "layouts/auth_base.html" %}
+{% block titulo %}Cuenta no encontrada{% endblock %}
+{% block formulario %}
+<h2>¡Todavía no tienes una cuenta!</h2>
+<p class="descripcion">Este teléfono no está registrado en Bee.</p>
+<a class="boton" href="/registro">Crear una cuenta</a>
+<p class="alternativa"><a href="/login">Intentar con otro número</a></p>
+{% endblock %}

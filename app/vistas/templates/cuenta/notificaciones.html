@@ -1,0 +1,27 @@
+{% extends "layouts/app_base.html" %}
+{% set seccion = "avisos" %}
+{% block titulo %}Notificaciones{% endblock %}
+{% block contenido %}
+{% include "parciales/avisos_push.html" %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo">Novedades de tus pedidos</p>
+        <h1>Notificaciones</h1>
+    </div>
+</div>
+{% if notificaciones %}
+<ul class="tarjeta lista-notificaciones lista-completa" id="todas-notificaciones">
+    {% for n in notificaciones %}
+    <li class="notificacion {% if not n.leida %}no-leida{% endif %}">
+        <a href="{{ '/tienda' if usuario.rol == 'Tienda' else '/estudiante/pedidos' }}">
+            <span class="notificacion-texto">{{ n.texto }}</span>
+            <small>{{ n.creada_en|fecha_corta }}</small>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<ul id="todas-notificaciones" hidden></ul>
+<div class="vacio"><p>No tienes notificaciones todavía.</p></div>
+{% endif %}
+{% endblock %}

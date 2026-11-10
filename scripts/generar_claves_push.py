@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.push import crear_claves  # noqa: E402
+from app.servicios.push import crear_claves  # noqa: E402
 
 claves = crear_claves()
 print(f"VAPID_PUBLIC_KEY={claves['publica']}")

@@ -53,17 +53,27 @@ La plataforma busca conectar a los estudiantes con las tiendas disponibles dentr
 | Git y GitHub | Control de versiones y alojamiento del código |
 | GitHub Pages | Publicación de la página de presentación |
 
-## Programación Orientada a Objetos (POO)
+## Arquitectura (Modelo-Vista-Controlador)
 
-El proyecto contempla la organización del sistema mediante entidades que representan sus componentes principales:
+Bee está organizado con el patrón **MVC**. La explicación completa, con diagramas, está en **[ARQUITECTURA.md](ARQUITECTURA.md)**.
 
-- **Estudiante:** representa al usuario que realiza los pedidos.
-- **Universidad:** agrupa las tiendas disponibles y los estudiantes asociados.
-- **Tienda:** representa el establecimiento que ofrece productos.
-- **Producto:** contiene información como nombre, precio y disponibilidad.
-- **Pedido:** registra los productos solicitados, su estado y el horario de recogida.
+```mermaid
+flowchart LR
+    U["👤 Usuario"] -- petición --> C["CONTROLADOR<br/>app/controladores/"]
+    C -- datos --> M["MODELO<br/>app/modelos/"]
+    M -- SQL --> BD[("PostgreSQL")]
+    C -- elige la vista --> V["VISTA<br/>app/vistas/"]
+    V -- HTML --> U
+```
 
-Estas entidades sirven como base conceptual para organizar la información y las responsabilidades del sistema.
+| Capa | Carpeta | Responsabilidad |
+|---|---|---|
+| **Modelo** | `app/modelos/` | Entidades del negocio (usuarios, universidades, tiendas, menús, pedidos, notificaciones) y todo el acceso a la base de datos. |
+| **Vista** | `app/vistas/` | Plantillas HTML, estilos y JavaScript. |
+| **Controlador** | `app/controladores/` | Rutas: reciben la petición, usan el modelo y eligen la vista. |
+| Servicios | `app/servicios/` | Seguridad (CSRF), fotos, avisos push, validación. |
+
+Las entidades principales (Estudiante, Universidad, Tienda, Producto, Pedido) son módulos de `app/modelos/`. Las pruebas de `tests/test_arquitectura.py` verifican que cada capa cumpla su papel.
 
 ## Cómo funciona hoy
 
@@ -96,7 +106,7 @@ Bee se puede **instalar como app** (PWA) desde el navegador, sin tiendas de apli
 
 La página `/instalar` explica estos pasos y la página web tiene el botón **📲 Descargar app**. La app instalada se abre a pantalla completa y **empieza en Iniciar sesión / Registro** (`/app`); si ya hay una sesión abierta, entra directo al panel. Sin internet muestra una pantalla «Sin conexión».
 
-Archivos: `static/pwa/` (manifest, service worker e íconos) y `app/rutas/pwa.py`.
+Archivos: `app/vistas/static/pwa/` (manifest, service worker e íconos) y `app/controladores/pwa.py`.
 
 ### Avisos en el celular (notificaciones push)
 
@@ -143,38 +153,23 @@ Reglas de seguridad:
 
 ```text
 BEE/
-├── main.py                 # Crea la app FastAPI y registra las rutas
-├── alembic.ini             # Configuración de las migraciones
-├── migraciones/            # Cambios de la base de datos, en orden (Alembic)
-├── render.yaml             # Configuración para publicar en Render
+├── main.py                 Punto de entrada: arma la app con sus capas
+├── ARQUITECTURA.md         Arquitectura MVC con diagramas
 ├── app/
-│   ├── db.py               # Conexión a PostgreSQL
-│   ├── sesion.py           # Usuario en sesión y permisos por rol
-│   ├── permisos.py         # Permisos de los administradores
-│   ├── usuarios.py         # Creación de usuarios
-│   ├── validacion.py       # Clase Formulario (validaciones)
-│   ├── csrf.py             # Protección de formularios
-│   ├── fotos.py            # Fotos de perfil y de productos
-│   ├── push.py             # Envío de notificaciones push
-│   ├── plantillas.py       # Jinja2 y mensajes
-│   ├── pedidos.py          # Estados, tiempos, horario, pagos y notificaciones
-│   └── rutas/
-│       ├── auth.py         # Registro, login, verificación, perfil
-│       ├── tienda.py       # Panel de la tienda
-│       ├── estudiante.py   # Tiendas y pedidos del estudiante
-│       ├── cuenta.py       # Notificaciones, configuración y foto
-│       ├── admin.py        # Panel de administración
-│       └── pwa.py          # App instalable y suscripción a avisos push
-├── scripts/
-│   ├── crear_admin.py      # Crea el primer administrador
-│   ├── generar_claves_push.py  # Claves para las notificaciones push
-│   └── generar_diccionario.py  # Regenera docs/diccionario.html desde la base
-├── templates/              # Páginas HTML (Jinja2)
-├── static/                 # Estilos y JavaScript de los avisos
-├── tests/                  # Pruebas automáticas (pytest)
-├── .github/workflows/      # Pruebas automáticas en GitHub
-└── docs/                   # Página de presentación (GitHub Pages)
+│   ├── config.py           Configuración (.env, carpetas, constantes)
+│   ├── modelos/            MODELO: datos y reglas de negocio (todo el SQL)
+│   ├── vistas/             VISTA: templates/ (HTML) y static/ (CSS, JS, app instalable)
+│   ├── controladores/      CONTROLADOR: rutas HTTP (auth, estudiante, tienda, cuenta, admin, pwa)
+│   └── servicios/          CSRF, fotos, avisos push, validación, formato
+├── migraciones/            Cambios de la base de datos (Alembic)
+├── tests/                  Pruebas automáticas (incluye pruebas de arquitectura)
+├── scripts/                Primer administrador, claves push, diccionario de datos
+├── docs/                   Página de presentación, diccionario y diagramas (docs/arquitectura/)
+├── .github/workflows/      Pruebas automáticas en GitHub
+├── alembic.ini · render.yaml · requirements.txt · .env.example
 ```
+
+Cada carpeta tiene un `README.md` que explica su contenido.
 
 ## Ejecución local del backend
 
@@ -238,7 +233,7 @@ No se editan migraciones que ya estén en `main`; los cambios siempre van en una
 
 ### Seguridad de los formularios
 
-Todos los formularios llevan un token CSRF (`app/csrf.py`): otra página web no puede enviarlos en nombre del usuario. En las plantillas se agrega con `{{ campo_csrf() }}` dentro de cada `<form method="post">`.
+Todos los formularios llevan un token CSRF (`app/servicios/csrf.py`): otra página web no puede enviarlos en nombre del usuario. En las plantillas se agrega con `{{ campo_csrf() }}` dentro de cada `<form method="post">`.
 
 ## Publicar la aplicación
 
@@ -279,9 +274,10 @@ Proyecto desarrollado por:
 
 ## Documentación
 
-El repositorio puede incluir documentos relacionados con los objetivos, requisitos, diseño, diccionario de datos y presentación académica del proyecto.
-
-Consulta las carpetas y archivos del repositorio para acceder a los documentos disponibles.
+- **[ARQUITECTURA.md](ARQUITECTURA.md):** arquitectura MVC, diagramas (capas, secuencia de un pedido, estados, modelo de datos) y guía para agregar funcionalidades.
+- **[docs/diccionario.html](docs/diccionario.html):** diccionario de datos generado desde la base real.
+- **[docs/arquitectura/](docs/arquitectura/):** los diagramas en SVG, listos para presentaciones.
+- **[docs/implementacion_proyectos_BEE.pdf](docs/implementacion_proyectos_BEE.pdf):** documento de implementación del proyecto.
 
 ## Proyección del proyecto
 

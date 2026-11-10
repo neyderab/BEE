@@ -1,0 +1,87 @@
+{% extends "layouts/app_base.html" %}
+{% from "parciales/casillas_permisos.html" import casillas %}
+{% block titulo %}Nuevo usuario{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo"><a href="/admin/usuarios">← Usuarios</a></p>
+        <h1>Nuevo usuario</h1>
+    </div>
+</div>
+
+<form class="tarjeta formulario-admin" action="/admin/usuarios" method="post" id="form-usuario">
+{{ campo_csrf() }}
+    <fieldset class="selector-rol selector-rol-{{ roles|length }}">
+        <legend>Tipo de usuario</legend>
+        {% for r in roles %}
+        <label class="opcion-rol">
+            <input type="radio" name="rol" value="{{ r }}" {% if valores.rol == r %}checked{% endif %}>
+            <span>
+                <strong>{{ {"Estudiante": "🎓 Estudiante", "Tienda": "🏪 Tienda", "Admin": "🛡️ Administrador"}[r] }}</strong>
+                <small>{{ {"Estudiante": "Hace pedidos", "Tienda": "Recibe pedidos", "Admin": "Gestiona Bee según sus permisos"}[r] }}</small>
+            </span>
+        </label>
+        {% endfor %}
+    </fieldset>
+    {% if errores.rol %}<p class="error-campo">{{ errores.rol }}</p>{% endif %}
+
+    <div class="dos-columnas">
+        <div>
+            <label for="nombre">Nombre</label>
+            <input class="campo {% if errores.nombre %}con-error{% endif %}" id="nombre" name="nombre" value="{{ valores.nombre or '' }}" maxlength="50" required>
+            {% if errores.nombre %}<p class="error-campo">{{ errores.nombre }}</p>{% endif %}
+        </div>
+        <div>
+            <label for="apellido">Apellido</label>
+            <input class="campo {% if errores.apellido %}con-error{% endif %}" id="apellido" name="apellido" value="{{ valores.apellido or '' }}" maxlength="50" required>
+            {% if errores.apellido %}<p class="error-campo">{{ errores.apellido }}</p>{% endif %}
+        </div>
+    </div>
+
+    <label for="telefono">Teléfono (con este número inicia sesión)</label>
+    <div class="campo-telefono {% if errores.telefono %}con-error{% endif %}">
+        <span class="prefijo">+57</span>
+        <input type="tel" id="telefono" name="telefono" value="{{ valores.telefono or '' }}" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required>
+    </div>
+    {% if errores.telefono %}<p class="error-campo">{{ errores.telefono }}</p>{% endif %}
+
+    <div data-para="Estudiante Tienda">
+        {% include "parciales/campo_universidad.html" %}
+    </div>
+    <div data-para="Tienda">
+        <label for="nombre_tienda">Nombre de la tienda</label>
+        <input class="campo {% if errores.nombre_tienda %}con-error{% endif %}" id="nombre_tienda" name="nombre_tienda" value="{{ valores.nombre_tienda or '' }}" maxlength="80">
+        {% if errores.nombre_tienda %}<p class="error-campo">{{ errores.nombre_tienda }}</p>{% endif %}
+    </div>
+    {% if "Admin" in roles %}
+    <div data-para="Admin">
+        <label>Permisos del administrador</label>
+        {{ casillas(permisos, valores.permisos or [], usuario) }}
+        {% if errores.permisos %}<p class="error-campo">{{ errores.permisos }}</p>{% endif %}
+    </div>
+    {% endif %}
+
+    <button class="boton boton-auto" type="submit">Crear usuario</button>
+</form>
+
+<script>
+    // Muestra solo los campos que corresponden al tipo de usuario elegido.
+    (function () {
+        const form = document.getElementById("form-usuario");
+        function actualizar() {
+            const rol = form.rol.value;
+            form.querySelectorAll("[data-para]").forEach(function (bloque) {
+                const visible = bloque.dataset.para.split(" ").includes(rol);
+                bloque.hidden = !visible;
+                bloque.querySelectorAll("input:not([type=checkbox]), select").forEach(function (campo) {
+                    campo.required = visible;
+                });
+            });
+            const etiqueta = document.getElementById("etiqueta-universidad");
+            if (etiqueta) etiqueta.textContent = rol === "Tienda" ? "Universidad donde está la tienda" : "Universidad";
+        }
+        form.addEventListener("change", function (e) { if (e.target.name === "rol") actualizar(); });
+        actualizar();
+    })();
+</script>
+{% endblock %}

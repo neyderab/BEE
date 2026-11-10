@@ -29,7 +29,7 @@ import json  # noqa: E402
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app.db import conectar  # noqa: E402
+from app.modelos.base_datos import conectar  # noqa: E402
 from main import app  # noqa: E402
 
 class ClienteBee(TestClient):

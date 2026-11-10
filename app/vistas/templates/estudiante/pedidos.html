@@ -1,0 +1,88 @@
+{% extends "layouts/app_base.html" %}
+{% from "parciales/iconos.html" import icono %}
+{% set seccion = "pedidos" %}
+{% set recargar_con_novedades = True %}
+{% block titulo %}Mis pedidos{% endblock %}
+
+{% macro tarjeta(p) %}
+<article class="tarjeta pedido estado-{{ p.estado }}">
+    <header class="pedido-cabecera">
+        <div>
+            <strong>{{ p.tienda }}</strong>
+            <small class="pedido-numero">Pedido #{{ p.id }} · {{ p.creado_en|fecha_corta }}</small>
+        </div>
+        <span class="insignia insignia-{{ p.estado }}">{{ ESTADOS[p.estado] }}</span>
+    </header>
+
+    {% if p.estado == "cancelado" %}
+    <p class="aviso aviso-error aviso-compacto">Este pedido se canceló. No se te cobró nada.</p>
+    {% elif p.estado != "entregado" %}
+    {% set actual = PASOS.index(p.estado) %}
+    <ol class="progreso" aria-label="Estado del pedido">
+        {% for paso in PASOS %}
+        <li class="{% if loop.index0 < actual %}hecho{% elif loop.index0 == actual %}actual{% endif %}"
+            {% if loop.index0 == actual %}aria-current="step"{% endif %}>
+            <span class="punto" aria-hidden="true"></span>
+            <span class="etiqueta-paso">{{ "Enviado" if paso == "pendiente" else ESTADOS[paso] }}</span>
+        </li>
+        {% endfor %}
+    </ol>
+    <p class="recoger">
+        {% if p.estado == "pendiente" %}Esperando que la tienda acepte tu pedido.{% if p.tiempo_min %} Estará listo {{ texto_tiempo(p.tiempo_min) }} después.{% endif %}
+        {% elif p.estado == "listo" %}<strong>¡Ya puedes recogerlo!</strong>
+        {% elif p.ventana %}Pásalo a recoger entre <strong>{{ p.ventana[0]|hora }}</strong> y <strong>{{ p.ventana[1]|hora }}</strong>{% endif %}
+    </p>
+    {% endif %}
+
+    {% if p.estado == "listo" and p.codigo_recogida %}
+    <div class="codigo-recogida" aria-label="Código de recogida">
+        <small>Muestra este código en la tienda</small>
+        <strong>{{ p.codigo_recogida }}</strong>
+        <small>Sin el código no se entrega el pedido</small>
+    </div>
+    {% endif %}
+
+    <ul class="items">
+        {% for i in p["items"] %}
+        <li><span>{{ i.cantidad }} × {{ i.nombre_producto }}</span><span>{{ (i.precio_unitario * i.cantidad)|pesos }}</span></li>
+        {% endfor %}
+    </ul>
+    <p class="total"><span>Total · {{ METODOS_PAGO.get(p.metodo_pago, ("Efectivo",))[0] }}</span><strong>{{ p.total|pesos }}</strong></p>
+
+    {% if p.estado == "pendiente" %}
+    <form action="/estudiante/pedidos/{{ p.id }}/cancelar" method="post"
+          onsubmit="return confirm('¿Cancelar el pedido #{{ p.id }}?')">
+{{ campo_csrf() }}
+        <button class="boton boton-peligro" type="submit">Cancelar pedido</button>
+    </form>
+    {% elif p.estado in ("entregado", "cancelado") %}
+    <a class="boton boton-secundario boton-con-icono" href="/estudiante/tiendas/{{ p.tienda_id }}?repetir={{ p.id }}">
+        {{ icono("repetir") }} Pedir de nuevo
+    </a>
+    {% endif %}
+</article>
+{% endmacro %}
+
+{% block contenido %}
+<h1 class="app-h1">Mis pedidos</h1>
+{% include "parciales/avisos_push.html" %}
+
+{% set en_curso = pedidos|selectattr("estado", "in", ["pendiente", "aceptado", "preparando", "listo"])|list %}
+{% set anteriores = pedidos|rejectattr("estado", "in", ["pendiente", "aceptado", "preparando", "listo"])|list %}
+
+{% if pedidos %}
+    {% if en_curso %}
+    <h2 class="app-h2">En curso</h2>
+    <div class="lista-pedidos">{% for p in en_curso %}{{ tarjeta(p) }}{% endfor %}</div>
+    {% endif %}
+    {% if anteriores %}
+    <h2 class="app-h2">Anteriores</h2>
+    <div class="lista-pedidos">{% for p in anteriores %}{{ tarjeta(p) }}{% endfor %}</div>
+    {% endif %}
+{% else %}
+<div class="vacio">
+    <p>Todavía no has hecho pedidos.</p>
+    <a class="boton boton-auto" href="/estudiante">Ver tiendas</a>
+</div>
+{% endif %}
+{% endblock %}

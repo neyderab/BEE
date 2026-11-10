@@ -3,7 +3,7 @@ import io
 import pytest
 from PIL import Image
 
-from app.db import conectar
+from app.modelos.base_datos import conectar
 from tests.conftest import USB, entrar, registrar
 
 

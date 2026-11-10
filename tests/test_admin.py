@@ -1,15 +1,14 @@
 import pytest
 
-from app import permisos as P
-from app.db import conectar
-from app.usuarios import insertar_usuario
+from app.modelos import permisos as P
+from app.modelos import usuarios
+from app.modelos.base_datos import conectar
 from scripts.crear_admin import main as crear_admin
 from tests.conftest import ANDES, USB, entrar, id_universidad, registrar
 
 
 def crear_admin_con(telefono, permisos, nombre="Admin"):
-    with conectar() as conexion:
-        return insertar_usuario(conexion, telefono, nombre, "Prueba", "Admin", None, permisos=permisos)
+    return usuarios.crear(telefono, nombre, "Prueba", "Admin", None, permisos=permisos)
 
 
 def id_de(telefono):

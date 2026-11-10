@@ -6,8 +6,9 @@ from datetime import datetime, time
 import pytest
 from PIL import Image
 
-from app.db import uno
-from app.pedidos import ZONA_HORARIA, tienda_abierta
+from app.modelos.base_datos import uno
+from app.config import ZONA_HORARIA
+from app.modelos.tiendas import tienda_abierta
 from tests.conftest import ANDES, USB, entrar, registrar
 
 

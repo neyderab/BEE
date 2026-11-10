@@ -16,15 +16,10 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from dotenv import load_dotenv  # noqa: E402
-
-load_dotenv(RAIZ / ".env")
-
-from app import permisos  # noqa: E402
-from app.db import conectar, inicializar_db  # noqa: E402
-from app.sesion import ADMIN  # noqa: E402
-from app.usuarios import guardar_permisos, insertar_usuario  # noqa: E402
-from app.validacion import telefono_valido  # noqa: E402
+from app.modelos import permisos, usuarios  # noqa: E402  (después de ajustar sys.path)
+from app.modelos.base_datos import aplicar_migraciones  # noqa: E402
+from app.modelos.usuarios import ADMIN  # noqa: E402
+from app.servicios.validacion import telefono_valido  # noqa: E402
 
 
 def main(argumentos: list[str]) -> int:
@@ -39,24 +34,21 @@ def main(argumentos: list[str]) -> int:
         print("Escribe el nombre y el apellido.")
         return 1
 
-    inicializar_db()
-    with conectar() as conexion:
-        existente = conexion.execute(
-            "SELECT id, rol FROM usuarios WHERE telefono = %s", (telefono,)
-        ).fetchone()
-        if existente and existente["rol"] != ADMIN:
-            print(
-                f"El teléfono {telefono} ya pertenece a una cuenta de tipo "
-                f"«{existente['rol']}». Usa otro número para el administrador."
-            )
-            return 1
-        if existente:
-            guardar_permisos(conexion, existente["id"], permisos.TODOS)
-            conexion.execute("UPDATE usuarios SET activo = TRUE WHERE id = %s", (existente["id"],))
-            print(f"El administrador {telefono} ya existía: se reactivó con todos los permisos.")
-        else:
-            insertar_usuario(conexion, telefono, nombre, apellido, ADMIN, None, permisos=permisos.TODOS)
-            print(f"Administrador creado. Inicia sesión en /login con el teléfono {telefono}.")
+    aplicar_migraciones()
+    existente = usuarios.buscar_por_telefono(telefono)
+    if existente and existente["rol"] != ADMIN:
+        print(
+            f"El teléfono {telefono} ya pertenece a una cuenta de tipo "
+            f"«{existente['rol']}». Usa otro número para el administrador."
+        )
+        return 1
+    if existente:
+        usuarios.guardar_permisos(existente["id"], permisos.TODOS)
+        usuarios.cambiar_activo(existente["id"], True)
+        print(f"El administrador {telefono} ya existía: se reactivó con todos los permisos.")
+    else:
+        usuarios.crear(telefono, nombre, apellido, ADMIN, None, permisos=permisos.TODOS)
+        print(f"Administrador creado. Inicia sesión en /login con el teléfono {telefono}.")
     return 0
 
 
