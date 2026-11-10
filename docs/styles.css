@@ -1389,3 +1389,213 @@ footer {
     }
 
 }
+
+/* =====================================================
+   MENÚ DEL CELULAR (botón ☰)
+===================================================== */
+
+.menu-boton {
+    display: none;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 1px solid #D8C45E;
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.menu-boton span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--dark);
+    transition: transform 0.25s, opacity 0.25s;
+}
+
+.menu-boton[aria-expanded="true"] span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.menu-boton[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-boton[aria-expanded="true"] span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+nav a,
+.logo-text span {
+    white-space: nowrap;
+}
+
+/* En computador, «Descargar app» está en la portada; en el menú solo en celular. */
+@media (min-width: 1101px) {
+    nav a.btn-app {
+        display: none;
+    }
+
+    nav {
+        gap: 18px;
+    }
+
+}
+
+@media (min-width: 601px) {
+    .logo .bee-circle {
+        width: 64px;
+        height: 64px;
+        font-size: 34px;
+    }
+}
+
+.hero-buttons {
+    flex-wrap: wrap;
+}
+
+/* El menú completo necesita unos 1.100 px; por debajo se usa el botón ☰. */
+@media (max-width: 1100px) {
+    nav {
+        display: none;
+    }
+
+    .nav-container {
+        position: relative;
+    }
+
+    .menu-boton {
+        display: flex;
+    }
+
+    nav.abierto {
+        display: flex;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        padding: 10px 20px 20px;
+        background: var(--yellow-header);
+        border-bottom: 1px solid #E9D98A;
+        box-shadow: 0 16px 30px rgba(100, 90, 40, 0.12);
+    }
+
+    nav.abierto a {
+        padding: 13px 4px;
+        font-size: 16px;
+        border-bottom: 1px solid #F0E1A0;
+    }
+
+    nav.abierto a.btn-primary {
+        margin-top: 10px;
+        padding: 14px;
+        font-size: 15px;
+        border-bottom: 1px solid #D8C45E;
+    }
+
+    nav.abierto a.btn-app {
+        background: var(--dark);
+        color: var(--white);
+        border-color: var(--dark);
+    }
+}
+
+/* =====================================================
+   CELULARES: tamaños más compactos
+===================================================== */
+
+@media (max-width: 600px) {
+    .nav-container {
+        padding: 10px 16px;
+    }
+
+    .logo .bee-circle {
+        width: 46px;
+        height: 46px;
+        font-size: 26px;
+    }
+
+    .logo-text span {
+        font-size: 8px;
+    }
+
+    .hero-content {
+        padding: 36px 16px 48px;
+        gap: 32px;
+    }
+
+    .hero h1 {
+        font-size: 38px;
+    }
+
+    .hero-buttons {
+        gap: 10px;
+    }
+
+    .hero-card {
+        padding: 28px 20px;
+    }
+
+    .section {
+        padding: 56px 16px;
+    }
+
+    .section-alt {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .section-title h2 {
+        font-size: 30px;
+    }
+
+    .about-grid,
+    .steps,
+    .poo-grid {
+        gap: 12px;
+    }
+
+    .about-card,
+    .step,
+    .poo-card {
+        padding: 22px;
+    }
+
+    /* Equipo en dos columnas con fotos más bajas */
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .member-photo {
+        height: 190px;
+    }
+
+    .member-info {
+        padding: 14px;
+    }
+
+    .member-info h3 {
+        font-size: 15px;
+    }
+
+    .member-info h4 {
+        font-size: 12px;
+    }
+
+    .member-initials {
+        font-size: 40px;
+    }
+
+    .document-card {
+        padding: 18px;
+    }
+}

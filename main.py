@@ -13,7 +13,7 @@ load_dotenv()
 from app.csrf import ErrorCSRF, verificar_csrf  # noqa: E402
 from app.db import inicializar_db  # noqa: E402  (después de cargar .env)
 from app.plantillas import render  # noqa: E402
-from app.rutas import admin, auth, cuenta, estudiante, tienda  # noqa: E402
+from app.rutas import admin, auth, cuenta, estudiante, pwa, tienda  # noqa: E402
 from app.sesion import SinPermiso  # noqa: E402
 
 logger = logging.getLogger("bee")
@@ -50,6 +50,7 @@ app.include_router(tienda.router)
 app.include_router(estudiante.router)
 app.include_router(cuenta.router)
 app.include_router(admin.router)
+app.include_router(pwa.router)
 
 
 @app.exception_handler(ErrorCSRF)

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block titulo %}Instalar la app{% endblock %}
+{% block clase_body %}pagina-centrada{% endblock %}
+{% block cuerpo %}
+<main class="tarjeta tarjeta-centrada instalar">
+    <a class="volver-inicio solo-web" href="/">← Volver a la página principal</a>
+    <img class="instalar-icono" src="/static/pwa/icono-192.png" alt="" width="96" height="96">
+    <h1>Instala Bee en tu celular</h1>
+    <p class="descripcion">Queda en tu pantalla de inicio como cualquier app: se abre a pantalla completa y entras directo a tu cuenta.</p>
+
+    <button class="boton" type="button" id="boton-instalar" hidden>📲 Instalar Bee</button>
+    <p class="aviso aviso-ok" id="instalada" hidden>¡Listo! Bee ya está en tu pantalla de inicio.</p>
+
+    <section class="pasos-instalar" data-plataforma="ios">
+        <h2>En iPhone (Safari)</h2>
+        <ol>
+            <li>Abre esta página en <strong>Safari</strong>.</li>
+            <li>Toca el botón <strong>Compartir</strong> <span aria-hidden="true">⬆️</span> de la barra de abajo.</li>
+            <li>Elige <strong>«Agregar a pantalla de inicio»</strong> y toca <strong>Agregar</strong>.</li>
+        </ol>
+    </section>
+    <section class="pasos-instalar" data-plataforma="android">
+        <h2>En Android (Chrome)</h2>
+        <ol>
+            <li>Toca <strong>«Instalar Bee»</strong> arriba, o abre el menú <strong>⋮</strong> de Chrome.</li>
+            <li>Elige <strong>«Instalar aplicación»</strong> (o «Agregar a la pantalla principal»).</li>
+            <li>Confirma con <strong>Instalar</strong>.</li>
+        </ol>
+    </section>
+    <section class="pasos-instalar" data-plataforma="escritorio">
+        <h2>En computador (Chrome o Edge)</h2>
+        <ol>
+            <li>Toca <strong>«Instalar Bee»</strong> arriba, o el ícono de instalar <span aria-hidden="true">⊕</span> al final de la barra de direcciones.</li>
+            <li>Confirma con <strong>Instalar</strong>.</li>
+        </ol>
+    </section>
+
+    <a class="boton boton-secundario" href="/login">Seguir en el navegador</a>
+</main>
+
+<script>
+    (function () {
+        // Si ya se abrió como app instalada, no hay nada que instalar.
+        if (matchMedia("(display-mode: standalone)").matches || navigator.standalone) {
+            location.replace("/app");
+            return;
+        }
+        const ua = navigator.userAgent;
+        const plataforma = /iPhone|iPad|iPod/.test(ua) ? "ios" : /Android/.test(ua) ? "android" : "escritorio";
+        document.querySelectorAll(".pasos-instalar").forEach(function (s) {
+            s.hidden = s.dataset.plataforma !== plataforma;
+        });
+
+        const boton = document.getElementById("boton-instalar");
+        let aviso = null;
+        window.addEventListener("beforeinstallprompt", function (e) {
+            e.preventDefault();
+            aviso = e;
+            boton.hidden = false;
+        });
+        boton.addEventListener("click", async function () {
+            if (!aviso) return;
+            aviso.prompt();
+            await aviso.userChoice;
+            aviso = null;
+            boton.hidden = true;
+        });
+        window.addEventListener("appinstalled", function () {
+            boton.hidden = true;
+            document.getElementById("instalada").hidden = false;
+        });
+    })();
+</script>
+{% endblock %}

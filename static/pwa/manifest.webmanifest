@@ -1,0 +1,19 @@
+{
+  "name": "Bee — Pide antes. Recoge sin fila.",
+  "short_name": "Bee",
+  "description": "Pide en las tiendas de tu universidad y recoge sin hacer fila.",
+  "lang": "es-CO",
+  "id": "/app",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F7F2",
+  "theme_color": "#FFDF35",
+  "categories": ["food", "shopping", "education"],
+  "icons": [
+    { "src": "/static/pwa/icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/static/pwa/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/static/pwa/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

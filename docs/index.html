@@ -13,7 +13,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#FFF1B8">
+    <link rel="stylesheet" href="styles.css?v=3">
 </head>
 
 <body>
@@ -30,7 +31,11 @@
                 </div>
             </a>
 
-            <nav aria-label="Menú principal">
+            <button class="menu-boton" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-principal">
+                <span></span><span></span><span></span>
+            </button>
+
+            <nav id="menu-principal" aria-label="Menú principal">
                 <a href="#inicio">Inicio</a>
                 <a href="#sobre">Sobre Bee</a>
                 <a href="#funciona">Cómo funciona</a>
@@ -44,6 +49,10 @@
 
                 <a href="/registro" class="btn btn-primary">
                     Registrarse
+                </a>
+
+                <a href="/instalar" class="btn btn-primary btn-app">
+                    📲 Descargar app
                 </a>
 
             </nav>
@@ -84,6 +93,10 @@
 
                         <a href="#funciona" class="btn btn-secondary">
                             Cómo funciona
+                        </a>
+
+                        <a href="/instalar" class="btn btn-secondary btn-descargar">
+                            📲 Descargar app
                         </a>
                     </div>
 
@@ -421,6 +434,26 @@
 
     </footer>
 
+    <script>
+        // Menú del celular: el botón ☰ abre y cierra el menú.
+        (function () {
+            const boton = document.querySelector(".menu-boton");
+            const menu = document.getElementById("menu-principal");
+            function cerrar() {
+                menu.classList.remove("abierto");
+                boton.setAttribute("aria-expanded", "false");
+                boton.setAttribute("aria-label", "Abrir menú");
+            }
+            boton.addEventListener("click", function () {
+                const abrir = !menu.classList.contains("abierto");
+                menu.classList.toggle("abierto", abrir);
+                boton.setAttribute("aria-expanded", String(abrir));
+                boton.setAttribute("aria-label", abrir ? "Cerrar menú" : "Abrir menú");
+            });
+            menu.addEventListener("click", function (e) { if (e.target.closest("a")) cerrar(); });
+            document.addEventListener("keydown", function (e) { if (e.key === "Escape") cerrar(); });
+        })();
+    </script>
 </body>
 </html>
 

@@ -2460,3 +2460,65 @@ button.insignia {
 .linea-tiempo .icono {
     margin-top: 1px;
 }
+
+/* =====================================================================
+   App instalable
+   ===================================================================== */
+
+/* Dentro de la app instalada no se muestra lo que lleva a la página web:
+   la app empieza y termina en Iniciar sesión / Registro. */
+@media (display-mode: standalone) {
+    .solo-web {
+        display: none !important;
+    }
+
+    .presentacion .logo {
+        pointer-events: none;
+    }
+}
+
+.instalar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.instalar .volver-inicio {
+    align-self: flex-start;
+    margin-bottom: 0;
+}
+
+.instalar-icono {
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.instalar h1 {
+    font-size: 26px;
+    margin: 6px 0 0;
+}
+
+.instalar .descripcion {
+    margin-bottom: 4px;
+}
+
+.pasos-instalar {
+    width: 100%;
+    padding: 16px 18px;
+    border-radius: var(--radio);
+    background: var(--fondo);
+    text-align: left;
+}
+
+.pasos-instalar h2 {
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.pasos-instalar ol {
+    padding-left: 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #44443c;
+}

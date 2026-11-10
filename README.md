@@ -85,6 +85,20 @@ Estas entidades sirven como base conceptual para organizar la información y las
 - **Administración** (`/admin`): los administradores crean estudiantes, tiendas y otros administradores, editan datos, suspenden o eliminan cuentas, ven los pedidos de todas las tiendas y agregan universidades. Cada administrador solo puede hacer lo que sus **permisos** le autorizan (ver más abajo).
 - **Regla de universidad:** un estudiante solo puede hacer pedidos en tiendas de su misma universidad. El servidor lo verifica en cada pedido.
 
+## App para el celular
+
+Bee se puede **instalar como app** (PWA) desde el navegador, sin tiendas de aplicaciones:
+
+- **Android (Chrome):** abre la página y toca «Instalar Bee», o menú ⋮ → «Instalar aplicación».
+- **iPhone (Safari):** botón Compartir → «Agregar a pantalla de inicio».
+- **Computador (Chrome o Edge):** ícono de instalar en la barra de direcciones.
+
+La página `/instalar` explica estos pasos y la página web tiene el botón **📲 Descargar app**. La app instalada se abre a pantalla completa y **empieza en Iniciar sesión / Registro** (`/app`); si ya hay una sesión abierta, entra directo al panel. Sin internet muestra una pantalla «Sin conexión».
+
+Archivos: `static/pwa/` (manifest, service worker e íconos) y `app/rutas/pwa.py`.
+
+> La instalación solo funciona con HTTPS, es decir, cuando la app esté publicada (por ejemplo en Render). En local funciona en `http://localhost`.
+
 ## Administradores y permisos
 
 Nadie puede registrarse como administrador desde la web. El **primer administrador** se crea desde la terminal, con la base de datos configurada en `.env`; recibe todos los permisos:
@@ -133,7 +147,8 @@ BEE/
 │       ├── tienda.py       # Panel de la tienda
 │       ├── estudiante.py   # Tiendas y pedidos del estudiante
 │       ├── cuenta.py       # Notificaciones, configuración y foto
-│       └── admin.py        # Panel de administración
+│       ├── admin.py        # Panel de administración
+│       └── pwa.py          # App instalable (manifest, service worker, /instalar)
 ├── scripts/
 │   ├── crear_admin.py      # Crea el primer administrador
 │   └── generar_diccionario.py  # Regenera docs/diccionario.html desde la base
