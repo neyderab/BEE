@@ -22,6 +22,7 @@ for variable in ("HOST", "PORT", "USER", "PASSWORD", "NAME", "SSLMODE"):
 os.environ["DB_PORT"] = os.environ["DB_PORT"] or "5432"
 os.environ["DB_SSLMODE"] = os.environ["DB_SSLMODE"] or "disable"
 os.environ["SECRET_KEY"] = "clave-de-pruebas"
+os.environ["PUSH_DESACTIVADO"] = "1"  # Las pruebas envían avisos push solo cuando lo piden.
 
 import base64  # noqa: E402
 import json  # noqa: E402

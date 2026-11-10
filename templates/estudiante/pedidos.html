@@ -34,6 +34,14 @@
     </p>
     {% endif %}
 
+    {% if p.estado == "listo" and p.codigo_recogida %}
+    <div class="codigo-recogida" aria-label="Código de recogida">
+        <small>Muestra este código en la tienda</small>
+        <strong>{{ p.codigo_recogida }}</strong>
+        <small>Sin el código no se entrega el pedido</small>
+    </div>
+    {% endif %}
+
     <ul class="items">
         {% for i in p["items"] %}
         <li><span>{{ i.cantidad }} × {{ i.nombre_producto }}</span><span>{{ (i.precio_unitario * i.cantidad)|pesos }}</span></li>
@@ -57,6 +65,7 @@
 
 {% block contenido %}
 <h1 class="app-h1">Mis pedidos</h1>
+{% include "_avisos_push.html" %}
 
 {% set en_curso = pedidos|selectattr("estado", "in", ["pendiente", "aceptado", "preparando", "listo"])|list %}
 {% set anteriores = pedidos|rejectattr("estado", "in", ["pendiente", "aceptado", "preparando", "listo"])|list %}

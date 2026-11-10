@@ -25,3 +25,4 @@ uvicorn==0.39.0
 pytest==9.2.0
 httpx==0.28.1
 alembic==1.20.1
+pywebpush==2.5.0

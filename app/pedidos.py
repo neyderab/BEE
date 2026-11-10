@@ -1,5 +1,6 @@
 """Pedidos: estados, tiempos, horario de las tiendas, pagos y notificaciones."""
 
+import secrets
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -23,7 +24,7 @@ TRANSICIONES = {
     "pendiente": ["aceptado", "cancelado"],
     "aceptado": ["preparando", "cancelado"],
     "preparando": ["listo", "cancelado"],
-    "listo": ["entregado"],
+    "listo": [],  # Se entrega solo con el código de recogida (ver entregar_con_codigo).
     "entregado": [],
     "cancelado": [],
 }
@@ -109,24 +110,46 @@ def ventana_recogida(pedido: dict) -> tuple[datetime, datetime] | None:
 
 # ---------- Notificaciones ----------
 
-def notificar(conexion, usuario_id: int | None, texto: str, pedido_id: int | None = None):
-    """Crea una notificación dentro de la transacción de `conexion`."""
+def notificar(conexion, usuario_id: int | None, texto: str, pedido_id: int | None = None, url: str = "/app"):
+    """Crea una notificación (campana) y la envía como aviso push al celular."""
     if usuario_id is None:  # El estudiante cerró su cuenta.
         return
     conexion.execute(
         "INSERT INTO notificaciones (usuario_id, pedido_id, texto) VALUES (%s, %s, %s)",
         (usuario_id, pedido_id, texto[:200]),
     )
+    from app.push import enviar_en_segundo_plano  # Evita una importación circular.
+
+    enviar_en_segundo_plano(usuario_id, texto, url)
 
 
-def mensaje_para_estudiante(estado: str, pedido_id: int, tienda: str, tiempo_min: int | None):
+# ---------- Código de recogida ----------
+
+def generar_codigo(conexion, tienda_id: int) -> str:
+    """Código de 4 dígitos que no repite el de otro pedido listo de la misma tienda."""
+    en_uso = {
+        f["codigo_recogida"]
+        for f in conexion.execute(
+            "SELECT codigo_recogida FROM pedidos WHERE tienda_id = %s AND estado = 'listo'", (tienda_id,)
+        )
+    }
+    while True:
+        codigo = f"{secrets.randbelow(10000):04d}"
+        if codigo not in en_uso:
+            return codigo
+
+
+def mensaje_para_estudiante(
+    estado: str, pedido_id: int, tienda: str, tiempo_min: int | None, codigo: str | None = None
+):
     if estado == "aceptado":
         espera = f" Estará listo en {texto_tiempo(tiempo_min)}." if tiempo_min else ""
         return f"{tienda} aceptó tu pedido #{pedido_id}.{espera}"
     if estado == "preparando":
         return f"Tu pedido #{pedido_id} está en preparación."
     if estado == "listo":
-        return f"¡Tu pedido #{pedido_id} está listo! Pásalo a recoger en {tienda}."
+        con_codigo = f" Muestra el código {codigo}" if codigo else " Pásalo a recoger"
+        return f"🐝 ¡Tu pedido #{pedido_id} está listo!{con_codigo} en {tienda}."
     if estado == "entregado":
         return f"Pedido #{pedido_id} entregado. ¡Buen provecho!"
     if estado == "cancelado":

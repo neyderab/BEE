@@ -2522,3 +2522,113 @@ button.insignia {
     line-height: 1.7;
     color: #44443c;
 }
+
+/* =====================================================================
+   Código de recogida, avisos push y cuenta
+   ===================================================================== */
+
+.codigo-recogida {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--amarillo);
+    text-align: center;
+}
+
+.codigo-recogida small {
+    font-size: 12px;
+    color: #514b22;
+}
+
+.codigo-recogida strong {
+    font-size: 44px;
+    letter-spacing: 12px;
+    padding-left: 12px; /* compensa el espacio de la última letra */
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.entregar-codigo {
+    padding: 12px;
+    border-radius: 14px;
+    background: var(--blanco);
+}
+
+.entregar-codigo label {
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.entregar-codigo div {
+    display: flex;
+    gap: 8px;
+}
+
+.entregar-codigo .campo {
+    margin: 0;
+    padding: 10px;
+    font-size: 20px;
+    letter-spacing: 6px;
+    text-align: center;
+    min-width: 0;
+}
+
+.entregar-codigo .boton {
+    padding: 10px 14px;
+}
+
+.avisos-push {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+}
+
+.avisos-push > div {
+    flex: 1;
+    min-width: 0;
+}
+
+.avisos-push small {
+    display: block;
+    color: var(--texto-suave);
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+.avisos-push-icono {
+    font-size: 24px;
+}
+
+.avisos-push[data-estado="activo"] {
+    background: var(--ok-suave);
+}
+
+.ajustes .avisos-push {
+    margin-bottom: 0;
+}
+
+.seccion-cuenta .accion-cuenta {
+    padding: 0;
+    border: none;
+}
+
+.seccion-cuenta p,
+.zona-peligro .accion-cuenta p {
+    color: var(--texto-suave);
+    font-size: 14px;
+}
+
+@media (max-width: 420px) {
+    .avisos-push {
+        flex-wrap: wrap;
+    }
+
+    .avisos-push .boton {
+        width: 100%;
+    }
+}

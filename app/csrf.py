@@ -41,3 +41,9 @@ async def verificar_csrf(request: Request) -> None:
     esperado = request.session.get(CAMPO)
     if not (esperado and enviado and secrets.compare_digest(str(enviado), esperado)):
         raise ErrorCSRF()
+
+
+@pass_context
+def valor_csrf(contexto) -> str:
+    """El token, para pedidos hechos con JavaScript (encabezado X-CSRF-Token)."""
+    return token_csrf(contexto["request"])

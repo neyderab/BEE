@@ -7,7 +7,7 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
 from app import permisos as P
-from app.csrf import campo_csrf
+from app.csrf import campo_csrf, valor_csrf
 from app.pedidos import (
     ACCIONES,
     ESTADOS,
@@ -80,6 +80,7 @@ templates.env.globals.update(
     P=P,
     tiene_permiso=P.tiene,
     campo_csrf=campo_csrf,
+    valor_csrf=valor_csrf,
     estatico=estatico,
 )
 

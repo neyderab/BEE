@@ -109,8 +109,9 @@ def test_estudiante_recibe_una_notificacion_por_cada_cambio(escenario):
     tienda, alumno, ids = escenario
     pedir(alumno, ids)
     pedido_id = ultimo_pedido()["id"]
-    for estado in ("aceptado", "preparando", "listo", "entregado"):
+    for estado in ("aceptado", "preparando", "listo"):
         tienda.post(f"/tienda/pedidos/{pedido_id}/estado", data={"estado": estado})
+    tienda.post("/tienda/entregar", data={"codigo": ultimo_pedido()["codigo_recogida"]})
     textos = notificaciones_de("3200000001")
     assert len(textos) == 4
     assert "en preparación" in textos[1]

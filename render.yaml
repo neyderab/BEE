@@ -28,3 +28,8 @@ services:
         sync: false
       - key: DB_NAME
         sync: false
+      # Notificaciones push: créalas con  python scripts/generar_claves_push.py
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false

@@ -12,6 +12,7 @@ from app.pedidos import (
     TIEMPOS,
     TRANSICIONES,
     agregar_items,
+    generar_codigo,
     leer_hora,
     mensaje_para_estudiante,
     menus_con_productos,
@@ -138,22 +139,54 @@ def cambiar_estado(
         elif estado not in TRANSICIONES[pedido["estado"]]:
             mostrar_mensaje(request, "Ese cambio de estado no es posible.", "error")
         else:
+            # Al quedar listo se crea el código que el estudiante mostrará al recoger.
+            codigo = generar_codigo(conexion, usuario["tienda_id"]) if estado == "listo" else None
             conexion.execute(
                 """
                 UPDATE pedidos
                 SET estado = %s,
-                    aceptado_en = CASE WHEN %s = 'aceptado' THEN now() ELSE aceptado_en END
+                    aceptado_en = CASE WHEN %s = 'aceptado' THEN now() ELSE aceptado_en END,
+                    codigo_recogida = COALESCE(%s, codigo_recogida)
                 WHERE id = %s
                 """,
-                (estado, estado, pedido_id),
+                (estado, estado, codigo, pedido_id),
             )
             notificar(
                 conexion,
                 pedido["estudiante_id"],
-                mensaje_para_estudiante(estado, pedido_id, usuario["tienda"], pedido["tiempo_min"]),
+                mensaje_para_estudiante(estado, pedido_id, usuario["tienda"], pedido["tiempo_min"], codigo),
                 pedido_id,
+                url="/estudiante/pedidos",
             )
             mostrar_mensaje(request, f"Pedido #{pedido_id}: {ESTADOS[estado]}.")
+    return RedirectResponse("/tienda", 303)
+
+
+@router.post("/entregar")
+def entregar_con_codigo(request: Request, codigo: str = Form(""), usuario: dict = Depends(tienda_en_sesion)):
+    """Entrega el pedido listo cuyo código de recogida dice el estudiante."""
+    codigo = codigo.strip()
+    with conectar() as conexion:
+        pedido = conexion.execute(
+            """
+            UPDATE pedidos p SET estado = 'entregado'
+            WHERE p.tienda_id = %s AND p.estado = 'listo' AND p.codigo_recogida = %s
+            RETURNING p.id, p.estudiante_id,
+                (SELECT nombre FROM usuarios WHERE id = p.estudiante_id) AS nombre
+            """,
+            (usuario["tienda_id"], codigo),
+        ).fetchone() if codigo.isdigit() and len(codigo) == 4 else None
+        if pedido:
+            notificar(
+                conexion, pedido["estudiante_id"],
+                mensaje_para_estudiante("entregado", pedido["id"], usuario["tienda"], None),
+                pedido["id"], url="/estudiante/pedidos",
+            )
+    if pedido:
+        quien = f" a {pedido['nombre']}" if pedido["nombre"] else ""
+        mostrar_mensaje(request, f"✅ Pedido #{pedido['id']} entregado{quien}.")
+    else:
+        mostrar_mensaje(request, "Ese código no corresponde a ningún pedido listo. Pídele al estudiante que lo revise.", "error")
     return RedirectResponse("/tienda", 303)
 
 

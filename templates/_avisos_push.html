@@ -1,0 +1,10 @@
+{# Tarjeta para activar las notificaciones push (la maneja static/push.js). #}
+<section class="tarjeta avisos-push" data-avisos-push hidden
+         data-descripcion="{{ 'Te avisamos al celular cuando llegue un pedido nuevo, aunque tengas Bee cerrada.' if usuario and usuario.rol == 'Tienda' else 'Te avisamos al celular cuando tu pedido esté listo, aunque tengas Bee cerrada.' }}">
+    <span class="avisos-push-icono" aria-hidden="true">🔔</span>
+    <div>
+        <strong>Avisos en tu celular</strong>
+        <small data-push-texto></small>
+    </div>
+    <button class="boton boton-auto boton-pequeno" type="button" data-push-boton>Activar avisos</button>
+</section>

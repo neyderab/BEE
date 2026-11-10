@@ -52,6 +52,8 @@
     <button class="boton boton-auto" type="submit">Guardar</button>
 </form>
 
+{% include "_avisos_push.html" %}
+
 <h2 class="titulo-seccion">Pedidos en curso <span class="contador">{{ en_curso }}</span></h2>
 
 {% macro tarjeta_pedido(p) %}
@@ -76,6 +78,7 @@
         {% endfor %}
     </ul>
     <p class="total"><span>Total · {{ METODOS_PAGO[p.metodo_pago][0] }}</span><strong>{{ p.total|pesos }}</strong></p>
+    {% if p.estado == "listo" %}<p class="ayuda ayuda-suelta">Pide al estudiante su código de 4 dígitos para entregarlo.</p>{% endif %}
     <div class="acciones">
         {% for siguiente in transiciones[p.estado] %}
         <form action="/tienda/pedidos/{{ p.id }}/estado" method="post"
@@ -95,6 +98,17 @@
     {% for estado, pedidos in columnas.items() %}
     <section class="columna columna-{{ estado }}">
         <h3>{{ "Por aceptar" if estado == "pendiente" else ESTADOS[estado] }} <span class="contador contador-suave">{{ pedidos|length }}</span></h3>
+        {% if estado == "listo" %}
+        <form class="entregar-codigo" action="/tienda/entregar" method="post">
+{{ campo_csrf() }}
+            <label for="codigo-entrega">Entregar con el código del estudiante</label>
+            <div>
+                <input class="campo" id="codigo-entrega" name="codigo" inputmode="numeric" pattern="[0-9]{4}"
+                       maxlength="4" placeholder="0000" autocomplete="off" required>
+                <button class="boton boton-auto" type="submit">Entregar</button>
+            </div>
+        </form>
+        {% endif %}
         {% for p in pedidos %}
             {{ tarjeta_pedido(p) }}
         {% else %}

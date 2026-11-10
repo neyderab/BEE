@@ -198,6 +198,7 @@ async def crear_pedido(
             f"Nuevo pedido #{pedido['id']} de {cliente} por {pesos(total)}"
             + (" (aceptado automáticamente)." if auto else ". Acéptalo para empezar."),
             pedido["id"],
+            url="/tienda",
         )
         if auto:
             notificar(
@@ -205,6 +206,7 @@ async def crear_pedido(
                 usuario["id"],
                 mensaje_para_estudiante("aceptado", pedido["id"], tienda["nombre"], tienda["tiempo_min"]),
                 pedido["id"],
+                url="/estudiante/pedidos",
             )
 
     if auto:
@@ -220,7 +222,7 @@ def ver_mis_pedidos(request: Request, usuario: dict = Depends(estudiante_en_sesi
     pedidos = todos(
         """
         SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en, p.metodo_pago, p.tienda_id,
-               p.tiempo_min, p.tiempo_max, p.aceptado_en, t.nombre AS tienda
+               p.tiempo_min, p.tiempo_max, p.aceptado_en, p.codigo_recogida, t.nombre AS tienda
         FROM pedidos p
         JOIN tiendas t ON t.id = p.tienda_id
         WHERE p.estudiante_id = %s
@@ -247,7 +249,7 @@ def cancelar_pedido(request: Request, pedido_id: int, usuario: dict = Depends(es
         ).fetchone()
         if pedido:
             cliente = f"{usuario['nombre']} {usuario['apellido']}".strip()
-            notificar(conexion, pedido["propietario_id"], f"{cliente} canceló el pedido #{pedido_id}.", pedido_id)
+            notificar(conexion, pedido["propietario_id"], f"{cliente} canceló el pedido #{pedido_id}.", pedido_id, url="/tienda")
     if pedido:
         mostrar_mensaje(request, f"Cancelaste el pedido #{pedido_id}.")
     else:

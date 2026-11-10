@@ -80,6 +80,7 @@ Estas entidades sirven como base conceptual para organizar la información y las
   - Ve solo las tiendas de **su universidad**, si están abiertas y su tiempo de preparación.
   - Agrega productos con los botones − y +, revisa el carrito y elige cómo pagar. Por ahora solo **efectivo** (al recoger); Nequi, tarjeta débito y tarjeta crédito aparecen como «Pronto».
   - Sigue cada pedido con una barra de progreso, lo **cancela** mientras la tienda no lo haya aceptado y lo **pide de nuevo** con un toque.
+  - Cuando el pedido está listo recibe un **código de recogida de 4 dígitos**. La tienda solo entrega el pedido si el estudiante le dice ese código, así nadie se lleva un pedido ajeno.
 - **Notificaciones:** la campana 🔔 avisa al estudiante cuando la tienda acepta, prepara, termina o cancela su pedido, y a la tienda cuando llega un pedido nuevo. Las páginas de pedidos se actualizan solas.
 - **Configuración** (`/configuracion`): ambos usuarios cambian su foto de perfil y su nombre (la tienda también el nombre de la tienda). El estudiante puede cerrar su cuenta desde ahí; la tienda debe escribir a admin@usebeeapp.com.
 - **Administración** (`/admin`): los administradores crean estudiantes, tiendas y otros administradores, editan datos, suspenden o eliminan cuentas, ven los pedidos de todas las tiendas y agregan universidades. Cada administrador solo puede hacer lo que sus **permisos** le autorizan (ver más abajo).
@@ -96,6 +97,20 @@ Bee se puede **instalar como app** (PWA) desde el navegador, sin tiendas de apli
 La página `/instalar` explica estos pasos y la página web tiene el botón **📲 Descargar app**. La app instalada se abre a pantalla completa y **empieza en Iniciar sesión / Registro** (`/app`); si ya hay una sesión abierta, entra directo al panel. Sin internet muestra una pantalla «Sin conexión».
 
 Archivos: `static/pwa/` (manifest, service worker e íconos) y `app/rutas/pwa.py`.
+
+### Avisos en el celular (notificaciones push)
+
+Bee avisa al celular aunque la app esté cerrada: a la tienda cuando llega un pedido y al estudiante cuando su pedido cambia de estado («🐝 ¡Tu pedido está listo! Muestra el código 4831…»). Cada usuario los activa con el botón **Activar avisos** (en Pedidos, Avisos o Configuración).
+
+- **Es gratis:** usa el servicio de notificaciones de cada navegador (Web Push). No hay que crear cuentas.
+- **Android:** funciona en el navegador y en la app instalada. **iPhone:** solo con la app instalada (iOS 16.4 o más).
+- **Claves:** en desarrollo se crean solas en `.claves_push.json`. Para producción, créalas una vez y guárdalas en las variables de entorno de Render:
+
+```bash
+python scripts/generar_claves_push.py
+```
+
+Copia las dos líneas que imprime (`VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY`). No las cambies después: los celulares que ya activaron los avisos tendrían que activarlos de nuevo.
 
 > La instalación solo funciona con HTTPS, es decir, cuando la app esté publicada (por ejemplo en Render). En local funciona en `http://localhost`.
 
@@ -140,6 +155,7 @@ BEE/
 │   ├── validacion.py       # Clase Formulario (validaciones)
 │   ├── csrf.py             # Protección de formularios
 │   ├── fotos.py            # Fotos de perfil y de productos
+│   ├── push.py             # Envío de notificaciones push
 │   ├── plantillas.py       # Jinja2 y mensajes
 │   ├── pedidos.py          # Estados, tiempos, horario, pagos y notificaciones
 │   └── rutas/
@@ -148,9 +164,10 @@ BEE/
 │       ├── estudiante.py   # Tiendas y pedidos del estudiante
 │       ├── cuenta.py       # Notificaciones, configuración y foto
 │       ├── admin.py        # Panel de administración
-│       └── pwa.py          # App instalable (manifest, service worker, /instalar)
+│       └── pwa.py          # App instalable y suscripción a avisos push
 ├── scripts/
 │   ├── crear_admin.py      # Crea el primer administrador
+│   ├── generar_claves_push.py  # Claves para las notificaciones push
 │   └── generar_diccionario.py  # Regenera docs/diccionario.html desde la base
 ├── templates/              # Páginas HTML (Jinja2)
 ├── static/                 # Estilos y JavaScript de los avisos

@@ -2,11 +2,12 @@
 
 from pathlib import Path
 
-from fastapi import APIRouter, Request
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
+from app import push
 from app.plantillas import render
-from app.sesion import cargar_usuario, pagina_inicio
+from app.sesion import cargar_usuario, pagina_inicio, usuario_en_sesion
 
 router = APIRouter()
 
@@ -47,3 +48,32 @@ def instalar(request: Request):
 @router.get("/offline")
 def sin_conexion(request: Request):
     return render(request, "offline.html", usuario=None)
+
+
+# ---------- Notificaciones push ----------
+
+@router.get("/push/clave")
+def clave_push():
+    """Clave pública que el navegador necesita para activar los avisos."""
+    return JSONResponse({"clave": push.claves()["publica"]})
+
+
+@router.post("/push/suscribir")
+async def suscribir_push(request: Request, usuario: dict = Depends(usuario_en_sesion)):
+    try:
+        suscripcion = await request.json()
+    except ValueError:
+        suscripcion = None
+    if not push.guardar_suscripcion(usuario["id"], suscripcion):
+        return JSONResponse({"ok": False}, status_code=400)
+    return JSONResponse({"ok": True})
+
+
+@router.post("/push/desuscribir")
+async def desuscribir_push(request: Request, usuario: dict = Depends(usuario_en_sesion)):
+    try:
+        endpoint = (await request.json()).get("endpoint", "")
+    except (ValueError, AttributeError):
+        endpoint = ""
+    push.borrar_suscripcion(endpoint, usuario["id"])
+    return JSONResponse({"ok": True})

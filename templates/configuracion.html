@@ -68,12 +68,21 @@
         </form>
     </section>
 
-    {% if usuario.rol == "Estudiante" %}
-    <a class="boton boton-secundario" href="/logout">Cerrar sesión</a>
-    {% endif %}
+    {% include "_avisos_push.html" %}
+
+    <section class="tarjeta seccion-cuenta">
+        <h2>Cuenta</h2>
+        <div class="accion-cuenta">
+            <div>
+                <strong>Cerrar sesión</strong>
+                <p>Sales de Bee en este dispositivo. Tus datos y pedidos se conservan.</p>
+            </div>
+            <a class="boton boton-auto boton-secundario" href="/logout">Cerrar sesión</a>
+        </div>
+    </section>
 
     <section class="tarjeta zona-peligro">
-        <h2>Cerrar cuenta</h2>
+        <h2>Eliminar cuenta</h2>
         {% if usuario.rol == "Admin" %}
         <p>Por seguridad, la cuenta de un administrador solo la puede eliminar otro administrador que tenga el permiso «Gestionar administradores».</p>
         {% elif usuario.rol == "Tienda" %}
@@ -85,13 +94,13 @@
         {% else %}
         <p>Se borrarán tus datos y tu foto. No podrás recuperar tu cuenta.</p>
         <details class="confirmar-cierre">
-            <summary class="enlace-peligro">Quiero cerrar mi cuenta</summary>
+            <summary class="enlace-peligro">Quiero eliminar mi cuenta</summary>
             <form action="/configuracion/cerrar-cuenta" method="post">
 {{ campo_csrf() }}
                 <label for="confirmacion">Escribe <strong>ELIMINAR</strong> para confirmar</label>
                 <input class="campo" id="confirmacion" name="confirmacion" autocomplete="off" required
                        pattern="[Ee][Ll][Ii][Mm][Ii][Nn][Aa][Rr]">
-                <button class="boton boton-auto boton-peligro" type="submit">Cerrar mi cuenta</button>
+                <button class="boton boton-auto boton-peligro" type="submit">Eliminar mi cuenta</button>
             </form>
         </details>
         {% endif %}
