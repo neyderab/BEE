@@ -1132,6 +1132,37 @@ nav a.btn-primary:hover {
 }
 
 
+.document-links {
+
+    list-style: none;
+
+    margin-top: 8px;
+
+    display: grid;
+
+    gap: 6px;
+
+    font-size: 12px;
+
+}
+
+
+.document-links li::before {
+
+    content: "↓ ";
+
+    color: var(--teal-dark);
+
+}
+
+
+.document-links a {
+
+    overflow-wrap: anywhere;
+
+}
+
+
 .arrow {
 
     color: var(--teal-dark);
