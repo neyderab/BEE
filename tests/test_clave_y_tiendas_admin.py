@@ -192,3 +192,30 @@ def test_permisos_de_la_seccion_tiendas(con_tienda, nuevo_cliente):
     assert "Eliminar tienda" not in solo_ver.get(f"/admin/tiendas/{tienda_id}").text
     assert solo_ver.post(f"/admin/tiendas/{tienda_id}/eliminar").status_code == 403
     assert uno("SELECT COUNT(*) AS n FROM tiendas")["n"] == 1
+
+
+# ---------- Editar el teléfono ----------
+
+def test_admin_cambia_el_telefono_de_un_usuario(cliente, nuevo_cliente):
+    crear_admin_con("3000000001")
+    objetivo = crear_admin_con("3000000002", [P.VER_USUARIOS])
+    registrar(cliente, "3200000001")
+    entrar(cliente, "3000000001")
+    datos = {"nombre": "Nuevo", "apellido": "Nombre"}
+    respuesta = cliente.post(f"/admin/usuarios/{objetivo}/datos", data={**datos, "telefono": "3200000001"})
+    assert "ya es de otra cuenta" in respuesta.text
+    respuesta = cliente.post(f"/admin/usuarios/{objetivo}/datos", data={**datos, "telefono": "12"})
+    assert "10 dígitos" in respuesta.text
+    respuesta = cliente.post(f"/admin/usuarios/{objetivo}/datos", data={**datos, "telefono": "3000000099"})
+    assert "Datos actualizados" in respuesta.text
+    assert usuarios.buscar_por_telefono("3000000002") is None
+    otro = nuevo_cliente()
+    assert str(entrar(otro, "3000000099").url).endswith("/admin")
+
+
+def test_admin_cambia_su_propio_telefono(cliente):
+    yo = crear_admin_con("3000000001")
+    entrar(cliente, "3000000001")
+    cliente.post(f"/admin/usuarios/{yo}/datos", data={"nombre": "Neyder", "apellido": "Arenas", "telefono": "3000000077"})
+    cliente.get("/logout")
+    assert str(entrar(cliente, "3000000077").url).endswith("/admin")

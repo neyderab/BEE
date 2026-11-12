@@ -150,15 +150,27 @@ def _guardar_permisos(conexion, usuario_id: int, permisos) -> None:
         )
 
 
-def actualizar_datos(usuario: dict, nombre: str, apellido: str, universidad_id=None, nombre_tienda=None) -> None:
-    """Cambia nombre y apellido; opcionalmente la universidad y el nombre de su tienda."""
-    with conectar() as conexion:
-        conexion.execute(
-            "UPDATE usuarios SET nombre = %s, apellido = %s, universidad_id = COALESCE(%s, universidad_id) WHERE id = %s",
-            (nombre, apellido, universidad_id, usuario["id"]),
-        )
-        if nombre_tienda is not None and usuario.get("tienda_id"):
-            conexion.execute("UPDATE tiendas SET nombre = %s WHERE id = %s", (nombre_tienda, usuario["tienda_id"]))
+def actualizar_datos(
+    usuario: dict, nombre: str, apellido: str, universidad_id=None, nombre_tienda=None, telefono=None
+) -> None:
+    """Cambia nombre y apellido; opcionalmente la universidad, el nombre de su tienda y el teléfono.
+
+    Lanza TelefonoRepetido si el teléfono nuevo ya es de otra cuenta.
+    """
+    try:
+        with conectar() as conexion:
+            conexion.execute(
+                """
+                UPDATE usuarios SET nombre = %s, apellido = %s,
+                       universidad_id = COALESCE(%s, universidad_id), telefono = COALESCE(%s, telefono)
+                WHERE id = %s
+                """,
+                (nombre, apellido, universidad_id, telefono, usuario["id"]),
+            )
+            if nombre_tienda is not None and usuario.get("tienda_id"):
+                conexion.execute("UPDATE tiendas SET nombre = %s WHERE id = %s", (nombre_tienda, usuario["tienda_id"]))
+    except psycopg.errors.UniqueViolation as error:
+        raise TelefonoRepetido(telefono) from error
 
 
 def completar_perfil(usuario: dict, universidad_id: int, nombre_tienda: str | None) -> None:

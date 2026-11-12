@@ -139,6 +139,7 @@ def editar_datos(
     usuario_id: int,
     nombre: str = Form(""),
     apellido: str = Form(""),
+    telefono: str = Form(""),
     universidad_id: str = Form(""),
     nombre_tienda: str = Form(""),
     usuario: dict = Depends(requiere_permiso(P.EDITAR_USUARIOS)),
@@ -147,7 +148,11 @@ def editar_datos(
     if error:
         return error
 
-    f = Formulario(nombre=nombre, apellido=apellido, universidad_id=universidad_id, nombre_tienda=nombre_tienda)
+    f = Formulario(
+        nombre=nombre, apellido=apellido, telefono=telefono or objetivo["telefono"],
+        universidad_id=universidad_id, nombre_tienda=nombre_tienda,
+    )
+    f.telefono()
     f.texto("nombre", "el nombre", 50)
     f.texto("apellido", "el apellido", 50)
     universidad = f.universidad() if objetivo["rol"] != ADMIN else None  # None: no se cambia.
@@ -157,10 +162,14 @@ def editar_datos(
         mostrar_mensaje(request, " ".join(f.errores.values()), "error")
         return ir_a_usuario(usuario_id)
 
-    usuarios.actualizar_datos(
-        objetivo, f["nombre"], f["apellido"], universidad,
-        f["nombre_tienda"] if objetivo["tienda_id"] else None,
-    )
+    try:
+        usuarios.actualizar_datos(
+            objetivo, f["nombre"], f["apellido"], universidad,
+            f["nombre_tienda"] if objetivo["tienda_id"] else None, telefono=f["telefono"],
+        )
+    except usuarios.TelefonoRepetido:
+        mostrar_mensaje(request, "Ese teléfono ya es de otra cuenta.", "error")
+        return ir_a_usuario(usuario_id)
     mostrar_mensaje(request, "Datos actualizados.")
     return ir_a_usuario(usuario_id)
 

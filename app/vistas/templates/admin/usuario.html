@@ -43,6 +43,11 @@
                     <input class="campo" id="apellido" name="apellido" value="{{ objetivo.apellido }}" maxlength="50" required>
                 </div>
             </div>
+            <label for="telefono">Teléfono (con este número inicia sesión)</label>
+            <div class="campo-telefono">
+                <span class="prefijo">+57</span>
+                <input type="tel" id="telefono" name="telefono" value="{{ objetivo.telefono }}" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required>
+            </div>
             {% if not es_admin %}
             <label for="universidad_id">Universidad</label>
             <select class="campo" id="universidad_id" name="universidad_id" required>
