@@ -51,4 +51,14 @@ def aplicar_migraciones() -> None:
     from alembic import command
     from alembic.config import Config
 
-    command.upgrade(Config(str(MIGRACIONES)), "head")
+    from sqlalchemy.exc import OperationalError
+
+    try:
+        command.upgrade(Config(str(MIGRACIONES)), "head")
+    except OperationalError as error:
+        destino = f"{os.getenv('DB_HOST') or '(DB_HOST vacío)'}:{os.getenv('DB_PORT', '5432')}"
+        raise SystemExit(
+            f"No se pudo conectar a PostgreSQL en {destino}, base de datos «{os.getenv('DB_NAME')}».\n"
+            "Revisa que PostgreSQL esté encendido y que los datos DB_* del archivo .env sean correctos.\n"
+            f"Detalle: {str(error.orig).splitlines()[0]}"
+        ) from None
