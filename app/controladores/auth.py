@@ -6,7 +6,8 @@ from fastapi.responses import FileResponse, RedirectResponse
 from app.config import CODIGO_PRUEBA, CORREO_SOPORTE, PRESENTACION
 from app.controladores.dependencias import pagina_inicio, usuario_actual, usuario_en_sesion
 from app.modelos import universidades, usuarios
-from app.modelos.usuarios import ESTUDIANTE, ROLES, TIENDA
+from app.modelos.usuarios import ADMIN, ESTUDIANTE, ROLES, TIENDA
+from app.servicios import claves
 from app.servicios.validacion import Formulario, telefono_valido
 from app.vistas.plantillas import render
 
@@ -15,6 +16,10 @@ router = APIRouter()
 # Teléfono que pidió el código. Se guarda en la sesión (firmada) y no en el
 # formulario, para que nadie pueda cambiarlo y entrar a la cuenta de otro.
 CLAVE_TELEFONO = "telefono_por_verificar"
+# Administrador que ya pasó el código y le falta la contraseña.
+CLAVE_ADMIN = "admin_por_clave"
+INTENTOS_ADMIN = "intentos_clave"
+MAXIMO_INTENTOS = 5
 
 
 @router.get("/")
@@ -116,8 +121,45 @@ def verificar_codigo(request: Request, codigo: str = Form("")):
         return RedirectResponse("/login", 303)
 
     request.session.clear()
+    if usuario["rol"] == ADMIN:
+        # Los administradores, además del código, escriben su contraseña.
+        if not usuarios.leer_clave_hash(usuario["id"]):
+            return render(
+                request, "auth/login.html", status_code=403,
+                error="Esta cuenta de administrador todavía no tiene contraseña. Defínela con "
+                      "«python scripts/crear_admin.py» o pídesela a otro administrador.",
+            )
+        request.session[CLAVE_ADMIN] = usuario["id"]
+        return render(request, "auth/clave.html")
+
     request.session["usuario_id"] = usuario["id"]
     return RedirectResponse(pagina_inicio(usuarios.cargar(usuario["id"])), 303)
+
+
+@router.post("/verificar-clave")
+def verificar_clave(request: Request, clave: str = Form("")):
+    usuario_id = request.session.get(CLAVE_ADMIN)
+    if not usuario_id:
+        return RedirectResponse("/login", 303)
+
+    usuario = usuarios.cargar(usuario_id)
+    if usuario and usuario["activo"] and claves.verificar(clave, usuarios.leer_clave_hash(usuario_id)):
+        request.session.clear()
+        request.session["usuario_id"] = usuario_id
+        return RedirectResponse(pagina_inicio(usuario), 303)
+
+    intentos = request.session.get(INTENTOS_ADMIN, 0) + 1
+    if intentos >= MAXIMO_INTENTOS or not usuario or not usuario["activo"]:
+        request.session.clear()
+        return render(
+            request, "auth/login.html", status_code=403,
+            error="Demasiados intentos con una contraseña incorrecta. Vuelve a empezar.",
+        )
+    request.session[INTENTOS_ADMIN] = intentos
+    return render(
+        request, "auth/clave.html", status_code=400,
+        error=f"Contraseña incorrecta. Te quedan {MAXIMO_INTENTOS - intentos} intentos.",
+    )
 
 
 @router.get("/logout")

@@ -1,0 +1,81 @@
+{% extends "layouts/app_base.html" %}
+{% block titulo %}{{ tienda.nombre }}{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo"><a href="/admin/tiendas">← Tiendas</a></p>
+        <h1>{{ tienda.nombre }}</h1>
+    </div>
+</div>
+
+<div class="estadisticas">
+    <div class="tarjeta estadistica"><strong>{{ tienda.productos }}</strong><span>Productos</span></div>
+    <div class="tarjeta estadistica"><strong>{{ tienda.pedidos_hoy }}</strong><span>Pedidos hoy</span></div>
+    <div class="tarjeta estadistica"><strong>{{ tienda.en_curso }}</strong><span>En curso</span></div>
+    <div class="tarjeta estadistica"><strong>{{ tienda.pedidos_total }}</strong><span>Pedidos en total</span></div>
+</div>
+
+<div class="ajustes">
+    <section class="tarjeta">
+        <h2>Datos</h2>
+        <dl class="datos-fijos">
+            <div><dt>Estado</dt><dd>{% if tienda.activo %}<span class="insignia insignia-listo">Activa</span>{% else %}<span class="insignia insignia-cancelado">Suspendida</span>{% endif %}</dd></div>
+            <div><dt>Ahora</dt><dd>{{ "Recibiendo pedidos" if abierta else "Cerrada" }}{% if tienda.hora_apertura and tienda.hora_cierre %} · {{ tienda.hora_apertura.strftime("%H:%M") }}–{{ tienda.hora_cierre.strftime("%H:%M") }}{% endif %}</dd></div>
+            <div><dt>Universidad</dt><dd>{{ tienda.universidad or "—" }}</dd></div>
+            <div><dt>Dueño</dt><dd>
+                {% if tiene_permiso(usuario, P.VER_USUARIOS) %}<a href="/admin/usuarios/{{ tienda.propietario_id }}">{{ tienda.propietario_nombre }} {{ tienda.propietario_apellido }}</a>
+                {% else %}{{ tienda.propietario_nombre }} {{ tienda.propietario_apellido }}{% endif %}
+            </dd></div>
+            <div><dt>Teléfono</dt><dd>+57 {{ tienda.telefono }}</dd></div>
+            <div><dt>Registrada</dt><dd>{{ tienda.registrada_en|fecha_corta }}</dd></div>
+        </dl>
+    </section>
+
+    <section class="tarjeta">
+        <h2>Menú</h2>
+        {% for m in menus %}
+        <h3 class="menu-admin-titulo">{{ m.nombre }}</h3>
+        {% if m.productos %}
+        <ul class="menu-admin">
+            {% for p in m.productos %}
+            <li class="{{ '' if p.disponible else 'agotado' }}">
+                <span>{{ p.nombre }}{% if not p.disponible %} <small>(agotado)</small>{% endif %}</span>
+                <strong>{{ p.precio|pesos }}</strong>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}<p class="ayuda ayuda-suelta">Sin productos.</p>{% endif %}
+        {% else %}
+        <p class="ayuda ayuda-suelta">Esta tienda todavía no ha creado su menú.</p>
+        {% endfor %}
+    </section>
+
+    {% if tiene_permiso(usuario, P.EDITAR_USUARIOS) or tiene_permiso(usuario, P.ELIMINAR_USUARIOS) %}
+    <section class="tarjeta zona-peligro">
+        <h2>Acciones</h2>
+        {% if tiene_permiso(usuario, P.EDITAR_USUARIOS) %}
+        <form class="accion-cuenta" action="/admin/tiendas/{{ tienda.id }}/estado" method="post">
+{{ campo_csrf() }}
+            <input type="hidden" name="activo" value="{{ '0' if tienda.activo else '1' }}">
+            <div>
+                <strong>{{ "Suspender tienda" if tienda.activo else "Reactivar tienda" }}</strong>
+                <p>{{ "Deja de aparecer para los estudiantes y su dueño no puede entrar. No se borra nada." if tienda.activo else "Vuelve a aparecer para los estudiantes y su dueño puede entrar." }}</p>
+            </div>
+            <button class="boton boton-auto {{ 'boton-secundario' if tienda.activo else '' }}" type="submit">{{ "Suspender" if tienda.activo else "Reactivar" }}</button>
+        </form>
+        {% endif %}
+        {% if tiene_permiso(usuario, P.ELIMINAR_USUARIOS) %}
+        <form class="accion-cuenta" action="/admin/tiendas/{{ tienda.id }}/eliminar" method="post"
+              onsubmit='return confirm({{ ("¿Eliminar definitivamente la tienda «" ~ tienda.nombre ~ "», su menú y su historial de pedidos? No se puede deshacer.")|tojson }})'>
+{{ campo_csrf() }}
+            <div>
+                <strong>Eliminar tienda</strong>
+                <p>Se borran la tienda, la cuenta de su dueño, su menú y su historial de pedidos. No se puede deshacer.</p>
+            </div>
+            <button class="boton boton-auto boton-peligro" type="submit">Eliminar</button>
+        </form>
+        {% endif %}
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

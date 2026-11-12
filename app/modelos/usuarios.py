@@ -115,16 +115,17 @@ def crear(
     universidad_id: int | None,
     nombre_tienda: str = "",
     permisos=(),
+    clave_hash: str | None = None,
 ) -> int:
     """Crea el usuario (y su tienda o sus permisos) en una sola transacción. Devuelve su id."""
     try:
         with conectar() as conexion:
             usuario_id = conexion.execute(
                 """
-                INSERT INTO usuarios (telefono, nombre, apellido, rol, universidad_id)
-                VALUES (%s, %s, %s, %s, %s) RETURNING id
+                INSERT INTO usuarios (telefono, nombre, apellido, rol, universidad_id, clave_hash)
+                VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
                 """,
-                (telefono, nombre, apellido, rol, universidad_id),
+                (telefono, nombre, apellido, rol, universidad_id, clave_hash),
             ).fetchone()["id"]
             if rol == TIENDA:
                 conexion.execute("INSERT INTO tiendas (usuario_id, nombre) VALUES (%s, %s)", (usuario_id, nombre_tienda))
@@ -166,6 +167,16 @@ def completar_perfil(usuario: dict, universidad_id: int, nombre_tienda: str | No
         conexion.execute("UPDATE usuarios SET universidad_id = %s WHERE id = %s", (universidad_id, usuario["id"]))
         if nombre_tienda is not None:
             conexion.execute("INSERT INTO tiendas (usuario_id, nombre) VALUES (%s, %s)", (usuario["id"], nombre_tienda))
+
+
+def leer_clave_hash(usuario_id: int) -> str | None:
+    """El hash de la contraseña del administrador (no se incluye en cargar() a propósito)."""
+    fila = uno("SELECT clave_hash FROM usuarios WHERE id = %s", (usuario_id,))
+    return fila["clave_hash"] if fila else None
+
+
+def guardar_clave(usuario_id: int, clave_hash: str) -> None:
+    ejecutar("UPDATE usuarios SET clave_hash = %s WHERE id = %s", (clave_hash, usuario_id))
 
 
 def cambiar_activo(usuario_id: int, activo: bool) -> None:

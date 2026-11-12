@@ -4,11 +4,13 @@ from app.modelos import permisos as P
 from app.modelos import usuarios
 from app.modelos.base_datos import conectar
 from scripts.crear_admin import main as crear_admin
-from tests.conftest import ANDES, USB, entrar, id_universidad, registrar
+from app.servicios import claves
+from tests.conftest import ANDES, CLAVE_ADMIN, USB, entrar, id_universidad, registrar
 
 
 def crear_admin_con(telefono, permisos, nombre="Admin"):
-    return usuarios.crear(telefono, nombre, "Prueba", "Admin", None, permisos=permisos)
+    return usuarios.crear(telefono, nombre, "Prueba", "Admin", None, permisos=permisos,
+                          clave_hash=claves.hashear(CLAVE_ADMIN))
 
 
 def id_de(telefono):
@@ -39,14 +41,14 @@ def superadmin(cliente, nuevo_cliente):
 
 def nuevo(admin, **datos):
     base = {"rol": "Estudiante", "telefono": "3111111111", "nombre": "Ana", "apellido": "Ruiz",
-            "universidad_id": str(id_universidad(USB))}
+            "universidad_id": str(id_universidad(USB)), "clave": CLAVE_ADMIN}
     return admin.post("/admin/usuarios", data={**base, **datos})
 
 
 # ---------- Primer administrador ----------
 
 def test_script_crea_el_primer_admin_con_todos_los_permisos(cliente):
-    assert crear_admin(["3000000009", "Neyder", "Arenas"]) == 0
+    assert crear_admin(["3000000009", "Neyder", "Arenas"], clave=CLAVE_ADMIN) == 0
     assert permisos_de("3000000009") == set(P.TODOS)
     respuesta = entrar(cliente, "3000000009")
     assert str(respuesta.url).endswith("/admin")
@@ -55,7 +57,7 @@ def test_script_crea_el_primer_admin_con_todos_los_permisos(cliente):
 
 def test_script_no_convierte_otras_cuentas_en_admin(cliente):
     registrar(cliente, "3001112233")
-    assert crear_admin(["3001112233", "X", "Y"]) == 1
+    assert crear_admin(["3001112233", "X", "Y"], clave=CLAVE_ADMIN) == 1
     assert permisos_de("3001112233") == set()
 
 

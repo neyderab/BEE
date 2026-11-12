@@ -58,6 +58,11 @@
         <label>Permisos del administrador</label>
         {{ casillas(permisos, valores.permisos or [], usuario) }}
         {% if errores.permisos %}<p class="error-campo">{{ errores.permisos }}</p>{% endif %}
+        <label for="clave">Contraseña inicial (mínimo 8 caracteres)</label>
+        <input class="campo {% if errores.clave %}con-error{% endif %}" type="password" id="clave" name="clave"
+               autocomplete="new-password" minlength="8" maxlength="128">
+        {% if errores.clave %}<p class="error-campo">{{ errores.clave }}</p>{% endif %}
+        <p class="ayuda">Dísela en persona. Podrá cambiarla en su Configuración.</p>
     </div>
     {% endif %}
 

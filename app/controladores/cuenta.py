@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse, RedirectResponse, Response
 from app.controladores.dependencias import usuario_en_sesion
 from app.modelos import menus, notificaciones, usuarios
 from app.modelos.usuarios import ADMIN, ESTUDIANTE, TIENDA
+from app.servicios import claves
 from app.servicios.fotos import leer_foto, respuesta_foto
 from app.servicios.validacion import Formulario
 from app.vistas.plantillas import mostrar_mensaje, render
@@ -72,6 +73,26 @@ def guardar_perfil(
 
     usuarios.actualizar_datos(usuario, f["nombre"], f["apellido"], nombre_tienda=f["tienda"] if es_tienda else None)
     mostrar_mensaje(request, "Tus datos se guardaron.")
+    return volver_a_configuracion()
+
+
+@router.post("/configuracion/clave")
+def cambiar_clave(
+    request: Request,
+    actual: str = Form(""),
+    nueva: str = Form(""),
+    confirmacion: str = Form(""),
+    usuario: dict = Depends(usuario_en_sesion),
+):
+    if usuario["rol"] != ADMIN:
+        mostrar_mensaje(request, "Solo los administradores usan contraseña.", "error")
+    elif not claves.verificar(actual, usuarios.leer_clave_hash(usuario["id"])):
+        mostrar_mensaje(request, "Tu contraseña actual no es correcta.", "error")
+    elif claves.problema(nueva, confirmacion):
+        mostrar_mensaje(request, claves.problema(nueva, confirmacion), "error")
+    else:
+        usuarios.guardar_clave(usuario["id"], claves.hashear(nueva))
+        mostrar_mensaje(request, "Tu contraseña se cambió.")
     return volver_a_configuracion()
 
 

@@ -70,6 +70,28 @@
 
     {% include "parciales/avisos_push.html" %}
 
+    {% if usuario.rol == "Admin" %}
+    <section class="tarjeta">
+        <h2>Contraseña de administrador</h2>
+        <form action="/configuracion/clave" method="post">
+{{ campo_csrf() }}
+            <label for="clave_actual">Contraseña actual</label>
+            <input class="campo" type="password" id="clave_actual" name="actual" autocomplete="current-password" maxlength="128" required>
+            <div class="dos-columnas">
+                <div>
+                    <label for="clave_nueva">Contraseña nueva</label>
+                    <input class="campo" type="password" id="clave_nueva" name="nueva" autocomplete="new-password" minlength="8" maxlength="128" required>
+                </div>
+                <div>
+                    <label for="clave_confirmacion">Repítela</label>
+                    <input class="campo" type="password" id="clave_confirmacion" name="confirmacion" autocomplete="new-password" minlength="8" maxlength="128" required>
+                </div>
+            </div>
+            <button class="boton boton-auto" type="submit">Cambiar contraseña</button>
+        </form>
+    </section>
+    {% endif %}
+
     <section class="tarjeta seccion-cuenta">
         <h2>Cuenta</h2>
         <div class="accion-cuenta">

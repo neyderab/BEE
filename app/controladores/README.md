@@ -13,7 +13,7 @@ La **C** de MVC: un router de FastAPI por área. Cada ruta:
 | `estudiante.py` | Estudiante | `/estudiante`, `/estudiante/tiendas/{id}`, `/estudiante/pedidos` |
 | `tienda.py` | Tienda | `/tienda` (pedidos, entregar, horario), `/tienda/menu` (menús y productos) |
 | `cuenta.py` | Todos | `/notificaciones`, `/configuracion`, fotos y eliminar cuenta |
-| `admin.py` | Administrador | `/admin` (usuarios, permisos, pedidos, universidades) |
+| `admin.py` | Administrador | `/admin` (usuarios, permisos, contraseñas, tiendas, pedidos, universidades) |
 | `pwa.py` | Todos | `/app`, `/manifest.webmanifest`, `/sw.js`, `/instalar`, `/offline`, `/push/*` |
 | `dependencias.py` | — | `usuario_en_sesion`, `estudiante_en_sesion`, `tienda_en_sesion`, `requiere_permiso(...)` |
 

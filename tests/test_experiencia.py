@@ -225,7 +225,7 @@ def test_las_paginas_incluyen_el_token(escenario):
 # ---------- Migraciones ----------
 
 def test_la_base_queda_en_la_ultima_migracion(cliente):
-    assert uno("SELECT version_num FROM alembic_version")["version_num"] == "0003"
+    assert uno("SELECT version_num FROM alembic_version")["version_num"] == "0004"
 
 
 def test_universidad_de_otra_tienda_sigue_bloqueada(escenario, cliente, nuevo_cliente):

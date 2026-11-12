@@ -106,6 +106,13 @@ def registrar(cliente, telefono, rol="Estudiante", universidad=USB, **extra):
     return cliente.post("/registrar", data=datos)
 
 
-def entrar(cliente, telefono):
+CLAVE_ADMIN = "clave-de-prueba-123"
+
+
+def entrar(cliente, telefono, clave=CLAVE_ADMIN):
+    """Inicia sesión; si la cuenta es de administrador, escribe también su contraseña."""
     cliente.post("/login", data={"telefono": telefono})
-    return cliente.post("/verificar-codigo", data={"codigo": "123456"})
+    respuesta = cliente.post("/verificar-codigo", data={"codigo": "123456"})
+    if 'action="/verificar-clave"' in respuesta.text:
+        respuesta = cliente.post("/verificar-clave", data={"clave": clave})
+    return respuesta

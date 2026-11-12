@@ -13,7 +13,8 @@
 
 <div class="estadisticas">
     <div class="tarjeta estadistica"><strong>{{ por_rol.get("Estudiante", 0) }}</strong><span>Estudiantes</span></div>
-    <div class="tarjeta estadistica"><strong>{{ por_rol.get("Tienda", 0) }}</strong><span>Tiendas</span></div>
+    {% if tiene_permiso(usuario, P.VER_USUARIOS) %}<a class="tarjeta estadistica" href="/admin/tiendas"><strong>{{ por_rol.get("Tienda", 0) }}</strong><span>Tiendas →</span></a>
+    {% else %}<div class="tarjeta estadistica"><strong>{{ por_rol.get("Tienda", 0) }}</strong><span>Tiendas</span></div>{% endif %}
     <div class="tarjeta estadistica"><strong>{{ por_rol.get("Admin", 0) }}</strong><span>Administradores</span></div>
     <div class="tarjeta estadistica"><strong>{{ pedidos.hoy }}</strong><span>Pedidos hoy</span></div>
     <div class="tarjeta estadistica"><strong>{{ pedidos.en_curso }}</strong><span>Pedidos en curso</span></div>

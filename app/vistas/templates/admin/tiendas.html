@@ -1,0 +1,51 @@
+{% extends "layouts/app_base.html" %}
+{% block titulo %}Tiendas{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <p class="sobretitulo">Administración</p>
+        <h1>Tiendas</h1>
+    </div>
+</div>
+
+<form class="tarjeta filtros" method="get">
+    <input class="campo" type="search" name="q" value="{{ filtros.q }}" placeholder="Buscar por tienda, dueño o teléfono" aria-label="Buscar">
+    <select class="campo" name="universidad_id" aria-label="Universidad">
+        <option value="">Todas las universidades</option>
+        {% for u in universidades %}<option value="{{ u.id }}" {% if filtros.universidad_id == u.id|string %}selected{% endif %}>{{ u.nombre }}</option>{% endfor %}
+    </select>
+    <select class="campo" name="estado" aria-label="Estado">
+        <option value="">Activas y suspendidas</option>
+        <option value="activa" {% if filtros.estado == "activa" %}selected{% endif %}>Solo activas</option>
+        <option value="suspendida" {% if filtros.estado == "suspendida" %}selected{% endif %}>Solo suspendidas</option>
+    </select>
+    <button class="boton boton-auto" type="submit">Filtrar</button>
+</form>
+
+{% if tiendas %}
+<div class="tarjeta tabla-contenedor">
+    <table class="tabla tabla-tiendas">
+        <thead><tr><th>Tienda</th><th>Universidad</th><th>Productos</th><th>Pedidos</th><th>Estado</th></tr></thead>
+        <tbody>
+            {% for t in tiendas %}
+            <tr>
+                <td>
+                    <a class="celda-tienda" href="/admin/tiendas/{{ t.id }}">
+                        <strong>{{ t.nombre }}</strong>
+                        <small>{{ t.propietario_nombre }} {{ t.propietario_apellido }} · +57 {{ t.telefono }}</small>
+                    </a>
+                </td>
+                <td>{{ t.universidad or "—" }}</td>
+                <td>{{ t.productos }}</td>
+                <td>{{ t.pedidos_total }}{% if t.en_curso %} <small>({{ t.en_curso }} en curso)</small>{% endif %}</td>
+                <td>{% if t.activo %}<span class="insignia insignia-listo">Activa</span>{% else %}<span class="insignia insignia-cancelado">Suspendida</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p class="ayuda ayuda-centrada">{{ tiendas|length }} tienda{{ "s" if tiendas|length != 1 }}.</p>
+{% else %}
+<div class="vacio"><p>No hay tiendas con esos filtros.</p></div>
+{% endif %}
+{% endblock %}

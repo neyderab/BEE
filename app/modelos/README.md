@@ -8,7 +8,7 @@ La **M** de MVC: los datos de Bee y las reglas del negocio. **Es la única capa 
 | `usuarios.py` | Roles (`Estudiante`, `Tienda`, `Admin`), crear usuarios, datos, foto, suspender y eliminar. |
 | `permisos.py` | Permisos de administrador: `tiene()`, `elegibles()` y `combinar()`. |
 | `universidades.py` | Listar, crear y contar universidades. |
-| `tiendas.py` | Horario (`tienda_abierta`, `estado_tienda`), tiempos de preparación y tiendas de una universidad. |
+| `tiendas.py` | Horario (`tienda_abierta`, `estado_tienda`), tiempos de preparación tiendas de una universidad (sin las suspendidas) y el listado para el administrador. |
 | `menus.py` | Menús y productos: precios, disponibilidad y fotos. |
 | `pedidos.py` | Estados y `TRANSICIONES`, pagos, código de recogida; `crear`, `cambiar_estado`, `entregar_con_codigo` y `cancelar_por_estudiante`. |
 | `notificaciones.py` | La campana: `notificar()` (también dispara el aviso push), contar y marcar como leídas. |

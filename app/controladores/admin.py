@@ -4,9 +4,10 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 
 from app.controladores.dependencias import SinPermiso, admin_en_sesion, requiere_permiso
-from app.modelos import pedidos, universidades, usuarios
+from app.modelos import menus, pedidos, tiendas, universidades, usuarios
 from app.modelos import permisos as P
 from app.modelos.usuarios import ADMIN, ESTUDIANTE, TIENDA, TODOS_LOS_ROLES
+from app.servicios import claves
 from app.servicios.validacion import Formulario
 from app.vistas.plantillas import mostrar_mensaje, render
 
@@ -83,6 +84,7 @@ def crear_usuario(
     universidad_id: str = Form(""),
     nombre_tienda: str = Form(""),
     permisos: list[str] = Form([]),
+    clave: str = Form(""),
     usuario: dict = Depends(requiere_permiso(P.CREAR_USUARIOS)),
 ):
     f = Formulario(
@@ -102,11 +104,14 @@ def crear_usuario(
     otorgados = P.elegibles(usuario, permisos) if rol == ADMIN else set()
     if rol == ADMIN and not otorgados:
         f.error("permisos", "Elige al menos un permiso para el administrador.")
+    if rol == ADMIN and claves.problema(clave):
+        f.error("clave", claves.problema(clave))
 
     if f.valido:
         try:
             nuevo_id = usuarios.crear(
-                f["telefono"], f["nombre"], f["apellido"], rol, universidad, f["nombre_tienda"], otorgados
+                f["telefono"], f["nombre"], f["apellido"], rol, universidad, f["nombre_tienda"], otorgados,
+                clave_hash=claves.hashear(clave) if rol == ADMIN else None,
             )
             mostrar_mensaje(request, f"Usuario {f['nombre']} {f['apellido']} creado.")
             return ir_a_usuario(nuevo_id)
@@ -184,6 +189,24 @@ def editar_permisos(
     return ir_a_usuario(usuario_id)
 
 
+@router.post("/usuarios/{usuario_id}/clave")
+def restablecer_clave(
+    request: Request, usuario_id: int, clave: str = Form(""),
+    usuario: dict = Depends(requiere_permiso(P.GESTIONAR_PERMISOS)),
+):
+    objetivo, error = cargar_objetivo(request, usuario, usuario_id, "clave")
+    if error:
+        return error
+    if objetivo["rol"] != ADMIN:
+        mostrar_mensaje(request, "Solo los administradores tienen contraseña.", "error")
+    elif claves.problema(clave):
+        mostrar_mensaje(request, claves.problema(clave), "error")
+    else:
+        usuarios.guardar_clave(usuario_id, claves.hashear(clave))
+        mostrar_mensaje(request, "Contraseña restablecida. Dísela en persona.")
+    return ir_a_usuario(usuario_id)
+
+
 @router.post("/usuarios/{usuario_id}/estado")
 def cambiar_estado_cuenta(
     request: Request, usuario_id: int, activo: str = Form(""),
@@ -214,6 +237,76 @@ def eliminar_usuario(request: Request, usuario_id: int, usuario: dict = Depends(
     usuarios.eliminar(usuario_id)
     mostrar_mensaje(request, f"Se eliminó la cuenta de {objetivo['nombre']} {objetivo['apellido']}.")
     return RedirectResponse("/admin/usuarios", 303)
+
+
+# ---------- Tiendas ----------
+# Una tienda es la cuenta de su dueño: suspenderla o eliminarla actúa sobre esa
+# cuenta, con las mismas reglas que en Usuarios.
+
+def ir_a_tienda(tienda_id: int) -> RedirectResponse:
+    return RedirectResponse(f"/admin/tiendas/{tienda_id}", 303)
+
+
+def tienda_no_existe(request: Request):
+    return render(request, "errores/error.html", status_code=404, texto="Esa tienda no existe.", volver="/admin/tiendas")
+
+
+@router.get("/tiendas")
+def listar_tiendas(
+    request: Request, q: str = "", universidad_id: str = "", estado: str = "",
+    usuario: dict = Depends(requiere_permiso(P.VER_USUARIOS)),
+):
+    return render(
+        request, "admin/tiendas.html", seccion="tiendas",
+        tiendas=tiendas.listar_para_admin(q, int(universidad_id) if universidad_id.isdigit() else None, estado),
+        universidades=universidades.listar(), filtros={"q": q, "universidad_id": universidad_id, "estado": estado},
+    )
+
+
+@router.get("/tiendas/{tienda_id}")
+def ver_tienda(request: Request, tienda_id: int, usuario: dict = Depends(requiere_permiso(P.VER_USUARIOS))):
+    tienda = tiendas.para_admin(tienda_id)
+    if tienda is None:
+        return tienda_no_existe(request)
+    return render(
+        request, "admin/tienda.html", seccion="tiendas", tienda=tienda,
+        abierta=tiendas.tienda_abierta(tienda), menus=menus.menus_con_productos(tienda_id),
+    )
+
+
+@router.post("/tiendas/{tienda_id}/estado")
+def cambiar_estado_tienda(
+    request: Request, tienda_id: int, activo: str = Form(""),
+    usuario: dict = Depends(requiere_permiso(P.EDITAR_USUARIOS)),
+):
+    tienda = tiendas.para_admin(tienda_id)
+    if tienda is None:
+        return tienda_no_existe(request)
+    activar = activo == "1"
+    usuarios.cambiar_activo(tienda["propietario_id"], activar)
+    mostrar_mensaje(
+        request,
+        f"«{tienda['nombre']}» está activa de nuevo." if activar
+        else f"«{tienda['nombre']}» quedó suspendida: no aparece para los estudiantes y su dueño no puede entrar.",
+    )
+    return ir_a_tienda(tienda_id)
+
+
+@router.post("/tiendas/{tienda_id}/eliminar")
+def eliminar_tienda(request: Request, tienda_id: int, usuario: dict = Depends(requiere_permiso(P.ELIMINAR_USUARIOS))):
+    tienda = tiendas.para_admin(tienda_id)
+    if tienda is None:
+        return tienda_no_existe(request)
+    if tienda["en_curso"]:
+        mostrar_mensaje(
+            request,
+            f"Tiene {tienda['en_curso']} pedido(s) en curso. Espera a que se entreguen o se cancelen, o suspéndela mientras tanto.",
+            "error",
+        )
+        return ir_a_tienda(tienda_id)
+    usuarios.eliminar(tienda["propietario_id"])  # Borra en cascada la tienda, su menú y sus pedidos.
+    mostrar_mensaje(request, f"Se eliminó la tienda «{tienda['nombre']}».")
+    return RedirectResponse("/admin/tiendas", 303)
 
 
 # ---------- Pedidos ----------

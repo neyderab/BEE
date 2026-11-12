@@ -126,13 +126,21 @@ Copia las dos líneas que imprime (`VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY`). No
 
 ## Administradores y permisos
 
-Nadie puede registrarse como administrador desde la web. El **primer administrador** se crea desde la terminal, con la base de datos configurada en `.env`; recibe todos los permisos:
+Nadie puede registrarse como administrador desde la web. El **primer administrador** se crea desde la terminal, con la base de datos configurada en `.env`; recibe todos los permisos y el script le pide una **contraseña** (mínimo 8 caracteres):
 
 ```bash
 python scripts/crear_admin.py 3001234567 Nombre Apellido
 ```
 
-Después, ese administrador entra con su teléfono y crea a los demás en **Usuarios → Nuevo usuario**, marcando los permisos de cada uno:
+Si el teléfono ya es de un administrador, el script le pone la contraseña nueva y le devuelve todos los permisos (sirve para recuperar el acceso).
+
+Los administradores entran en tres pasos: teléfono → código → **contraseña**. Tras 5 contraseñas incorrectas hay que empezar de nuevo. Cada administrador cambia su contraseña en **Configuración**, y quien tiene «Gestionar administradores» puede restablecer la de otro desde su ficha. Las contraseñas se guardan como hash scrypt (`app/servicios/claves.py`), nunca en texto plano.
+
+Después, ese administrador crea a los demás en **Usuarios → Nuevo usuario**, marcando los permisos de cada uno y su contraseña inicial.
+
+En **Tiendas** el administrador ve todas las tiendas con su dueño, universidad, productos y pedidos; puede abrir cada una para ver su menú, **suspenderla** (deja de aparecer para los estudiantes y su dueño no puede entrar, sin borrar nada) o **eliminarla** (se borran la tienda, la cuenta de su dueño, su menú y sus pedidos; no se permite si tiene pedidos en curso). Ver tiendas usa el permiso «Ver usuarios»; suspender, «Editar usuarios»; eliminar, «Eliminar usuarios».
+
+Permisos:
 
 | Permiso | Qué permite |
 |---|---|
@@ -246,7 +254,7 @@ Pasos en [Render](https://render.com):
 3. Cuando esté funcionando, crea el primer administrador desde la pestaña **Shell** del servicio: `python scripts/crear_admin.py 3001234567 Nombre Apellido`.
 4. En **Settings → Custom Domains** agrega `usebeeapp.com` y cambia los registros DNS del dominio como indique Render. Después desactiva GitHub Pages en el repositorio.
 
-> ⚠️ Antes de publicar para usuarios reales hay que reemplazar el código de prueba `123456` por el envío real de SMS. Con el código fijo, cualquiera que conozca un teléfono puede entrar a esa cuenta, incluidas las de administrador.
+> ⚠️ Antes de publicar para usuarios reales hay que reemplazar el código de prueba `123456` por el envío real de SMS. Con el código fijo, cualquiera que conozca un teléfono puede entrar a la cuenta de un estudiante o una tienda. Las cuentas de administrador están protegidas además por su contraseña.
 
 ## Diccionario de datos
 

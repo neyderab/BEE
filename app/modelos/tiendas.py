@@ -54,7 +54,7 @@ def buscar(tienda_id: int) -> dict | None:
         """
         SELECT t.id, t.nombre, t.tiempo_min, t.auto_aceptar, t.usuario_id AS propietario_id,
                t.abierta, t.hora_apertura, t.hora_cierre,
-               u.universidad_id, un.nombre AS universidad
+               u.universidad_id, u.activo AS propietario_activo, un.nombre AS universidad
         FROM tiendas t
         JOIN usuarios u ON u.id = t.usuario_id
         JOIN universidades un ON un.id = u.universidad_id
@@ -74,7 +74,7 @@ def listar_de_universidad(universidad_id: int) -> list[dict]:
         JOIN usuarios u ON u.id = t.usuario_id
         LEFT JOIN menus m ON m.tienda_id = t.id
         LEFT JOIN productos p ON p.menu_id = m.id
-        WHERE u.universidad_id = %s
+        WHERE u.universidad_id = %s AND u.activo  -- Las tiendas suspendidas no se muestran.
         GROUP BY t.id
         ORDER BY t.nombre
         """,
@@ -95,3 +95,43 @@ def guardar_disponibilidad(tienda_id: int, tiempo_min: int, auto_aceptar: bool, 
 def alternar_abierta(tienda_id: int) -> bool:
     """Abre o cierra la tienda. Devuelve True si quedó abierta."""
     return uno("UPDATE tiendas SET abierta = NOT abierta WHERE id = %s RETURNING abierta", (tienda_id,))["abierta"]
+
+
+# ---------- Administración ----------
+
+_RESUMEN_ADMIN = """
+    SELECT t.id, t.nombre, t.abierta, t.hora_apertura, t.hora_cierre, u.creado_en AS registrada_en,
+           u.id AS propietario_id, u.nombre AS propietario_nombre, u.apellido AS propietario_apellido,
+           u.telefono, u.activo, u.universidad_id, un.nombre AS universidad,
+           (SELECT COUNT(*) FROM productos p JOIN menus m ON m.id = p.menu_id WHERE m.tienda_id = t.id) AS productos,
+           (SELECT COUNT(*) FROM pedidos pe WHERE pe.tienda_id = t.id) AS pedidos_total,
+           (SELECT COUNT(*) FROM pedidos pe WHERE pe.tienda_id = t.id
+                AND pe.creado_en >= date_trunc('day', now())) AS pedidos_hoy,
+           (SELECT COUNT(*) FROM pedidos pe WHERE pe.tienda_id = t.id AND pe.estado = ANY(%(activos)s)) AS en_curso
+    FROM tiendas t
+    JOIN usuarios u ON u.id = t.usuario_id
+    LEFT JOIN universidades un ON un.id = u.universidad_id
+"""
+
+
+def listar_para_admin(q: str = "", universidad_id: int | None = None, estado: str = "") -> list[dict]:
+    """Todas las tiendas con su dueño y sus números, con búsqueda y filtros."""
+    from app.modelos.pedidos import ACTIVOS
+
+    condiciones, parametros = [], {"activos": list(ACTIVOS)}
+    if q.strip():
+        condiciones.append("(t.nombre ILIKE %(q)s OR u.nombre || ' ' || u.apellido ILIKE %(q)s OR u.telefono LIKE %(q)s)")
+        parametros["q"] = f"%{q.strip()}%"
+    if universidad_id:
+        condiciones.append("u.universidad_id = %(universidad_id)s")
+        parametros["universidad_id"] = universidad_id
+    if estado in ("activa", "suspendida"):
+        condiciones.append("u.activo" if estado == "activa" else "NOT u.activo")
+    donde = "WHERE " + " AND ".join(condiciones) if condiciones else ""
+    return todos(f"{_RESUMEN_ADMIN} {donde} ORDER BY t.nombre", parametros)
+
+
+def para_admin(tienda_id: int) -> dict | None:
+    from app.modelos.pedidos import ACTIVOS
+
+    return uno(f"{_RESUMEN_ADMIN} WHERE t.id = %(id)s", {"activos": list(ACTIVOS), "id": tienda_id})

@@ -1512,6 +1512,54 @@ button.insignia {
     text-decoration: underline;
 }
 
+.celda-tienda {
+    display: block;
+    text-decoration: none;
+}
+
+.celda-tienda small {
+    display: block;
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.celda-tienda:hover strong {
+    text-decoration: underline;
+}
+
+a.estadistica {
+    color: inherit;
+    text-decoration: none;
+}
+
+a.estadistica:hover {
+    border-color: var(--texto-suave);
+}
+
+.menu-admin-titulo {
+    margin: 14px 0 6px;
+    font-size: 15px;
+}
+
+.menu-admin {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.menu-admin li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--borde);
+    font-size: 14px;
+}
+
+.menu-admin li.agotado {
+    color: var(--texto-suave);
+}
+
 .insignia-rol-estudiante {
     background: var(--info-suave);
     color: var(--info);
@@ -2631,4 +2679,8 @@ button.insignia {
     .avisos-push .boton {
         width: 100%;
     }
+}
+
+.estadisticas + .ajustes {
+    margin-top: 18px;
 }

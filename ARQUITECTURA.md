@@ -126,7 +126,7 @@ flowchart LR
 | `usuarios.py` | Roles, crear usuarios (con su tienda o permisos), datos, foto, suspender y eliminar; búsqueda para el administrador. |
 | `permisos.py` | Los 7 permisos de administrador y sus reglas: nadie da permisos que no tiene. |
 | `universidades.py` | Listar, crear y contar estudiantes y tiendas por universidad. |
-| `tiendas.py` | Horario (abierta o cerrada, incluso pasando la medianoche), tiempos de preparación y tiendas de una universidad. |
+| `tiendas.py` | Horario (abierta o cerrada, incluso pasando la medianoche), tiempos de preparación, tiendas de una universidad (sin las suspendidas) y el listado con números para el administrador. |
 | `menus.py` | Menús y productos de una tienda: precios, disponibilidad y fotos. Solo afecta a la tienda dueña. |
 | `pedidos.py` | Estados y transiciones, métodos de pago, código de recogida y las operaciones crear, cambiar estado, entregar y cancelar. |
 | `notificaciones.py` | La campana: crear, contar y marcar avisos como leídos. También dispara el aviso push. |
@@ -150,7 +150,7 @@ flowchart LR
 | `estudiante.py` | Estudiante | Tiendas de su universidad, pedir, «pedir de nuevo», seguir y cancelar pedidos. |
 | `tienda.py` | Tienda | Tablero de pedidos, entregar con código, abrir/cerrar, horario, menús y productos. |
 | `cuenta.py` | Todos | Avisos, configuración del perfil, fotos, eliminar cuenta. |
-| `admin.py` | Administrador | Usuarios, permisos, pedidos de todas las tiendas, universidades. |
+| `admin.py` | Administrador | Usuarios, permisos, contraseñas, tiendas, pedidos de todas las tiendas, universidades. |
 | `pwa.py` | Todos | App instalable (`/app`, manifest, service worker, `/instalar`) y suscripción a avisos push. |
 | `dependencias.py` | — | `usuario_en_sesion`, `estudiante_en_sesion`, `tienda_en_sesion`, `requiere_permiso(...)`. |
 
@@ -345,7 +345,7 @@ erDiagram
     }
 ```
 
-**Migraciones:** `0001` aplica el esquema inicial (idempotente, conserva los datos existentes), `0002` agrega el horario, el método de pago y las fotos de productos, y `0003` agrega el código de recogida y las suscripciones push. Los cambios nuevos siempre van en una migración nueva (ver README, «Migraciones»).
+**Migraciones:** `0001` aplica el esquema inicial (idempotente, conserva los datos existentes), `0002` agrega el horario, el método de pago y las fotos de productos, `0003` agrega el código de recogida y las suscripciones push, y `0004` la contraseña de los administradores. Los cambios nuevos siempre van en una migración nueva (ver README, «Migraciones»).
 
 ---
 
@@ -353,11 +353,11 @@ erDiagram
 
 | Controlador | Rutas |
 |---|---|
-| `auth.py` | `GET /` · `GET /registro` · `POST /registrar` · `GET,POST /login` · `POST /verificar-codigo` · `GET /logout` · `GET,POST /completar-perfil` |
+| `auth.py` | `GET /` · `GET /registro` · `POST /registrar` · `GET,POST /login` · `POST /verificar-codigo` · `POST /verificar-clave` (administradores) · `GET /logout` · `GET,POST /completar-perfil` |
 | `estudiante.py` | `GET /estudiante` · `GET /estudiante/tiendas/{id}` · `POST /estudiante/tiendas/{id}/pedido` · `GET /estudiante/pedidos` · `POST /estudiante/pedidos/{id}/cancelar` |
 | `tienda.py` | `GET /tienda` · `POST /tienda/pedidos/{id}/estado` · `POST /tienda/entregar` · `POST /tienda/disponibilidad` · `POST /tienda/abrir-cerrar` · `GET /tienda/menu` · `POST /tienda/menus` · `POST /tienda/menus/{id}/eliminar` · `POST /tienda/menus/{id}/productos` · `POST /tienda/productos/{id}/editar · /disponibilidad · /eliminar · /foto · /foto/eliminar` |
-| `cuenta.py` | `GET /notificaciones` · `GET /notificaciones/resumen` · `POST /notificaciones/leidas` · `GET /configuracion` · `POST /configuracion/perfil · /foto · /foto/eliminar · /cerrar-cuenta` · `GET /fotos/{id}` · `GET /productos/{id}/foto` |
-| `admin.py` | `GET /admin` · `GET /admin/usuarios` · `GET /admin/usuarios/nuevo` · `POST /admin/usuarios` · `GET /admin/usuarios/{id}` · `POST /admin/usuarios/{id}/datos · /permisos · /estado · /eliminar` · `GET /admin/pedidos` · `GET,POST /admin/universidades` |
+| `cuenta.py` | `GET /notificaciones` · `GET /notificaciones/resumen` · `POST /notificaciones/leidas` · `GET /configuracion` · `POST /configuracion/perfil · /clave · /foto · /foto/eliminar · /cerrar-cuenta` · `GET /fotos/{id}` · `GET /productos/{id}/foto` |
+| `admin.py` | `GET /admin` · `GET /admin/usuarios` · `GET /admin/usuarios/nuevo` · `POST /admin/usuarios` · `GET /admin/usuarios/{id}` · `POST /admin/usuarios/{id}/datos · /permisos · /clave · /estado · /eliminar` · `GET /admin/tiendas` · `GET /admin/tiendas/{id}` · `POST /admin/tiendas/{id}/estado · /eliminar` · `GET /admin/pedidos` · `GET,POST /admin/universidades` |
 | `pwa.py` | `GET /app` · `GET /manifest.webmanifest` · `GET /sw.js` · `GET /instalar` · `GET /offline` · `GET /push/clave` · `POST /push/suscribir` · `POST /push/desuscribir` |
 
 En total son **58 rutas**. La documentación interactiva generada por FastAPI está en `http://127.0.0.1:8000/docs` con la app corriendo.

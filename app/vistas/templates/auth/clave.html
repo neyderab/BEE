@@ -1,0 +1,18 @@
+{% extends "layouts/auth_base.html" %}
+{% block titulo %}Contraseña de administrador{% endblock %}
+{% block formulario %}
+<span class="etiqueta">Administración</span>
+<h2>Escribe tu contraseña</h2>
+<p class="descripcion">Las cuentas de administrador tienen un paso más de seguridad.</p>
+
+<form action="/verificar-clave" method="post">
+{{ campo_csrf() }}
+    <label for="clave">Contraseña</label>
+    <input class="campo {% if error %}con-error{% endif %}" type="password" id="clave" name="clave"
+           autocomplete="current-password" maxlength="128" required autofocus>
+    {% if error %}<p class="error-campo">{{ error }}</p>{% endif %}
+    <button class="boton" type="submit">Entrar al panel</button>
+</form>
+
+<p class="alternativa"><a href="/login">Volver al inicio de sesión</a></p>
+{% endblock %}

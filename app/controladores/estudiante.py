@@ -14,6 +14,8 @@ router = APIRouter(prefix="/estudiante")
 def tienda_de_mi_universidad(request: Request, tienda_id: int, usuario: dict):
     """La tienda, o la página de error si no existe (404) o es de otra universidad (403)."""
     tienda = tiendas.buscar(tienda_id)
+    if tienda and not tienda["propietario_activo"]:
+        tienda = None  # Tienda suspendida por un administrador: como si no existiera.
     if tienda and tienda["universidad_id"] == usuario["universidad_id"]:
         return tienda, None
     if tienda is None:

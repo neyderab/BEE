@@ -48,6 +48,7 @@
         {% elif usuario.rol == "Admin" %}
             <a href="/admin" {% if seccion == "panel" %}aria-current="page"{% endif %}>Panel</a>
             {% if tiene_permiso(usuario, P.VER_USUARIOS) %}<a href="/admin/usuarios" {% if seccion == "usuarios" %}aria-current="page"{% endif %}>Usuarios</a>{% endif %}
+            {% if tiene_permiso(usuario, P.VER_USUARIOS) %}<a href="/admin/tiendas" {% if seccion == "tiendas" %}aria-current="page"{% endif %}>Tiendas</a>{% endif %}
             {% if tiene_permiso(usuario, P.VER_PEDIDOS) %}<a href="/admin/pedidos" {% if seccion == "pedidos" %}aria-current="page"{% endif %}>Pedidos</a>{% endif %}
             {% if tiene_permiso(usuario, P.GESTIONAR_UNIVERSIDADES) %}<a href="/admin/universidades" {% if seccion == "universidades" %}aria-current="page"{% endif %}>Universidades</a>{% endif %}
         {% endif %}

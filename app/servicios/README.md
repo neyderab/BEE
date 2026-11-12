@@ -8,4 +8,5 @@ Apoyo transversal que usan varias capas y que no es ni Modelo, ni Vista, ni Cont
 | `fotos.py` | Valida imágenes (máx. 5 MB) y las convierte en JPEG cuadrado. | Controladores `cuenta` y `tienda` |
 | `push.py` | Claves VAPID y envío de notificaciones push cifradas, en segundo plano. | `modelos/notificaciones.py`, controlador `pwa` |
 | `validacion.py` | Clase `Formulario`: lee campos, valida y acumula errores por campo. | Controladores |
+| `claves.py` | Contraseñas de administrador: hash scrypt con sal y verificación en tiempo constante. | Controladores `auth`, `admin`, `cuenta`; `scripts/crear_admin.py` |
 | `formato.py` | `pesos(12500)` → `$12.500`. | Vistas y modelo de pedidos |

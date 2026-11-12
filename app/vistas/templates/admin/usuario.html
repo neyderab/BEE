@@ -83,6 +83,19 @@
         <p class="ayuda ayuda-suelta">Necesitas el permiso «Gestionar administradores» para cambiar esto.</p>
         {% endif %}
     </section>
+
+    {% if not soy_yo and tiene_permiso(usuario, P.GESTIONAR_PERMISOS) %}
+    <section class="tarjeta">
+        <h2>Contraseña</h2>
+        <form action="/admin/usuarios/{{ objetivo.id }}/clave" method="post">
+{{ campo_csrf() }}
+            <label for="clave">Contraseña nueva (mínimo 8 caracteres)</label>
+            <input class="campo" type="password" id="clave" name="clave" autocomplete="new-password" minlength="8" maxlength="128" required>
+            <p class="ayuda">Úsalo si olvidó su contraseña. Dísela en persona.</p>
+            <button class="boton boton-auto boton-secundario" type="submit">Restablecer contraseña</button>
+        </form>
+    </section>
+    {% endif %}
     {% endif %}
 
     {% if not soy_yo and puedo_tocarlo and (tiene_permiso(usuario, P.EDITAR_USUARIOS) or tiene_permiso(usuario, P.ELIMINAR_USUARIOS)) %}
