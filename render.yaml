@@ -1,6 +1,5 @@
-# Configuración para publicar Bee en Render (https://render.com).
-# En Render: New → Blueprint → elige este repositorio. Después completa las
-# variables DB_* con los datos de la base PostgreSQL que ya usan.
+# Configuración para publicar Bee en Render (https://render.com)
+
 services:
   - type: web
     name: bee
@@ -28,7 +27,8 @@ services:
         sync: false
       - key: DB_NAME
         sync: false
-      # Notificaciones push: créalas con  python scripts/generar_claves_push.py
+
+      #Notificaciones
       - key: VAPID_PUBLIC_KEY
         sync: false
       - key: VAPID_PRIVATE_KEY
