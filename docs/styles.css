@@ -904,9 +904,11 @@ nav a.btn-primary:hover {
 
 .team-grid {
 
-    display: grid;
+    display: flex;
 
-    grid-template-columns: repeat(4, 1fr);
+    flex-wrap: wrap;
+
+    justify-content: center;
 
     gap: 20px;
 
@@ -914,6 +916,10 @@ nav a.btn-primary:hover {
 
 
 .member {
+
+    flex: 0 1 300px;
+
+    text-align: center;
 
     background: white;
 
@@ -1033,6 +1039,19 @@ nav a.btn-primary:hover {
     margin-top: 6px;
 
     font-size: 18px;
+
+}
+
+
+.member-desc {
+
+    margin-top: 10px;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+
+    color: var(--gray);
 
 }
 
@@ -1284,9 +1303,9 @@ footer {
     }
 
 
-    .team-grid {
+    .member {
 
-        grid-template-columns: repeat(2, 1fr);
+        flex-basis: calc(50% - 10px);
 
     }
 
@@ -1381,9 +1400,11 @@ footer {
     }
 
 
-    .team-grid {
+    .member {
 
-        grid-template-columns: 1fr;
+        flex-basis: 100%;
+
+        max-width: 380px;
 
     }
 
@@ -1600,10 +1621,17 @@ nav a,
         padding: 22px;
     }
 
-    /* Equipo en dos columnas con fotos más bajas */
+    /* Equipo en dos columnas con fotos más bajas; la tercera queda centrada */
     .team-grid {
-        grid-template-columns: repeat(2, 1fr);
         gap: 12px;
+    }
+
+    .member {
+        flex-basis: calc(50% - 6px);
+    }
+
+    .member-desc {
+        font-size: 12px;
     }
 
     .member-photo {

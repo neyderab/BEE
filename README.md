@@ -291,7 +291,6 @@ Proyecto desarrollado por:
 | **Neyder Arenas** | Programación y backend |
 | **Nicole Lamprea** | Diseño visual y CSS |
 | **Camilo Cueto** | Documentación y pruebas |
-| **Daniel Muñoz** | Documentación, implementación de proyectos y pruebas |
 
 ## Documentación
 
