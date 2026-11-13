@@ -141,3 +141,13 @@ def test_cuenta_de_prueba_muestra_el_codigo_ante_cualquier_fallo_de_twilio(clien
     pagina = pedir_codigo(cliente)
     assert pagina.status_code == 200 and "482913" in pagina.text
     assert str(cliente.post("/verificar-codigo", data={"codigo": "482913"}).url).endswith("/estudiante")
+
+
+def test_una_pestana_vieja_no_rompe_el_inicio_de_sesion(cliente):
+    """La campana de otra pestaña sin sesión no debe borrar el token del formulario («La página venció»)."""
+    registrar(cliente, "3200000001")
+    pagina = cliente.post("/login", data={"telefono": "3200000001"})
+    token = re.search(r'name="csrf" value="([^"]+)"', pagina.text).group(1)
+    assert cliente.get("/notificaciones/resumen").status_code == 401  # Pestaña vieja, sin sesión.
+    respuesta = cliente.post("/verificar-codigo", data={"codigo": "123456", "csrf": token}, sin_csrf=True)
+    assert str(respuesta.url).endswith("/estudiante")

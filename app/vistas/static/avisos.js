@@ -28,6 +28,7 @@
     async function revisar() {
         try {
             const r = await fetch("/notificaciones/resumen", { headers: { "Accept": "application/json" } });
+            if (r.status === 401) { clearInterval(intervalo); return; }  // La sesión terminó: dejar de preguntar.
             if (!r.ok || !(r.headers.get("content-type") || "").includes("json")) return;
             const datos = await r.json();
             if (ultimaId !== null && datos.ultima_id > ultimaId) {
@@ -60,6 +61,6 @@
         });
     }
 
+    const intervalo = setInterval(revisar, 15000);
     revisar();
-    setInterval(revisar, 15000);
 })();

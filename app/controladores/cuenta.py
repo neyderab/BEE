@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 
-from app.controladores.dependencias import usuario_en_sesion
+from app.controladores.dependencias import usuario_actual, usuario_en_sesion
 from app.modelos import menus, notificaciones, usuarios
 from app.modelos.usuarios import ADMIN, ESTUDIANTE, TIENDA
 from app.servicios import claves
@@ -30,8 +30,15 @@ def ver_notificaciones(request: Request, usuario: dict = Depends(usuario_en_sesi
 
 
 @router.get("/notificaciones/resumen")
-def resumen_notificaciones(usuario: dict = Depends(usuario_en_sesion)):
-    """Lo consulta la página cada pocos segundos para avisar de novedades."""
+def resumen_notificaciones(request: Request):
+    """Lo consulta la página cada pocos segundos para avisar de novedades.
+
+    Sin sesión responde 401 y no toca la sesión: así una pestaña vieja no
+    interrumpe un inicio de sesión en curso en otra pestaña.
+    """
+    usuario = usuario_actual(request)
+    if usuario is None:
+        return JSONResponse({"error": "sin sesión"}, status_code=401)
     recientes = notificaciones.recientes(usuario["id"], limite=1)
     ultima = recientes[0] if recientes else {"id": 0, "texto": ""}
     return JSONResponse(

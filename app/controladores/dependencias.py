@@ -40,7 +40,9 @@ def usuario_en_sesion(request: Request) -> dict:
     """Dependencia: exige una sesión iniciada."""
     usuario = usuario_actual(request)
     if usuario is None:
-        request.session.clear()
+        # Solo se quita el usuario: borrar toda la sesión eliminaría también el token
+        # CSRF y el inicio de sesión que esté en curso en otra pestaña («La página venció»).
+        request.session.pop("usuario_id", None)
         raise redirigir("/login")
     request.state.usuario = usuario
     return usuario
