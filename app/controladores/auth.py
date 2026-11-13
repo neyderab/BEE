@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import FileResponse, RedirectResponse
 
-from app.config import CODIGO_PRUEBA, CORREO_SOPORTE, PRESENTACION
+from app.config import CORREO_SOPORTE, PRESENTACION
 from app.controladores.dependencias import pagina_inicio, usuario_actual, usuario_en_sesion
 from app.modelos import universidades, usuarios
 from app.modelos.usuarios import ADMIN, ESTUDIANTE, ROLES, TIENDA
@@ -16,6 +16,8 @@ router = APIRouter()
 # Teléfono que pidió el código. Se guarda en la sesión (firmada) y no en el
 # formulario, para que nadie pueda cambiarlo y entrar a la cuenta de otro.
 CLAVE_TELEFONO = "telefono_por_verificar"
+# Código que se muestra en pantalla (modo de prueba, o número sin verificar en la cuenta trial).
+CLAVE_CODIGO_VISIBLE = "codigo_visible"
 # Administrador que ya pasó el código y le falta la contraseña.
 CLAVE_ADMIN = "admin_por_clave"
 INTENTOS_ADMIN = "intentos_clave"
@@ -100,18 +102,19 @@ def iniciar_sesion(request: Request, telefono: str = Form("")):
         )
 
     try:
-        sms.enviar_codigo(telefono)
+        codigo_visible = sms.enviar_codigo(telefono)
     except sms.SMSNoDisponible as error:
         return render(request, "auth/login.html", status_code=503, error=str(error), telefono=telefono)
     request.session[CLAVE_TELEFONO] = telefono
+    request.session[CLAVE_CODIGO_VISIBLE] = codigo_visible
     return pagina_verificar(request, telefono)
 
 
 def pagina_verificar(request: Request, telefono: str, status_code: int = 200, error: str | None = None):
-    # El cuadro con el código de prueba solo se muestra mientras no se envían SMS reales.
+    # El cuadro «Código de prueba» solo aparece cuando el código no llegó por SMS.
     return render(
         request, "auth/verificar.html", status_code=status_code, telefono=telefono,
-        codigo_prueba=None if sms.activo() else CODIGO_PRUEBA, error=error,
+        codigo_prueba=request.session.get(CLAVE_CODIGO_VISIBLE), error=error,
     )
 
 

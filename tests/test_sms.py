@@ -13,12 +13,14 @@ class TwilioFalso:
     """Reemplaza httpx.post y responde como la API de mensajes de Twilio."""
 
     def __init__(self):
-        self.caido, self.mensajes = False, []
+        self.caido, self.mensajes, self.verificados = False, [], None
 
     def __call__(self, url, data=None, auth=None, timeout=None):
         if self.caido:
             raise httpx.ConnectError("sin conexión")
         self.mensajes.append((url, data, auth))
+        if self.verificados is not None and data["To"] not in self.verificados:
+            return httpx.Response(400, json={"code": 21608, "message": "The number is unverified.", "status": 400})
         return httpx.Response(201, json={"sid": "SMprueba", "status": "queued"})
 
     def ultimo_codigo(self):
@@ -110,3 +112,23 @@ def test_cuenta_de_prueba_envia_la_plantilla_2fa_y_acepta_su_codigo(cliente, twi
     assert twilio.mensajes[0][1]["Body"] == "sms_2fa"
     assert cliente.post("/verificar-codigo", data={"codigo": "123456"}).status_code == 400
     assert str(cliente.post("/verificar-codigo", data={"codigo": "482913"}).url).endswith("/estudiante")
+
+
+def test_cuenta_de_prueba_con_numero_no_verificado_muestra_el_codigo(cliente, twilio, monkeypatch, nuevo_cliente):
+    monkeypatch.setenv("TWILIO_CUENTA_DE_PRUEBA", "1")
+    twilio.verificados = {"+573200000001"}
+    registrar(cliente, "3200000001")
+    registrar(cliente, "3200000002")
+    verificado = nuevo_cliente()
+    assert "Código de prueba" not in verificado.post("/login", data={"telefono": "3200000001"}).text
+    otro = nuevo_cliente()
+    pagina = otro.post("/login", data={"telefono": "3200000002"})
+    assert pagina.status_code == 200 and "Código de prueba" in pagina.text and "482913" in pagina.text
+    assert str(otro.post("/verificar-codigo", data={"codigo": "482913"}).url).endswith("/estudiante")
+
+
+def test_cuenta_paga_no_muestra_codigo_si_twilio_rechaza(cliente, twilio):
+    twilio.verificados = set()  # Twilio rechaza a todos, pero sin cuenta de prueba no hay plan B.
+    registrar(cliente, "3200000001")
+    pagina = pedir_codigo(cliente)
+    assert pagina.status_code == 503 and "482913" not in pagina.text
