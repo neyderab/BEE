@@ -106,8 +106,9 @@ def enviar_codigo(telefono: str) -> str | None:
 
 def codigo_correcto(telefono: str, codigo: str) -> bool:
     """¿El código que escribió el usuario es el que le llegó por SMS?"""
-    codigo = codigo.strip()
+    codigo = "".join(codigo.split())  # Acepta "482 913" o con espacios al copiar y pegar.
     if not (codigo.isdigit() and len(codigo) == 6):
+        logger.warning("Código rechazado para …%s: no tiene 6 dígitos.", telefono[-4:])
         return False
     if not activo():
         return codigo == CODIGO_PRUEBA

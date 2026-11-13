@@ -1,6 +1,10 @@
 """Códigos de verificación por SMS: se guarda solo su HMAC, con vencimiento e intentos."""
 
+import logging
+
 from app.modelos.base_datos import conectar, ejecutar, uno
+
+logger = logging.getLogger(__name__)
 
 MINUTOS_VIGENCIA = 10
 MAXIMO_INTENTOS = 5
@@ -37,15 +41,25 @@ def comprobar(telefono: str, coincide) -> bool:
     """
     with conectar() as conexion:
         fila = conexion.execute(
-            "SELECT codigo_hash, intentos FROM codigos_verificacion WHERE telefono = %s AND expira_en > now() FOR UPDATE",
+            "SELECT codigo_hash, intentos, expira_en > now() AS vigente FROM codigos_verificacion WHERE telefono = %s FOR UPDATE",
             (telefono,),
         ).fetchone()
-        if fila is None or fila["intentos"] >= MAXIMO_INTENTOS:
+        # El motivo queda en el registro (sin el código) para poder revisar fallos en Render.
+        final = f"…{telefono[-4:]}"
+        if fila is None:
+            logger.warning("Código rechazado para %s: no hay un código pendiente (pide uno nuevo en /login).", final)
+            return False
+        if not fila["vigente"]:
+            logger.warning("Código rechazado para %s: venció (pasaron más de %s minutos).", final, MINUTOS_VIGENCIA)
+            return False
+        if fila["intentos"] >= MAXIMO_INTENTOS:
+            logger.warning("Código rechazado para %s: ya se usaron los %s intentos.", final, MAXIMO_INTENTOS)
             return False
         if coincide(fila["codigo_hash"]):
             conexion.execute("DELETE FROM codigos_verificacion WHERE telefono = %s", (telefono,))
             return True
         conexion.execute("UPDATE codigos_verificacion SET intentos = intentos + 1 WHERE telefono = %s", (telefono,))
+        logger.warning("Código rechazado para %s: no coincide (intento %s de %s).", final, fila["intentos"] + 1, MAXIMO_INTENTOS)
         return False
 
 
