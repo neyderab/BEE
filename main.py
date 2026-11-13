@@ -8,9 +8,10 @@
 Inicia la app con:  python3 main.py   (ver ARQUITECTURA.md)
 """
 
+import asyncio
 import logging
 import os
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
@@ -19,6 +20,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.config import COOKIE_SEGURA, ESTATICOS, PRESENTACION, SECRET_KEY, SECRET_KEY_DE_DESARROLLO
 from app.controladores import admin, auth, cuenta, estudiante, pwa, tienda
 from app.controladores.dependencias import SinPermiso
+from app.modelos import pedidos
 from app.modelos.base_datos import aplicar_migraciones
 from app.servicios.csrf import ErrorCSRF, verificar_csrf
 from app.vistas.plantillas import render
@@ -27,10 +29,24 @@ if SECRET_KEY_DE_DESARROLLO:
     logging.getLogger("bee").warning("SECRET_KEY no está definida en .env; usando una clave de desarrollo.")
 
 
+async def revisar_pedidos_vencidos():
+    """Cada minuto cancela los pedidos aceptados que no avanzaron (ver pedidos.cancelar_vencidos)."""
+    while True:
+        await asyncio.sleep(60)
+        try:
+            await asyncio.to_thread(pedidos.cancelar_vencidos)
+        except Exception:  # Un fallo pasajero de la base no debe detener la revisión.
+            logging.getLogger("bee").exception("No se pudieron revisar los pedidos vencidos.")
+
+
 @asynccontextmanager
 async def ciclo_de_vida(app: FastAPI):
     aplicar_migraciones()  # Pone la base de datos al día antes de atender pedidos.
+    revision = asyncio.create_task(revisar_pedidos_vencidos())
     yield
+    revision.cancel()
+    with suppress(asyncio.CancelledError):
+        await revision
 
 
 # Todo POST exige el token CSRF (app/servicios/csrf.py).

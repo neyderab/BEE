@@ -4,6 +4,8 @@ Reglas principales:
 - Un estudiante solo pide en tiendas de su universidad y si la tienda está abierta.
 - La tienda avanza el pedido según TRANSICIONES; «entregado» solo se marca
   con el código de recogida que el estudiante muestra.
+- Un pedido aceptado que pasa MINUTOS_SIN_AVANZAR sin cambiar de estado se
+  cancela solo (cancelar_vencidos).
 - Cada cambio genera una notificación (campana y aviso push).
 """
 
@@ -48,6 +50,8 @@ ACCIONES = {
 }
 
 ACTIVOS = ("pendiente", "aceptado", "preparando", "listo")
+# Un pedido aceptado que no avanza en este tiempo se cancela automáticamente.
+MINUTOS_SIN_AVANZAR = 30
 CANTIDAD_MAXIMA = 20  # Unidades por producto en un pedido.
 
 # Métodos de pago: (nombre, disponible). Por ahora solo se acepta efectivo.
@@ -66,6 +70,13 @@ class PedidoInvalido(Exception):
 
 def metodo_disponible(metodo: str) -> bool:
     return METODOS_PAGO.get(metodo, ("", False))[1]
+
+
+def vence_en(pedido: dict) -> datetime | None:
+    """Hasta cuándo puede seguir «aceptado» antes de cancelarse solo."""
+    if pedido.get("estado") != "aceptado" or pedido.get("aceptado_en") is None:
+        return None
+    return pedido["aceptado_en"] + timedelta(minutes=MINUTOS_SIN_AVANZAR)
 
 
 def ventana_recogida(pedido: dict) -> tuple[datetime, datetime] | None:
@@ -124,11 +135,13 @@ def agregar_items(pedidos: list[dict]) -> list[dict]:
     for pedido in pedidos:
         pedido["items"] = por_pedido[pedido["id"]]
         pedido["ventana"] = ventana_recogida(pedido)
+        pedido["vence_en"] = vence_en(pedido)
     return pedidos
 
 
 def de_tienda(tienda_id: int) -> list[dict]:
     """Pedidos de una tienda con los datos del estudiante (sin el código de recogida)."""
+    cancelar_vencidos()
     return agregar_items(todos(
         f"""
         SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en, p.metodo_pago,
@@ -144,6 +157,7 @@ def de_tienda(tienda_id: int) -> list[dict]:
 
 
 def de_estudiante(estudiante_id: int, limite: int = 30) -> list[dict]:
+    cancelar_vencidos()
     return agregar_items(todos(
         """
         SELECT p.id, p.estado, p.hora_recogida, p.total, p.creado_en, p.metodo_pago, p.tienda_id,
@@ -183,6 +197,7 @@ def resumen_hoy() -> dict:
 
 def listar_todos(universidad_id: int | None = None, estado: str = "", limite: int = 100) -> list[dict]:
     """Pedidos de todas las tiendas, con filtros (para el administrador)."""
+    cancelar_vencidos()
     condiciones, parametros = [], []
     if universidad_id:
         condiciones.append("dueno.universidad_id = %s")
@@ -342,3 +357,38 @@ def entregar_con_codigo(tienda: dict, codigo: str) -> dict | None:
                 pedido["id"], url="/estudiante/pedidos",
             )
     return pedido
+
+
+# ---------- Cancelación automática ----------
+
+def cancelar_vencidos() -> int:
+    """Cancela los pedidos aceptados que llevan MINUTOS_SIN_AVANZAR sin cambiar de estado.
+
+    Avisa al estudiante y a la tienda. Se llama cada minuto desde main.py y
+    también antes de mostrar listas de pedidos, por si el servidor estuvo
+    dormido. Devuelve cuántos canceló.
+    """
+    with conectar() as conexion:
+        vencidos = conexion.execute(
+            """
+            UPDATE pedidos p SET estado = 'cancelado'
+            FROM tiendas t
+            WHERE t.id = p.tienda_id AND p.estado = 'aceptado'
+              AND p.aceptado_en < now() - make_interval(mins => %s)
+            RETURNING p.id, p.estudiante_id, t.usuario_id AS propietario_id, t.nombre AS tienda
+            """,
+            (MINUTOS_SIN_AVANZAR,),
+        ).fetchall()
+        for p in vencidos:
+            notificar(
+                conexion, p["estudiante_id"],
+                f"Tu pedido #{p['id']} en {p['tienda']} se canceló porque la tienda no lo empezó a preparar "
+                f"en {MINUTOS_SIN_AVANZAR} minutos. Puedes pedirlo de nuevo.",
+                p["id"], url="/estudiante/pedidos",
+            )
+            notificar(
+                conexion, p["propietario_id"],
+                f"El pedido #{p['id']} se canceló solo: pasaron {MINUTOS_SIN_AVANZAR} minutos sin empezar a prepararlo.",
+                p["id"], url="/tienda",
+            )
+    return len(vencidos)

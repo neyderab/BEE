@@ -90,6 +90,7 @@ Las entidades principales (Estudiante, Universidad, Tienda, Producto, Pedido) so
   - Ve solo las tiendas de **su universidad**, si están abiertas y su tiempo de preparación.
   - Agrega productos con los botones − y +, revisa el carrito y elige cómo pagar. Por ahora solo **efectivo** (al recoger); Nequi, tarjeta débito y tarjeta crédito aparecen como «Pronto».
   - Sigue cada pedido con una barra de progreso, lo **cancela** mientras la tienda no lo haya aceptado y lo **pide de nuevo** con un toque.
+  - Si la tienda acepta un pedido pero no lo empieza a preparar en **30 minutos**, el pedido se **cancela solo** y se avisa al estudiante y a la tienda. La tienda ve en cada pedido aceptado hasta qué hora tiene para empezar.
   - Cuando el pedido está listo recibe un **código de recogida de 4 dígitos**. La tienda solo entrega el pedido si el estudiante le dice ese código, así nadie se lleva un pedido ajeno.
 - **Notificaciones:** la campana 🔔 avisa al estudiante cuando la tienda acepta, prepara, termina o cancela su pedido, y a la tienda cuando llega un pedido nuevo. Las páginas de pedidos se actualizan solas.
 - **Configuración** (`/configuracion`): ambos usuarios cambian su foto de perfil y su nombre (la tienda también el nombre de la tienda). El estudiante puede cerrar su cuenta desde ahí; la tienda debe escribir a admin@usebeeapp.com.

@@ -128,7 +128,7 @@ flowchart LR
 | `universidades.py` | Listar, crear y contar estudiantes y tiendas por universidad. |
 | `tiendas.py` | Horario (abierta o cerrada, incluso pasando la medianoche), tiempos de preparación, tiendas de una universidad (sin las suspendidas) y el listado con números para el administrador. |
 | `menus.py` | Menús y productos de una tienda: precios, disponibilidad y fotos. Solo afecta a la tienda dueña. |
-| `pedidos.py` | Estados y transiciones, métodos de pago, código de recogida y las operaciones crear, cambiar estado, entregar y cancelar. |
+| `pedidos.py` | Estados y transiciones, métodos de pago, código de recogida y las operaciones crear, cambiar estado, entregar, cancelar y cancelar solos los aceptados que pasan 30 minutos sin avanzar (`cancelar_vencidos`, que `main.py` ejecuta cada minuto). |
 | `notificaciones.py` | La campana: crear, contar y marcar avisos como leídos. También dispara el aviso push. |
 | `suscripciones_push.py` | Celulares que reciben avisos push de cada usuario. |
 
@@ -248,7 +248,7 @@ stateDiagram-v2
     pendiente --> aceptado: la tienda acepta
     pendiente --> cancelado: la tienda rechaza o el estudiante cancela
     aceptado --> preparando: la tienda empieza
-    aceptado --> cancelado: la tienda cancela
+    aceptado --> cancelado: la tienda cancela o pasan 30 min sin avanzar
     preparando --> listo: se crea el código de recogida
     preparando --> cancelado: la tienda cancela
     listo --> entregado: la tienda escribe el código correcto

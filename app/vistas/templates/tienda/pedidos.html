@@ -79,6 +79,7 @@
     </ul>
     <p class="total"><span>Total · {{ METODOS_PAGO[p.metodo_pago][0] }}</span><strong>{{ p.total|pesos }}</strong></p>
     {% if p.estado == "listo" %}<p class="ayuda ayuda-suelta">Pide al estudiante su código de 4 dígitos para entregarlo.</p>{% endif %}
+    {% if p.vence_en %}<p class="ayuda ayuda-suelta">⏱️ Empieza a prepararlo antes de las <strong>{{ p.vence_en|hora }}</strong> o se cancelará automáticamente.</p>{% endif %}
     <div class="acciones">
         {% for siguiente in transiciones[p.estado] %}
         <form action="/tienda/pedidos/{{ p.id }}/estado" method="post"
