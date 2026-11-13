@@ -265,6 +265,8 @@ Mientras no haya credenciales de Twilio, el código de verificación es siempre 
 
 Bee crea un código de 6 dígitos, guarda solo su HMAC en la tabla `codigos_verificacion` (vence a los 10 minutos, máximo 5 intentos, un envío cada 30 segundos) y lo envía con la API de mensajes de Twilio. En la cuenta de prueba solo llegan SMS a los números verificados en **Phone Numbers → Verified Caller IDs**, y hay que permitir Colombia en **Messaging → Settings → Geo permissions**.
 
+**Cuenta de prueba (trial) de Twilio:** solo permite sus plantillas predefinidas, no un texto propio (error `572006`). Con `TWILIO_CUENTA_DE_PRUEBA=1` Bee envía la plantilla de 2FA (`sms_2fa`), que trae siempre el código `482913`, y acepta ese código. Sirve para demostrar el SMS real, pero **no es seguro para usuarios reales**: con una cuenta paga se borra esa variable y cada SMS lleva un código distinto.
+
 > ⚠️ Sin Twilio, cualquiera que conozca un teléfono puede entrar a la cuenta de un estudiante o una tienda. Las cuentas de administrador están protegidas además por su contraseña.
 
 ## Diccionario de datos

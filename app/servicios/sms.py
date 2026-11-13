@@ -10,6 +10,11 @@ Se activa con tres variables de entorno (Render → Environment, o el .env):
     TWILIO_NUMERO        Número de Twilio que envía los SMS, con +, por ejemplo +15551234567
 
 Sin ellas, Bee sigue en modo de prueba: no envía nada y el código es 123456.
+
+Cuenta de prueba (trial) de Twilio: solo deja enviar sus plantillas predefinidas. Con
+TWILIO_CUENTA_DE_PRUEBA=1, Bee envía la plantilla de 2FA («sms_2fa»), que trae siempre
+el código 482913, y acepta ese código. Sirve para demostrar el envío real de SMS, pero
+NO es seguro para usuarios reales (el código no cambia): con una cuenta paga se quita.
 """
 
 import hashlib
@@ -27,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 URL_MENSAJES = "https://api.twilio.com/2010-04-01/Accounts/{cuenta}/Messages.json"
 PREFIJO_PAIS = "+57"  # Colombia: los teléfonos se guardan con 10 dígitos, sin el +57.
+PLANTILLA_2FA = "sms_2fa"       # Plantilla de 2FA de la cuenta de prueba de Twilio...
+CODIGO_PLANTILLA_2FA = "482913"  # ...que siempre envía este código.
 
 
 class SMSNoDisponible(Exception):
@@ -43,6 +50,11 @@ def activo() -> bool:
     return _credenciales() is not None
 
 
+def cuenta_de_prueba() -> bool:
+    """True si Twilio es una cuenta de prueba: se envía la plantilla de 2FA con su código fijo."""
+    return os.getenv("TWILIO_CUENTA_DE_PRUEBA", "").strip() == "1"
+
+
 def _huella(telefono: str, codigo: str) -> str:
     """HMAC con SECRET_KEY: aunque alguien leyera la base, no podría sacar el código."""
     return hmac.new(SECRET_KEY.encode(), f"{telefono}:{codigo}".encode(), hashlib.sha256).hexdigest()
@@ -54,14 +66,17 @@ def enviar_codigo(telefono: str) -> None:
         return
     if codigos.enviado_hace_poco(telefono):
         raise SMSNoDisponible("Ya te enviamos un código. Espera unos segundos antes de pedir otro.")
-    codigo = f"{secrets.randbelow(10**6):06d}"
+    if cuenta_de_prueba():
+        codigo, texto = CODIGO_PLANTILLA_2FA, PLANTILLA_2FA
+    else:
+        codigo = f"{secrets.randbelow(10**6):06d}"
+        texto = f"Tu código de Bee es {codigo}. Vence en {codigos.MINUTOS_VIGENCIA} minutos."
     codigos.guardar(telefono, _huella(telefono, codigo))
     cuenta, token, numero = _credenciales()
     try:
         respuesta = httpx.post(
             URL_MENSAJES.format(cuenta=cuenta),
-            data={"To": PREFIJO_PAIS + telefono, "From": numero,
-                  "Body": f"Tu código de Bee es {codigo}. Vence en {codigos.MINUTOS_VIGENCIA} minutos."},
+            data={"To": PREFIJO_PAIS + telefono, "From": numero, "Body": texto},
             auth=(cuenta, token), timeout=10,
         )
     except httpx.HTTPError as error:

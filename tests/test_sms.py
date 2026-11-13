@@ -101,3 +101,12 @@ def test_si_twilio_falla_se_avisa_y_no_se_entra(cliente, twilio):
     assert pagina.status_code == 503 and "No pudimos enviar el SMS" in pagina.text
     assert uno("SELECT COUNT(*) AS n FROM codigos_verificacion")["n"] == 0
     assert str(cliente.get("/estudiante").url).endswith("/login")
+
+
+def test_cuenta_de_prueba_envia_la_plantilla_2fa_y_acepta_su_codigo(cliente, twilio, monkeypatch):
+    monkeypatch.setenv("TWILIO_CUENTA_DE_PRUEBA", "1")
+    registrar(cliente, "3200000001")
+    pedir_codigo(cliente)
+    assert twilio.mensajes[0][1]["Body"] == "sms_2fa"
+    assert cliente.post("/verificar-codigo", data={"codigo": "123456"}).status_code == 400
+    assert str(cliente.post("/verificar-codigo", data={"codigo": "482913"}).url).endswith("/estudiante")

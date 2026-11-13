@@ -41,3 +41,5 @@ services:
         sync: false
       - key: TWILIO_NUMERO
         sync: false
+      - key: TWILIO_CUENTA_DE_PRUEBA
+        sync: false
