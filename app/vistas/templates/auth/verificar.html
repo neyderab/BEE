@@ -5,10 +5,12 @@
 <h2>Verifica tu número</h2>
 <p class="descripcion">Ingresa el código que enviamos al +57 {{ telefono }}.</p>
 
+{% if codigo_prueba %}
 <div class="codigo-prueba">
     Código de prueba
     <strong>{{ codigo_prueba }}</strong>
 </div>
+{% endif %}
 
 <form action="/verificar-codigo" method="post">
 {{ campo_csrf() }}
@@ -20,5 +22,5 @@
     <button class="boton" type="submit">Verificar y continuar</button>
 </form>
 
-<p class="alternativa"><a href="/login">Volver al inicio de sesión</a></p>
+<p class="alternativa">¿No te llegó? <a href="/login">Pide un código nuevo</a></p>
 {% endblock %}

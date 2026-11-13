@@ -255,7 +255,17 @@ Pasos en [Render](https://render.com):
 3. Cuando esté funcionando, crea el primer administrador desde la pestaña **Shell** del servicio: `python scripts/crear_admin.py 3001234567 Nombre Apellido`.
 4. En **Settings → Custom Domains** agrega `usebeeapp.com` y cambia los registros DNS del dominio como indique Render. Después desactiva GitHub Pages en el repositorio.
 
-> ⚠️ Antes de publicar para usuarios reales hay que reemplazar el código de prueba `123456` por el envío real de SMS. Con el código fijo, cualquiera que conozca un teléfono puede entrar a la cuenta de un estudiante o una tienda. Las cuentas de administrador están protegidas además por su contraseña.
+### Código por SMS (Twilio)
+
+Mientras no haya credenciales de Twilio, el código de verificación es siempre `123456` (modo de prueba). Para enviarlo por SMS de verdad (`app/servicios/sms.py`):
+
+1. En [twilio.com](https://www.twilio.com) → **Verify → Services → Create**, nombre `Bee`, canal **SMS**.
+2. Copia el **Account SID** y el **Auth Token** (página principal de la consola) y el **Service SID** del servicio (empieza por `VA`).
+3. En Render → **Environment** agrega `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` y `TWILIO_VERIFY_SERVICE_SID`, y vuelve a publicar.
+
+Twilio genera el código, lo vence a los 10 minutos y limita los intentos. En la cuenta de prueba de Twilio solo llegan SMS a los números verificados en **Phone Numbers → Verified Caller IDs**.
+
+> ⚠️ Sin Twilio, cualquiera que conozca un teléfono puede entrar a la cuenta de un estudiante o una tienda. Las cuentas de administrador están protegidas además por su contraseña.
 
 ## Diccionario de datos
 

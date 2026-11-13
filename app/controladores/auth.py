@@ -7,7 +7,7 @@ from app.config import CODIGO_PRUEBA, CORREO_SOPORTE, PRESENTACION
 from app.controladores.dependencias import pagina_inicio, usuario_actual, usuario_en_sesion
 from app.modelos import universidades, usuarios
 from app.modelos.usuarios import ADMIN, ESTUDIANTE, ROLES, TIENDA
-from app.servicios import claves
+from app.servicios import claves, sms
 from app.servicios.validacion import Formulario, telefono_valido
 from app.vistas.plantillas import render
 
@@ -99,8 +99,20 @@ def iniciar_sesion(request: Request, telefono: str = Form("")):
             error=f"Esta cuenta está suspendida. Escríbenos a {CORREO_SOPORTE}.", telefono=telefono,
         )
 
+    try:
+        sms.enviar_codigo(telefono)
+    except sms.SMSNoDisponible as error:
+        return render(request, "auth/login.html", status_code=503, error=str(error), telefono=telefono)
     request.session[CLAVE_TELEFONO] = telefono
-    return render(request, "auth/verificar.html", telefono=telefono, codigo_prueba=CODIGO_PRUEBA)
+    return pagina_verificar(request, telefono)
+
+
+def pagina_verificar(request: Request, telefono: str, status_code: int = 200, error: str | None = None):
+    # El cuadro con el código de prueba solo se muestra mientras no se envían SMS reales.
+    return render(
+        request, "auth/verificar.html", status_code=status_code, telefono=telefono,
+        codigo_prueba=None if sms.activo() else CODIGO_PRUEBA, error=error,
+    )
 
 
 @router.post("/verificar-codigo")
@@ -109,10 +121,14 @@ def verificar_codigo(request: Request, codigo: str = Form("")):
     if not telefono:
         return RedirectResponse("/login", 303)
 
-    if codigo.strip() != CODIGO_PRUEBA:
-        return render(
-            request, "auth/verificar.html", status_code=400, telefono=telefono,
-            codigo_prueba=CODIGO_PRUEBA, error="El código no es correcto. Vuelve a intentarlo.",
+    try:
+        correcto = sms.codigo_correcto(telefono, codigo)
+    except sms.SMSNoDisponible as error:
+        return pagina_verificar(request, telefono, status_code=503, error=str(error))
+    if not correcto:
+        return pagina_verificar(
+            request, telefono, status_code=400,
+            error="El código no es correcto o ya venció. Vuelve a intentarlo o pide uno nuevo.",
         )
 
     usuario = usuarios.buscar_por_telefono(telefono)

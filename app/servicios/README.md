@@ -9,4 +9,5 @@ Apoyo transversal que usan varias capas y que no es ni Modelo, ni Vista, ni Cont
 | `push.py` | Claves VAPID y envío de notificaciones push cifradas, en segundo plano. | `modelos/notificaciones.py`, controlador `pwa` |
 | `validacion.py` | Clase `Formulario`: lee campos, valida y acumula errores por campo. | Controladores |
 | `claves.py` | Contraseñas de administrador: hash scrypt con sal y verificación en tiempo constante. | Controladores `auth`, `admin`, `cuenta`; `scripts/crear_admin.py` |
+| `sms.py` | Código de verificación por SMS con Twilio Verify; sin credenciales, modo de prueba (123456). | Controlador `auth` |
 | `formato.py` | `pesos(12500)` → `$12.500`. | Vistas y modelo de pedidos |
