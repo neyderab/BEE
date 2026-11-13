@@ -345,7 +345,7 @@ erDiagram
     }
 ```
 
-**Migraciones:** `0001` aplica el esquema inicial (idempotente, conserva los datos existentes), `0002` agrega el horario, el método de pago y las fotos de productos, `0003` agrega el código de recogida y las suscripciones push, y `0004` la contraseña de los administradores. Los cambios nuevos siempre van en una migración nueva (ver README, «Migraciones»).
+**Migraciones:** `0001` aplica el esquema inicial (idempotente, conserva los datos existentes), `0002` agrega el horario, el método de pago y las fotos de productos, `0003` agrega el código de recogida y las suscripciones push, `0004` la contraseña de los administradores y `0005` permite el rol «Admin» en bases que venían de la versión original. Los cambios nuevos siempre van en una migración nueva (ver README, «Migraciones»).
 
 ---
 

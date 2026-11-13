@@ -219,3 +219,18 @@ def test_admin_cambia_su_propio_telefono(cliente):
     cliente.post(f"/admin/usuarios/{yo}/datos", data={"nombre": "Neyder", "apellido": "Arenas", "telefono": "3000000077"})
     cliente.get("/logout")
     assert str(entrar(cliente, "3000000077").url).endswith("/admin")
+
+
+# ---------- Bases que vienen de la versión original ----------
+
+def test_migracion_permite_admin_en_bases_con_la_restriccion_vieja(cliente):
+    """La tabla original solo aceptaba Estudiante y Tienda; la migración 0005 lo corrige."""
+    from app.modelos.base_datos import aplicar_migraciones, conectar
+
+    with conectar() as conexion:
+        conexion.execute("ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_rol_check")
+        conexion.execute("ALTER TABLE usuarios ADD CONSTRAINT usuarios_rol_check CHECK (rol IN ('Estudiante', 'Tienda'))")
+        conexion.execute("UPDATE alembic_version SET version_num = '0004'")
+    aplicar_migraciones()
+    assert crear_admin(["3000000001", "Neyder", "Arenas"], clave=CLAVE_ADMIN) == 0
+    assert str(entrar(cliente, "3000000001").url).endswith("/admin")
