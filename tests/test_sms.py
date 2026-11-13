@@ -132,3 +132,12 @@ def test_cuenta_paga_no_muestra_codigo_si_twilio_rechaza(cliente, twilio):
     registrar(cliente, "3200000001")
     pagina = pedir_codigo(cliente)
     assert pagina.status_code == 503 and "482913" not in pagina.text
+
+
+def test_cuenta_de_prueba_muestra_el_codigo_ante_cualquier_fallo_de_twilio(cliente, twilio, monkeypatch):
+    monkeypatch.setenv("TWILIO_CUENTA_DE_PRUEBA", "1")
+    twilio.caido = True
+    registrar(cliente, "3200000001")
+    pagina = pedir_codigo(cliente)
+    assert pagina.status_code == 200 and "482913" in pagina.text
+    assert str(cliente.post("/verificar-codigo", data={"codigo": "482913"}).url).endswith("/estudiante")

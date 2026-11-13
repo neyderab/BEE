@@ -34,7 +34,6 @@ URL_MENSAJES = "https://api.twilio.com/2010-04-01/Accounts/{cuenta}/Messages.jso
 PREFIJO_PAIS = "+57"  # Colombia: los teléfonos se guardan con 10 dígitos, sin el +57.
 PLANTILLA_2FA = "sms_2fa"       # Plantilla de 2FA de la cuenta de prueba de Twilio...
 CODIGO_PLANTILLA_2FA = "482913"  # ...que siempre envía este código.
-NO_VERIFICADO = 21608  # Error de Twilio: la cuenta de prueba solo envía a números verificados.
 
 
 class SMSNoDisponible(Exception):
@@ -66,8 +65,8 @@ def enviar_codigo(telefono: str) -> str | None:
 
     Devuelve el código que hay que mostrar en pantalla, o None si llegó por SMS:
     - sin Twilio (modo de prueba): 123456;
-    - cuenta de prueba de Twilio y número no verificado en Twilio: 482913, el mismo
-      código fijo que trae la plantilla, así cualquiera puede entrar a la demostración.
+    - cuenta de prueba de Twilio y el SMS no salió (número sin verificar u otro error):
+      482913, el mismo código fijo de la plantilla, así cualquiera entra a la demostración.
     """
     if not activo():
         return CODIGO_PRUEBA
@@ -88,23 +87,21 @@ def enviar_codigo(telefono: str) -> str | None:
         )
     except httpx.HTTPError as error:
         logger.warning("Twilio no respondió: %s", error)
+        if cuenta_de_prueba():
+            return CODIGO_PLANTILLA_2FA  # Demostración: el código es fijo, se muestra en pantalla.
         codigos.borrar(telefono)
         raise SMSNoDisponible("No pudimos enviar el SMS. Intenta de nuevo en un momento.") from None
     if respuesta.status_code >= 400:
         # El detalle (sin credenciales) queda en el registro para quien administra Render.
         logger.warning("Twilio respondió %s: %s", respuesta.status_code, respuesta.text[:300])
-        if cuenta_de_prueba() and _codigo_error(respuesta) == NO_VERIFICADO:
-            return CODIGO_PLANTILLA_2FA  # El código ya quedó guardado: se muestra en pantalla.
+        if cuenta_de_prueba():
+            # Cuenta trial: el código es fijo y ya quedó guardado, así que si Twilio no
+            # envía (número sin verificar, error 21608, u otro) se muestra en pantalla.
+            return CODIGO_PLANTILLA_2FA
         codigos.borrar(telefono)
         raise SMSNoDisponible("No pudimos enviar el SMS a ese número. Revisa que esté bien escrito.")
     return None
 
-
-def _codigo_error(respuesta: httpx.Response) -> int | None:
-    try:
-        return respuesta.json().get("code")
-    except ValueError:
-        return None
 
 
 def codigo_correcto(telefono: str, codigo: str) -> bool:
