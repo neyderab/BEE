@@ -1,10 +1,15 @@
+# Configuración local y secretos
 .env
+.claves_push.json
+
+# Entornos de Python
 venv/
 .venv/
 __pycache__/
 *.pyc
 
-	
+# Archivos del sistema y del editor
 .DS_Store
 .vscode/
-.claves_push.json
+*.bak
+*.respaldo
