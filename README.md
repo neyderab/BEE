@@ -296,7 +296,7 @@ Proyecto desarrollado por:
 
 - **[ARQUITECTURA.md](ARQUITECTURA.md):** arquitectura MVC, diagramas (capas, secuencia de un pedido, estados, modelo de datos) y guía para agregar funcionalidades.
 - **[docs/diccionario.html](docs/diccionario.html):** diccionario de datos generado desde la base real.
-- **[docs/arquitectura/](docs/arquitectura/):** los diagramas en SVG, listos para presentaciones.
+- **[docs/arquitectura/](docs/arquitectura/):** los diagramas en SVG, listos para presentaciones, y [`7-mvc-bee.png`](docs/arquitectura/7-mvc-bee.png): el MVC de Bee en una sola imagen para exponer.
 - **[docs/implementacion_proyectos_BEE.pdf](docs/implementacion_proyectos_BEE.pdf):** documento de implementación del proyecto.
 
 ## Proyección del proyecto

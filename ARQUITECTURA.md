@@ -189,7 +189,7 @@ BEE/
 └── requirements.txt            Dependencias de Python
 ```
 
-Cada carpeta de capa tiene su propio `README.md` con más detalle. Los diagramas de este documento también están como imágenes SVG en [`docs/arquitectura/`](docs/arquitectura/), listas para presentaciones.
+Cada carpeta de capa tiene su propio `README.md` con más detalle. Los diagramas de este documento también están como imágenes SVG en [`docs/arquitectura/`](docs/arquitectura/), listas para presentaciones. Para exponer, [`7-mvc-bee.png`](docs/arquitectura/7-mvc-bee.png) resume el MVC en una imagen: los archivos de cada capa y el recorrido de un pedido en 6 pasos.
 
 ---
 
