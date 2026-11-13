@@ -22,7 +22,7 @@ DICCIONARIO = RAIZ / "docs" / "diccionario.html"
 # Orden en que se presentan las tablas (de lo general a lo particular).
 ORDEN = [
     "universidades", "usuarios", "permisos_usuario", "tiendas", "menus",
-    "productos", "pedidos", "pedido_items", "notificaciones",
+    "productos", "pedidos", "pedido_items", "notificaciones", "codigos_verificacion",
 ]
 
 CAMPOS = """

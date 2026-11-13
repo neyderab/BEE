@@ -34,10 +34,10 @@ services:
       - key: VAPID_PRIVATE_KEY
         sync: false
 
-      # SMS con Twilio Verify (opcional; sin ellas el código es 123456)
+      # SMS con Twilio (opcional; sin ellas el código es 123456)
       - key: TWILIO_ACCOUNT_SID
         sync: false
       - key: TWILIO_AUTH_TOKEN
         sync: false
-      - key: TWILIO_VERIFY_SERVICE_SID
+      - key: TWILIO_NUMERO
         sync: false

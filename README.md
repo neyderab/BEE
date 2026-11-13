@@ -259,11 +259,11 @@ Pasos en [Render](https://render.com):
 
 Mientras no haya credenciales de Twilio, el código de verificación es siempre `123456` (modo de prueba). Para enviarlo por SMS de verdad (`app/servicios/sms.py`):
 
-1. En [twilio.com](https://www.twilio.com) → **Verify → Services → Create**, nombre `Bee`, canal **SMS**.
-2. Copia el **Account SID** y el **Auth Token** (página principal de la consola) y el **Service SID** del servicio (empieza por `VA`).
-3. En Render → **Environment** agrega `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` y `TWILIO_VERIFY_SERVICE_SID`, y vuelve a publicar.
+1. En [twilio.com](https://www.twilio.com) → **Phone Numbers → Manage → Buy a number** (en la cuenta de prueba, **Get a trial phone number**: es gratis). Ese número envía los SMS.
+2. Copia el **Account SID** y el **Auth Token** (página principal de la consola).
+3. En Render → **Environment** agrega `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` y `TWILIO_NUMERO` (el número con `+`, por ejemplo `+15551234567`), y vuelve a publicar.
 
-Twilio genera el código, lo vence a los 10 minutos y limita los intentos. En la cuenta de prueba de Twilio solo llegan SMS a los números verificados en **Phone Numbers → Verified Caller IDs**.
+Bee crea un código de 6 dígitos, guarda solo su HMAC en la tabla `codigos_verificacion` (vence a los 10 minutos, máximo 5 intentos, un envío cada 30 segundos) y lo envía con la API de mensajes de Twilio. En la cuenta de prueba solo llegan SMS a los números verificados en **Phone Numbers → Verified Caller IDs**, y hay que permitir Colombia en **Messaging → Settings → Geo permissions**.
 
 > ⚠️ Sin Twilio, cualquiera que conozca un teléfono puede entrar a la cuenta de un estudiante o una tienda. Las cuentas de administrador están protegidas además por su contraseña.
 
